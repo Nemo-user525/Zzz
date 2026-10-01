@@ -1,0 +1,259 @@
+openapi: 3.0.3
+info:
+  title: X-Ray offline demo API
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+paths:
+  /api/use-cases:
+    get:
+      responses:
+        '200':
+          description: Configured user roles, decision goals and output templates
+          content: {application/json: {schema: {type: object, properties: {default_use_case_id: {type: string}, use_cases: {type: array, items: {$ref: '#/components/schemas/UseCase'}}}}}}
+  /api/health:
+    get:
+      responses:
+        '200':
+          description: Health and data coverage
+          content: {application/json: {schema: {$ref: '#/components/schemas/Health'}}}
+  /api/demo-scenario:
+    get:
+      responses:
+        '200':
+          description: Explicitly fictional supplier inputs
+          content: {application/json: {schema: {$ref: '#/components/schemas/SimulationInput'}}}
+  /api/companies:
+    get:
+      parameters: [{name: query, in: query, schema: {type: string}}]
+      responses:
+        '200':
+          description: Covered companies
+          content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/CompanySummary'}}}}
+  /api/companies/{company_id}:
+    get:
+      parameters: [{name: company_id, in: path, required: true, schema: {type: string}}]
+      responses:
+        '200':
+          description: Identity and financial facts
+          content: {application/json: {schema: {$ref: '#/components/schemas/Company'}}}
+        '404': {$ref: '#/components/responses/Error'}
+  /api/companies/{company_id}/risk-events:
+    get:
+      parameters: [{name: company_id, in: path, required: true, schema: {type: string}}]
+      responses:
+        '200':
+          description: Verified event timeline
+          content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/RiskEvent'}}}}
+        '404': {$ref: '#/components/responses/Error'}
+  /api/sources/{source_id}:
+    get:
+      parameters: [{name: source_id, in: path, required: true, schema: {type: string}}]
+      responses:
+        '200':
+          description: Source metadata
+          content: {application/json: {schema: {$ref: '#/components/schemas/Source'}}}
+        '404': {$ref: '#/components/responses/Error'}
+  /api/risk-events/{event_id}/explanation:
+    get:
+      parameters: [{name: event_id, in: path, required: true, schema: {type: string}}]
+      responses:
+        '200':
+          description: Optional model explanation with offline fallback; never changes evidence state
+          content: {application/json: {schema: {type: object, properties: {mode: {type: string}, fallback: {type: boolean}, explanation: {type: object, properties: {plain_language: {type: string}, question_to_verify: {type: string}, caveat: {type: string}}}}}}}
+  /api/sources/{source_id}/candidates:
+    get:
+      parameters: [{name: source_id, in: path, required: true, schema: {type: string}}]
+      responses:
+        '200':
+          description: Optional unverified model candidates; never written to verified facts
+          content: {application/json: {schema: {type: object, properties: {mode: {type: string}, fallback: {type: boolean}, candidates: {type: array, items: {type: object}}}}}}
+  /api/simulations:
+    post:
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/SimulationInput'}}}}
+      responses:
+        '200': {description: Deterministic calculation, content: {application/json: {schema: {$ref: '#/components/schemas/SimulationResult'}}}}
+        '422': {$ref: '#/components/responses/Error'}
+  /api/compare-scenarios:
+    post:
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/SimulationInput'}}}}
+      responses:
+        '200': {description: Baseline, 30 percent advance, staged delivery and decline, content: {application/json: {schema: {$ref: '#/components/schemas/Comparison'}}}}
+        '422': {$ref: '#/components/responses/Error'}
+components:
+  responses:
+    Error:
+      description: Structured error
+      content: {application/json: {schema: {$ref: '#/components/schemas/Error'}}}
+  schemas:
+    UseCase:
+      type: object
+      required: [id, target_user, decision_goal, headline, subtitle, primary_action, output_template]
+      properties:
+        id: {type: string}
+        target_user: {type: string}
+        decision_goal: {type: string}
+        headline: {type: string}
+        subtitle: {type: string}
+        primary_action: {type: string}
+        output_template:
+          type: object
+          required: [title, sections]
+          properties:
+            title: {type: string}
+            sections:
+              type: array
+              items:
+                type: object
+                required: [id, title, fields]
+                properties:
+                  id: {type: string}
+                  title: {type: string}
+                  fields: {type: array, items: {type: string}}
+    Error:
+      type: object
+      required: [code, message, details]
+      properties:
+        code: {type: string}
+        message: {type: string}
+        details: {type: array, items: {type: object}}
+    Health:
+      type: object
+      required: [status, database_ready, verified_company_count, verified_source_count, as_of, llm_mode]
+      properties:
+        status: {type: string}
+        database_ready: {type: boolean}
+        verified_company_count: {type: integer}
+        verified_source_count: {type: integer}
+        as_of: {type: string, format: date}
+        llm_mode: {type: string, enum: [offline, openai, openai_compatible]}
+    CompanySummary:
+      type: object
+      required: [id, legal_name, ticker, industry, coverage, updated_at]
+      properties:
+        id: {type: string}
+        legal_name: {type: string}
+        ticker: {type: string}
+        industry: {type: string}
+        coverage: {type: string}
+        updated_at: {type: string, format: date}
+    FinancialObservation:
+      type: object
+      required: [field, value_yuan, period, unit, source_id, scope, audited, excerpt, verification_status]
+      properties:
+        field: {type: string}
+        value_yuan: {type: number, nullable: true}
+        period: {type: string}
+        unit: {type: string, enum: [CNY]}
+        source_id: {type: string}
+        scope: {type: string}
+        audited: {type: boolean}
+        excerpt: {type: string}
+        verification_status: {type: string, enum: [verified, conflicted, unverified, missing]}
+    Company:
+      allOf:
+        - {$ref: '#/components/schemas/CompanySummary'}
+        - type: object
+          required: [short_name, uscc, listed, financials, unknowns]
+          properties:
+            short_name: {type: string}
+            uscc: {type: string, nullable: true}
+            listed: {type: boolean}
+            financials: {type: array, items: {$ref: '#/components/schemas/FinancialObservation'}}
+            unknowns: {type: array, items: {type: string}}
+    RiskEvent:
+      type: object
+      required: [id, company_id, affected_entity, type, event_date, stage, amount_yuan, status, verification_status, source_ids, explanation]
+      properties:
+        id: {type: string}
+        company_id: {type: string}
+        affected_entity: {type: string}
+        type: {type: string}
+        event_date: {type: string, format: date}
+        stage: {type: string}
+        amount_yuan: {type: number, nullable: true}
+        status: {type: string}
+        verification_status: {type: string, enum: [verified, conflicted, unverified, missing]}
+        source_ids: {type: array, items: {type: string}}
+        explanation: {type: string}
+    Source:
+      type: object
+      required: [id, type, institution, title, url, notice_number, published_at, fetched_at, page, sha256, accessible, excerpt]
+      properties:
+        id: {type: string}
+        type: {type: string}
+        institution: {type: string}
+        title: {type: string}
+        url: {type: string, format: uri}
+        notice_number: {type: string, nullable: true}
+        published_at: {type: string, format: date}
+        fetched_at: {type: string, format: date}
+        page: {type: integer}
+        sha256: {type: string}
+        accessible: {type: boolean}
+        excerpt: {type: string}
+    Cashflow:
+      type: object
+      required: [day, amount_yuan, label]
+      properties:
+        day: {type: integer, minimum: 0}
+        amount_yuan: {type: number}
+        label: {type: string}
+    Shipment:
+      type: object
+      required: [day, fraction]
+      properties:
+        day: {type: integer, minimum: 0}
+        fraction: {type: number, minimum: 0, maximum: 1}
+    SimulationInput:
+      type: object
+      required: [company_id, opening_cash_yuan, safety_floor_yuan, order_amount_yuan, prepayment_rate, payment_term_days, delay_days, other_net_cashflows]
+      properties:
+        company_id: {type: string}
+        opening_cash_yuan: {type: number, minimum: 0}
+        safety_floor_yuan: {type: number, minimum: 0}
+        order_amount_yuan: {type: number, exclusiveMinimum: 0}
+        gross_margin_rate: {type: number, minimum: 0, maximum: 1, nullable: true}
+        direct_cost_yuan: {type: number, minimum: 0, nullable: true}
+        prepayment_rate: {type: number, minimum: 0, maximum: 1}
+        payment_term_days: {type: integer, minimum: 0, maximum: 365}
+        delay_days: {type: integer, minimum: 0, maximum: 365}
+        other_net_cashflows: {type: array, items: {$ref: '#/components/schemas/Cashflow'}}
+        shipments: {type: array, nullable: true, items: {$ref: '#/components/schemas/Shipment'}}
+        cost_day: {type: integer, minimum: 0, default: 10}
+        horizon_days: {type: integer, minimum: 90, maximum: 730, default: 90}
+    CashPoint:
+      type: object
+      required: [day, balance_yuan]
+      properties:
+        day: {type: integer}
+        balance_yuan: {type: number}
+    SimulationResult:
+      type: object
+      required: [cash_curve, minimum_balance_yuan, minimum_day, first_breach_day, shortfall_yuan, final_payment_day, outside_view_payment, assumptions, formula_breakdown, evidence_event_ids, data_labels]
+      properties:
+        cash_curve: {type: array, items: {$ref: '#/components/schemas/CashPoint'}}
+        minimum_balance_yuan: {type: number}
+        minimum_day: {type: integer}
+        first_breach_day: {type: integer, nullable: true}
+        shortfall_yuan: {type: number}
+        final_payment_day: {type: integer}
+        outside_view_payment: {type: boolean}
+        assumptions: {type: array, items: {type: string}}
+        formula_breakdown: {type: array, items: {type: string}}
+        evidence_event_ids: {type: array, items: {type: string}}
+        data_labels: {type: array, items: {type: string, enum: [公开事实, 情景假设, 计算结果]}}
+    Comparison:
+      type: object
+      required: [variants, opportunity_cost_yuan, explanation]
+      properties:
+        variants:
+          type: array
+          items:
+            type: object
+            required: [name, result]
+            properties:
+              name: {type: string}
+              result: {$ref: '#/components/schemas/SimulationResult'}
+        opportunity_cost_yuan: {type: number}
+        explanation: {type: string}

@@ -1,0 +1,12 @@
+{
+  "company": {"id":"halo-688173","legal_name":"希荻微电子集团股份有限公司","short_name":"希荻微","uscc":null,"ticker":"688173","industry":"集成电路设计","listed":true,"coverage":"2026半年报摘要 + 2026-09-03子公司风险公告；非全面尽调","updated_at":"2026-09-03"},
+  "facts": [
+    {"id":"fact-revenue","field":"营业收入","value_yuan":"528740366.73","unit":"CNY","period":"2026-01-01/2026-06-30","scope":"合并","audited":false,"source_id":"src-report-20260829","page":3,"excerpt":"营业收入 528,740,366.73","verification_status":"verified","reviewed_by_human":true,"review_note":"对照报告摘要第3页主要财务数据"},
+    {"id":"fact-operating-cash","field":"经营活动现金流量净额","value_yuan":"-85787630.14","unit":"CNY","period":"2026-01-01/2026-06-30","scope":"合并","audited":false,"source_id":"src-report-20260829","page":3,"excerpt":"经营活动产生的现金流量净额 -85,787,630.14","verification_status":"verified","reviewed_by_human":true,"review_note":"对照报告摘要第3页主要财务数据"},
+    {"id":"fact-net-assets","field":"归属上市公司股东净资产","value_yuan":"1499708682.21","unit":"CNY","period":"2026-06-30","scope":"合并","audited":false,"source_id":"src-report-20260829","page":3,"excerpt":"归属于上市公司股东的净资产 1,499,708,682.21","verification_status":"verified","reviewed_by_human":true,"review_note":"对照报告摘要第3页主要财务数据"},
+    {"id":"fact-zinitix-status","field":"控股子公司管理股风险","value_yuan":null,"unit":"CNY","period":"2026-09-03","scope":"Zinitix子公司，不等同于上市公司","audited":false,"source_id":"src-risk-20260903","page":1,"excerpt":"Zinitix将于2026年9月3日起被韩国交易所指定为管理股","verification_status":"verified","reviewed_by_human":true,"review_note":"对照风险公告第1页；条件退市未作为已发生事实"}
+  ],
+  "risk_events": [
+    {"id":"event-zinitix-management","company_id":"halo-688173","affected_entity":"Zinitix Co., Ltd.（控股子公司）","type":"控股子公司上市地位风险","event_date":"2026-09-03","stage":"管理股指定","amount_yuan":null,"status":"是否后续恢复或退市尚未复核","verification_status":"verified","source_ids":["src-risk-20260903"],"explanation":"公司公告称控股子公司因市值条件将被指定为管理股；退市及商誉减值是条件风险，不是已发生损失。"}
+  ]
+}

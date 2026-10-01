@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+.pytest_cache/
+frontend/node_modules/
+frontend/dist/
+frontend/tsconfig.tsbuildinfo
+data/xray.sqlite3
+*.log
+.env

@@ -1,0 +1,28 @@
+param([switch]$SkipInstall)
+$ErrorActionPreference = 'Stop'
+Set-Location $PSScriptRoot
+if (!(Test-Path '.venv\Scripts\python.exe')) { python -m venv .venv }
+if (!$SkipInstall) { & '.\.venv\Scripts\python.exe' -m pip install -q -r 'backend\requirements.txt' }
+$env:PYTHONPATH = Join-Path $PSScriptRoot 'backend'
+& '.\.venv\Scripts\python.exe' -m app.db.seed
+if ($LASTEXITCODE -ne 0) { throw '数据导入失败' }
+$pnpmCmd = (Get-Command pnpm -ErrorAction SilentlyContinue).Source
+if (!$pnpmCmd) {
+  $fallback = Join-Path $env:USERPROFILE '.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback\pnpm.cmd'
+  if (Test-Path $fallback) { $pnpmCmd = $fallback }
+}
+if (!$pnpmCmd) { throw '需要 pnpm；请安装 Node.js 与 pnpm。' }
+Push-Location 'frontend'
+try {
+  if (!$SkipInstall) { & $pnpmCmd install }
+  if ($LASTEXITCODE -ne 0) { throw '前端依赖安装失败' }
+} finally { Pop-Location }
+$api = Start-Process -FilePath (Join-Path $PSScriptRoot '.venv\Scripts\python.exe') -ArgumentList '-m','uvicorn','app.main:app','--host','127.0.0.1','--port','8000' -PassThru -WindowStyle Hidden -RedirectStandardOutput (Join-Path $PSScriptRoot 'backend.out.log') -RedirectStandardError (Join-Path $PSScriptRoot 'backend.err.log')
+try {
+  Write-Host 'API: http://127.0.0.1:8000/api/health'
+  Write-Host 'Web: http://127.0.0.1:5173/'
+  Push-Location 'frontend'
+  try { & $pnpmCmd dev } finally { Pop-Location }
+} finally {
+  if (!$api.HasExited) { Stop-Process -Id $api.Id -Force }
+}

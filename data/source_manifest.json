@@ -1,0 +1,32 @@
+[
+  {
+    "id": "src-risk-20260903",
+    "type": "company_announcement",
+    "institution": "希荻微 / 巨潮资讯",
+    "title": "关于控股子公司的风险提示公告",
+    "url": "https://static.cninfo.com.cn/finalpage/2026-09-03/1225545002.PDF",
+    "notice_number": "2026-089",
+    "published_at": "2026-09-03",
+    "fetched_at": "2026-10-02",
+    "page": 1,
+    "sha256": "2831F261F85B1686CAD429ECC4FFFA575FDFA3C38EDF2A499B6B91018C2BC575",
+    "local_file": "data/source_docs/subsidiary_risk_2026-09-03.pdf",
+    "accessible": true,
+    "excerpt": "Zinitix将于2026年9月3日起被韩国交易所指定为管理股。"
+  },
+  {
+    "id": "src-report-20260829",
+    "type": "financial_report_summary",
+    "institution": "希荻微 / 巨潮资讯",
+    "title": "2026年半年度报告摘要",
+    "url": "https://static.cninfo.com.cn/finalpage/2026-08-29/1225532542.PDF",
+    "notice_number": null,
+    "published_at": "2026-08-29",
+    "fetched_at": "2026-10-02",
+    "page": 3,
+    "sha256": "669758BAF88B785ACCC52F21EBF60312DAB58191A90512E6A5DEE183102E1318",
+    "local_file": "data/source_docs/report_summary_2026_H1.pdf",
+    "accessible": true,
+    "excerpt": "营业收入 528,740,366.73；经营活动产生的现金流量净额 -85,787,630.14。"
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "company_id": "halo-688173",
+  "opening_cash_yuan": 3000000,
+  "safety_floor_yuan": 200000,
+  "order_amount_yuan": 1000000,
+  "gross_margin_rate": 0.18,
+  "direct_cost_yuan": null,
+  "prepayment_rate": 0,
+  "payment_term_days": 90,
+  "delay_days": 30,
+  "cost_day": 10,
+  "horizon_days": 90,
+  "shipments": [{"day": 10, "fraction": 1}],
+  "other_net_cashflows": [{"day": 75, "amount_yuan": -2150000, "label": "其他业务预计净流出（虚构）"}]
+}
