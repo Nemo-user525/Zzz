@@ -1,5 +1,7 @@
 # 两人联调交接
 
+交给队友 Codex 的完整执行提示词见 [`TEAMMATE_CODEX_PROMPT.md`](TEAMMATE_CODEX_PROMPT.md)，以当前基线和文件所有权为准。
+
 推荐分支：`feat/data-engine`（产品/核心技术）与 `feat/db-frontend`（数据库/网页）。本轮完整基线已落地，分支是后续协作建议。
 
 | 负责人 | 文件所有权 |
