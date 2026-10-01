@@ -76,6 +76,7 @@ Invoke-RestMethod http://127.0.0.1:8000/api/simulations -Method Post -ContentTyp
 
 ## 文档
 
+- [修改导航：想改什么、改哪个文件和字段](docs/MODIFICATION_GUIDE.md)：角色、UI、情景、数据、算法、接口、启动与验证的一站式维护指南。
 - `docs/openapi.yaml`：接口契约。
 - `docs/DATA_PROVENANCE.md`：来源、哈希、事实定位与局限。
 - `docs/DEMO_SCRIPT.md`：30 秒与 3 分钟话术、备份操作。
