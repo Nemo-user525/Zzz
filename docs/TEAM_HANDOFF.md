@@ -102,3 +102,16 @@ pnpm --dir frontend test
 | 新企业的未知项目前由核心 API 固定文案返回，报告事实分类也依赖一个字段名 | 企业核验配置增加 `unknowns` 与明确事实种类，再由 API 原样返回；Source 可增加 issuer/company_ids 供主体归属校验 | 当前前端逐项消费 API，不写死这些未知项。新增企业时核心负责人须同步维护真实缺口与来源主体，不能照搬希荻微情况。 |
 
 真实覆盖未变：**1 家希荻微／2 份官方 PDF／4 条结构化事实／1 个 Zinitix 事件**。来源中文识别仍依赖既有人工复核；自动步骤只检查哈希、页码及数字，不声称自动核实整段中文。没有同业覆盖、用户访谈、付费验证、违约预测或收益保证。图表与核对卡不依赖在线 LLM。
+
+### 推送状态与离线交接
+
+实现提交：`202640f157a2926d2fac5bf72daae3368d0ac101`，分支 `feat/db-frontend`。截至本次交付，HTTPS 推送返回 `403 Access denied`；已有 SSH 身份 `lainey-delacriox` 登录 Gitee 成功，但向 `hongrui-ye/zzz` 推送返回 `Auth error: Access denied`。因此**不能声称已推送**，需仓库所有者赋予该账号写权限，或在本机切换到已有权限的账号后重试。没有修改远端 main，没有创建新密钥，也没有将代码推到其他仓库。
+
+当前分支另提供完整 Git bundle（仓库外的 `../xray-db-frontend.bundle`），只包含 Git 已提交内容，不包含 `.env`、运行数据库、日志、虚拟环境或构建产物。负责人可在已有仓库中执行：
+
+```powershell
+git fetch 'D:\weyang\学军黑客松\xray-db-frontend.bundle' feat/db-frontend
+git switch -c review/db-frontend FETCH_HEAD
+```
+
+最后补验：100% 预付的 API 最低现金为 103 万元，页面明确“全额预付，无余款”；新开浏览器页面重新完成 0%→30% 流程，控制台错误列表为空。测试没有进行真实用户访谈或计时实验，30 秒为演示设计目标。
