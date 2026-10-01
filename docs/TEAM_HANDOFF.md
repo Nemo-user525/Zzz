@@ -103,9 +103,9 @@ pnpm --dir frontend test
 
 真实覆盖未变：**1 家希荻微／2 份官方 PDF／4 条结构化事实／1 个 Zinitix 事件**。来源中文识别仍依赖既有人工复核；自动步骤只检查哈希、页码及数字，不声称自动核实整段中文。没有同业覆盖、用户访谈、付费验证、违约预测或收益保证。图表与核对卡不依赖在线 LLM。
 
-### 推送状态与离线交接
+### 推送状态与离线交接（2026-10-02 更新）
 
-实现提交：`202640f157a2926d2fac5bf72daae3368d0ac101`，分支 `feat/db-frontend`。截至本次交付，HTTPS 推送返回 `403 Access denied`；已有 SSH 身份 `lainey-delacriox` 登录 Gitee 成功，但向 `hongrui-ye/zzz` 推送返回 `Auth error: Access denied`。因此**不能声称已推送**，需仓库所有者赋予该账号写权限，或在本机切换到已有权限的账号后重试。没有修改远端 main，没有创建新密钥，也没有将代码推到其他仓库。
+实现提交：`202640f157a2926d2fac5bf72daae3368d0ac101`，分支 `feat/db-frontend`。初次 HTTPS／现有 SSH 身份 `lainey-delacriox` 推送均被 Gitee 拒绝。用户随后授权切换到 HongRui Ye；使用仓库路径对应的 `hongrui-ye` 用户名，经本机 Git Credential Manager 完成认证后，**已成功推送至 `https://gitee.com/hongrui-ye/zzz` 的 `feat/db-frontend` 分支**，并设置远端跟踪。没有修改远端 main，没有创建新密钥，也没有将代码推到其他仓库。凭据不进入项目文件或聊天记录；该仓库按 URL 路径区分凭据，避免影响其他仓库的账号。
 
 当前分支另提供完整 Git bundle（仓库外的 `../xray-db-frontend.bundle`），只包含 Git 已提交内容，不包含 `.env`、运行数据库、日志、虚拟环境或构建产物。负责人可在已有仓库中执行：
 
