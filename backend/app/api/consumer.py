@@ -5,7 +5,7 @@ from fastapi.responses import RedirectResponse
 from urllib.parse import urlsplit
 from app.schemas.consumer import DiscoveryInput, AnalysisInput, Discovery, Analysis
 from app.services import consumer, consumer_criteria, consumer_model, qcc, consumer_progress
-from app.services import consumer_qcc_session, consumer_workbuddy, workbuddy_client
+from app.services import consumer_qcc_session, consumer_workbuddy, workbuddy_client, consumer_qcc_mcp
 import logging
 import os
 import time
@@ -41,6 +41,7 @@ class SessionInput(BaseModel):
 async def set_qcc_session(body: SessionInput, request: Request):
     if not local_operator(request):raise HTTPException(403,detail='仅可在本机页面配置企查查会话')
     if consumer_workbuddy.selected():raise HTTPException(409,detail='当前使用 WorkBuddy 企查查连接器，请在 WorkBuddy 管理授权')
+    if consumer_qcc_mcp.selected():raise HTTPException(409,detail='当前使用企查查官方 MCP，不需要网页 Cookie')
     try:consumer_qcc_session.configure(body.cookie.get_secret_value())
     except ValueError as exc:raise HTTPException(422,detail=str(exc))
     return consumer_qcc_session.status()
@@ -50,6 +51,7 @@ async def set_qcc_session(body: SessionInput, request: Request):
 def qcc_session_status(request: Request, response: Response):
     response.headers['Cache-Control']='no-store'
     if consumer_workbuddy.selected():return consumer_workbuddy.status() | {'configurable':bool(local_operator(request))}
+    if consumer_qcc_mcp.selected():return consumer_qcc_mcp.status()
     return consumer_qcc_session.status() | {'configurable':bool(local_operator(request))}
 
 
@@ -107,13 +109,14 @@ async def workbuddy_callback(request: Request, code: str = '', state: str = '', 
 @router.get('/capabilities')
 def capabilities(request: Request):
     workbuddy = consumer_workbuddy.selected()
-    connection = consumer_workbuddy.status() if workbuddy else consumer_qcc_session.status()
+    mcp = not workbuddy and consumer_qcc_mcp.selected()
+    connection = consumer_workbuddy.status() if workbuddy else consumer_qcc_mcp.status() if mcp else consumer_qcc_session.status()
     return {'search': 'public_360_bing_sogou',
             'search_providers': ['360 公开网页', 'Bing 公开 RSS', '搜狗公开网页'] + (['Tavily'] if os.getenv('TAVILY_API_KEY') else []) + (['博查'] if os.getenv('BOCHA_API_KEY') else []),
-            'qcc_provider': 'workbuddy' if workbuddy else 'direct',
-            'qcc_configured': connection['configured'] if workbuddy else (all(qcc.credentials()) or bool(os.getenv('QCC_MCP_URL') and os.getenv('QCC_MCP_API_KEY'))), 'llm_mode': consumer_model.effective_mode(),
+            'qcc_provider': 'workbuddy' if workbuddy else 'qcc_mcp' if mcp else 'direct',
+            'qcc_configured': connection['configured'] if workbuddy or mcp else all(qcc.credentials()), 'llm_mode': consumer_model.effective_mode(),
             'model_name': consumer_model.model_name(),
-            'qcc_web_session':connection, 'qcc_session_configurable':bool(local_operator(request)) and not workbuddy,
+            'qcc_web_session':connection, 'qcc_session_configurable':bool(local_operator(request)) and not (workbuddy or mcp),
             'agent_framework': 'LangGraph', 'agent_enabled': consumer_model.effective_mode() != 'offline',
             'xiaohongshu': 'public_search_index_only', 'criteria': consumer_criteria.reference('')}
 

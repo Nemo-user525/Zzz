@@ -52,13 +52,13 @@ CONSUMER_CLOUD_MODEL=qwen/qwen3.8-27b:free
 
 公开网页检索无需密钥。设置 `TAVILY_API_KEY`、`BOCHA_API_KEY` 后可同时使用授权搜索服务；这些服务的额度和费用由各自账号决定。
 
-**企查查默认通过 WorkBuddy 自动查询**（`QCC_PROVIDER=workbuddy`）。本机网页点击 **配置 WorkBuddy**：打开官方开放平台创建应用、登记页面给出的 OAuth 回调地址，并申请 `user.localassistant.readable` 和 `user.localassistant.invokable` 两项权限。将 Client ID / Secret 填入配置页保存，应用审核启用后点击“授权连接 WorkBuddy”。这是平台要求的应用授权；WorkBuddy 内已连接企查查不能替代这一步。详见 [配置与验收说明](docs/WORKBUDDY_QCC.md)。
+**企查查默认直连官方 MCP**（`QCC_PROVIDER=mcp`），无需 WorkBuddy 第三方应用。工程发现实际工具参数后查询工商登记；确认公司后另查财务、工商变更、年报，将可归属主体的原始字段交给模型，结合公开资料、用户评价及数据库参考判断风险。没有记录的财务响应不生成证据卡片，也不代表财务正常。
 
-保持 WorkBuddy 本地助理在线，并在其中授权“企查查（工商信息）”连接器。以后在网页确认公司，后端自动发送查询、读取本次回复，校验公司名和采集时间后，把工商、财务、变更、年报字段与公开检索、用户评价及数据库参考一起交给模型。无需手工启动桥接任务或复制提示词。默认等待 150 秒，可设置 `WORKBUDDY_QCC_TIMEOUT`（10–300 秒）；权限不足、离线、限流或超时会保留真实状态。
+本仓库按账号所有者明确授权，在 `configs/qcc-mcp.json` 随附共享演示密钥，后端自动加载；它只由服务器向企查查官方 HTTPS 地址发送，不返回页面或状态接口。共享额度、密钥有效性和网络仍影响可用性，换设备仍需安装依赖与本地模型。自有密钥可用服务端 `.env` 中非空的 `QCC_MCP_API_KEY` 覆盖（可带或不带 Bearer 前缀）；`QCC_MCP_URL` 覆盖地址。详见 [企查查接入说明](docs/QCC_INTEGRATION.md)。
 
-配置页将应用凭据与 OAuth 令牌分别保存到忽略的 `data/runtime/workbuddy-app.json`、`workbuddy-oauth.json`，也支持服务端环境变量配置。网页保存的完整应用配置优先于环境变量；不读取 WorkBuddy 桌面端的内部登录令牌。换电脑需配置应用并重新授权。返回材料标注“WorkBuddy 回传、未独立在线复验”：消息回传本身不能证明企查查工具确实执行，本机尚待应用审核授权后的真实联调，不能把测试响应称为真实工商数据。
+2026-10-02 已用真实账号取得杭州乐刻网络技术有限公司的工商登记、变更和年报；财务工具对本次公司返回无记录。原始响应保存在本机忽略目录，不作为固定 demo 或训练事实。默认最多调用 4 个工具、纳入 19 段字段，长响应显示截断说明。资料来源为授权接口，仍需区分公司与具体门店，不能把存续登记直接等同于安全。
 
-旧 API 736、直连 MCP、Cookie 和 HAR 适配器仅在明确设置 `QCC_PROVIDER=direct` 后启用，见 [旧路线说明](docs/QCC_INTEGRATION.md)。历史研究入口的 API 736 设置独立保留。
+WorkBuddy OpenAPI 保留为 `QCC_PROVIDER=workbuddy` 的可选方案，需具备第三方应用创建资格、审核和授权，当前个人账号无法创建所需应用，未完成该线路真实联调。[WorkBuddy 说明](docs/WORKBUDDY_QCC.md)。旧 API 736、Cookie 和 HAR 仅在显式 `QCC_PROVIDER=direct` 时使用；默认 MCP 失败不会回退这些路线。历史研究入口的 API 736 独立保留。
 
 小红书及其他社区目前使用公开搜索索引，并非官方平台全量 API；登录内容、删除内容和未收录页面不在覆盖范围。企查查不使用破解密钥或绕过鉴权。
 
@@ -103,7 +103,7 @@ $env:PYTHONPATH='backend'
 | [消费者智能体实现](docs/CONSUMER_AGENT.md) | 模型、预算、评级、异步接口 |
 | [评价、收支与确信度方法](docs/CONSUMER_RISK_METHOD.md) | 全部评价覆盖、真实现金基线、情景公式与评级边界 |
 | [企查查授权接入](docs/QCC_INTEGRATION.md) | API / MCP 配置与边界 |
-| [WorkBuddy 自动接入](docs/WORKBUDDY_QCC.md) | 配置入口、应用授权、自动查询与真实验收 |
+| [WorkBuddy 可选接入](docs/WORKBUDDY_QCC.md) | 适用于具备第三方应用资格的账号 |
 | [本轮验收](docs/CONSUMER_ACCEPTANCE.md) | 实测结果、未完成的账号联调 |
 | [数据说明](docs/DATASET_CARD.md) | 历史研究样本与质量局限 |
 | [当前 OpenAPI](docs/openapi-consumer.json) | 从运行时代码导出的契约 |

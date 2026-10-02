@@ -9,7 +9,7 @@ from app.services import qcc, consumer_qcc_mcp, consumer_qcc_web, consumer_workb
 async def lookup(query, exact=False):
     if consumer_workbuddy.selected():
         return await consumer_workbuddy.lookup(query, exact)
-    if consumer_qcc_mcp.configured():
+    if consumer_qcc_mcp.selected():
         return await consumer_qcc_mcp.lookup(query, exact)
     if not all(qcc.credentials()):
         rows, name = consumer_qcc_web.lookup(query, exact)

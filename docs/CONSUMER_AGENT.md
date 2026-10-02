@@ -16,7 +16,9 @@
 
 收支基线只接受有原文或授权接口支持的同期间经营现金流入/流出总额，校验金额、单位、日期与主体；营业收入、利润、融资不能替代现金收付款。缺基线时使用指数敏感性试算。情景计算和确信度证据门槛见 [方法说明](CONSUMER_RISK_METHOD.md)。
 
-企业查询默认调用 WorkBuddy Local Assistant OpenAPI：检查在线状态、发送含唯一请求编号的取数任务、增量读取该消息之后的回复。接受本次公司匹配的原始工商 JSON，转换为带来源和采集时间的证据，再进入上述分批阅读及最终综合。对话中其他消息不进入模型。此接口返回的是助理消息，不能独立证明其底层工具执行；来源标注“WorkBuddy 回传、未独立在线复验”。未配置、失败和空结果不生成企业资料。应用授权、原始字段约束与预算见 [WorkBuddy 自动接入](WORKBUDDY_QCC.md)。
+企业查询默认直接连接企查查官方 MCP：实际发现工具 schema、使用服务端授权请求工商登记、财务、变更、年报；精确核对主公司名后，把原始字段转为来源证据，进入上述分批阅读及最终综合。无记录不生成证据卡片；变更保留事件日期、年报保留年度，长响应明确标记仅纳入部分字段。环境密钥优先于账号所有者明确授权公开的共享演示配置。配置、预算和真实验收见 [企查查接入说明](QCC_INTEGRATION.md)。
+
+WorkBuddy Local Assistant OpenAPI 保留为显式 `QCC_PROVIDER=workbuddy` 的可选线路，需第三方应用资格。当前个人账号无法创建所需应用，未完成该线路真实联调。其助理回传与官方 MCP 原始返回有不同的来源描述，不能混为同一次验证。
 
 ## 评级与校验
 
@@ -31,11 +33,11 @@
 
 ## API
 
-- `GET /api/consumer/qcc-session`：当前企业数据线路的配置状态，无凭据。默认返回 WorkBuddy 应用授权状态，不代表已取得工商数据。
+- `GET /api/consumer/qcc-session`：当前企业数据线路的配置状态，无凭据。默认返回官方 MCP 配置及最近一次查询状态；ready 仅表示已配置，不代表查询成功。
 - `POST /api/consumer/workbuddy/config`：仅本机同源配置应用凭据和回调，持久化到忽略目录。
 - `POST /api/consumer/workbuddy/authorize`：发起 OAuth，返回官方授权页地址并设置短期 HttpOnly 校验 Cookie。
 - `GET /api/consumer/workbuddy/callback`：验证一次性 state 和浏览器会话，服务端换取令牌；回到主页并清除校验 Cookie。
-- `POST /api/consumer/qcc-session`：仅显式 `QCC_PROVIDER=direct` 时允许本机配置旧 Cookie 路线；默认模式返回 409。
+- `POST /api/consumer/qcc-session`：仅显式 `QCC_PROVIDER=direct` 时允许本机配置旧 Cookie 路线；MCP 和 WorkBuddy 模式均返回 409。
 - `GET /api/consumer/capabilities`：配置状态、模型名、训练概况，无密钥。
 - `POST /api/consumer/discovery`：关键词、可选位置，返回真实候选和来源。
 - `POST /api/consumer/jobs`：提交 investigation_id、candidate_id 和消费条件，202 返回随机 job_id。
@@ -47,6 +49,6 @@
 
 ## 对应文件
 
-`services/consumer_search.py`：公开搜索/API、去重与网页读取；`consumer_agent.py`：图与批量解释；`consumer_model.py`：推理模型传输；`consumer_risk.py`：证据门槛；`workbuddy_client.py`：官方 OpenAPI 和 OAuth；`consumer_workbuddy.py`：自动取数与证据校验；`consumer_qcc_mcp.py`：旧直连 MCP；`api/consumer.py`：任务接口；`frontend/src/ConsumerWorkspace.tsx`：风险与证据 UI；`WorkBuddyConnection.tsx`：应用配置入口。
+`services/consumer_search.py`：公开搜索/API、去重与网页读取；`consumer_agent.py`：图与批量解释；`consumer_model.py`：推理模型传输；`consumer_risk.py`：证据门槛；`workbuddy_client.py`：可选 WorkBuddy OpenAPI 和 OAuth；`consumer_workbuddy.py`：助理回传校验；`consumer_qcc_mcp.py`：当前默认的官方 MCP 直连；`api/consumer.py`：任务接口；`frontend/src/ConsumerWorkspace.tsx`：风险与证据 UI；`WorkBuddyConnection.tsx`：可选应用配置入口。
 
 实际验证及未联调项目见 [本轮验收](CONSUMER_ACCEPTANCE.md)。

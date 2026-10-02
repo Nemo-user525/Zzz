@@ -2,9 +2,19 @@
 
 ## 当前默认线路
 
-消费者主页已改为 WorkBuddy 自动查询，设置为 `QCC_PROVIDER=workbuddy`。本机网页“配置 WorkBuddy”完成应用配置与 OAuth 授权后，工程通过官方 Local Assistant OpenAPI 发起查询并接收企业资料，纳入最终判断。配置与真实验收步骤见 [WorkBuddy 接入说明](WORKBUDDY_QCC.md)。默认不会调用下面的 Cookie、直连 MCP、API 或 HAR 适配器；连接器授权和开放平台应用授权是两个独立步骤。
+消费者主页默认 `QCC_PROVIDER=mcp`，直接连接 `https://agent.qcc.com/mcp/company/stream`，由企查查返回工具字段并进入最终模型判断。个人账号可使用企业工商服务，无需创建 WorkBuddy 第三方应用；权限及额度以企查查账号为准。官方说明见 [企查查智能体平台](https://agent.qcc.com/guide)。
 
-下面保留旧适配器文档。只有显式设置 `QCC_PROVIDER=direct`，消费者主页才使用这些旧路线。原历史研究入口的 API 736 设置独立保留。
+本仓库按账号所有者明确同意公开的要求，在 `configs/qcc-mcp.json` 提供共享演示配置。服务端非空的 `QCC_MCP_URL`、`QCC_MCP_API_KEY` 优先；Bearer 前缀会规范化。删除共享配置并移除环境密钥可停用该凭据。接口和前端只显示状态，不返回密钥；公开仓库的配置文件本身是公开交付，仍可能被其他人使用，配额不是每个检出独立分配。
+
+默认工具为工商登记、财务、工商变更、企业年报；通过实际 `tools/list` 识别参数后只读查询。发现阶段仅请求工商登记，品牌关联同时依赖公开搜索并要求用户确认公司。精确主体确认后，响应的主公司名必须一致，关联企业中的同名字段不能冒充主公司。
+
+原始 JSON 转为有采集时间的字段片段；工商登记最多 3 段、变更最多 6 段、年报最多 6 段、财务最多 4 段，长响应标注截断。每条变更保留事件日期与项目，每份年报保留年度；不把采集日期当事件日期。无记录的响应仅写入查询日志，页面不生成空来源卡片。多个字段片段仍属于同一供应商。
+
+本次实际返回工商登记、变更和年报共 15 段；财务返回无记录，不生成真实收支基线。登记存续和“不公示”都不能证明资金充足。完整模型验收见 [记录](CONSUMER_ACCEPTANCE.md)。
+
+WorkBuddy 仅作为具备应用资格账号的可选方式，显式设置 `QCC_PROVIDER=workbuddy` 后使用；个人账号无需走这条线路。默认 MCP 失败不会切换到 Cookie 网页抓取。
+
+下面保留旧网页/API 适配器文档，仅显式 `QCC_PROVIDER=direct` 使用。原历史研究入口的 API 736 设置独立保留。官方 MCP 配置章节对应当前默认 `mcp` 线路。
 
 ## 旧路线：Cookie 网页会话
 
@@ -35,7 +45,7 @@
 
 1. 在 [企查查智能体平台](https://agent.qcc.com/guide)注册/登录，获取官方 Streamable HTTP 接入 URL 和 Bearer API Key。平台公布有开发者体验及每日赠送额度，具体以账号页面为准。
 2. 在项目 `.env` 设置 `QCC_MCP_URL`、`QCC_MCP_API_KEY`。URL 必须是官方 `qcc.com` 子域的 HTTPS 地址，密钥放在服务端请求头，不写入前端。
-3. `QCC_MCP_TOOLS` 是工具名称到企业关键词参数名称的 JSON 映射，默认 `{"get_company_registration_info":"auto"}`。`auto` 根据实际 `tools/list` 的 schema 识别 keyword、searchKey、companyName 等常用字符串参数；不同服务器若使用其他名称，可显式配置参数。每次最多调用 5 个显式配置的只读 get/query/search 工具。
+3. `QCC_MCP_TOOLS` 是工具名称到企业关键词参数名称的 JSON 映射，默认工商登记、财务、变更、年报四个工具均为 `auto`。`auto` 根据实际 `tools/list` 的 schema 识别 keyword、searchKey、companyName 等常用字符串参数；本次真实服务器要求 `searchKey`，不要沿用旧的 keyword 映射。不同服务器若使用其他名称，可显式配置参数。每次最多调用 5 个显式配置的只读 get/query/search 工具。
 4. 后端执行 initialize → tools/list → schema 检查 → tools/call。配置有误、额度不足、返回主体不同或仅有无法解析的文本时，不生成企业记录；页面只显示成功取得的材料，失败状态保留在折叠的调查记录中。
 
 来源链接是官方接入文档，接口原始字段有明确标识，不冒充国家公示原件。模型不能自行构造 MCP 工具名、读取密钥或更换服务地址。API 736 与 MCP 配置不能代替真实联调验收。

@@ -4,6 +4,15 @@ import { QccSession } from '../src/QccSession';
 
 afterEach(()=>{cleanup();vi.unstubAllGlobals();});
 
+it('shows direct QCC MCP status without asking for WorkBuddy or cookies',async()=>{
+  vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>({provider:'qcc_mcp',configured:true,status:'ready',configurable:false,message:'已配置企查查官方 MCP'})}));
+  render(<QccSession active={false}/>);
+  await screen.findByText('企查查 · 官方 MCP 直连');
+  expect(screen.queryByRole('button',{name:'配置 WorkBuddy'})).toBeNull();
+  expect(screen.queryByLabelText('企查查 Cookie')).toBeNull();
+  expect(screen.queryByRole('dialog')).toBeNull();
+});
+
 it('shows WorkBuddy connection state without opening the legacy cookie drawer',async()=>{
   vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>({provider:'workbuddy',configured:false,status:'not_configured',configurable:false,message:'请先配置 WorkBuddy 开放平台应用。'})}));
   render(<QccSession active={false}/>);

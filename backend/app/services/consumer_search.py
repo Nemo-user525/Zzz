@@ -277,11 +277,12 @@ async def public_addresses(host, port):
 async def read_page(source):
     """Recheck every redirect; never send credentials to discovered URLs."""
     url = source.url
-    from app.services import consumer_qcc_session, consumer_workbuddy
+    from app.services import consumer_qcc_session, consumer_workbuddy, consumer_qcc_mcp
     if source.purpose == '企查查网页导入':return ''
     host=(urlparse(url).hostname or '').lower()
-    if consumer_workbuddy.selected() and (host=='qcc.com' or host.endswith('.qcc.com')):
-        source.page_status='企业字段通过 WorkBuddy 企查查连接器获取，此链接仅保留公开搜索摘要。'
+    if (consumer_workbuddy.selected() or consumer_qcc_mcp.selected()) and (host=='qcc.com' or host.endswith('.qcc.com')):
+        route='WorkBuddy 企查查连接器' if consumer_workbuddy.selected() else '企查查官方 MCP'
+        source.page_status=f'企业字段通过{route}获取，此链接仅保留公开搜索摘要。'
         return ''
     if consumer_qcc_session.company_page(url):
         return await consumer_qcc_session.read(source)

@@ -1,5 +1,7 @@
 # WorkBuddy 自动接入企查查
 
+> 当前默认已改为 `QCC_PROVIDER=mcp`，工程直接使用企查查官方 MCP，详见 [当前接入说明](QCC_INTEGRATION.md)。以下是显式 `QCC_PROVIDER=workbuddy` 时的可选实现，要求账号具备第三方应用创建资格。当前个人账号不能创建所需应用，此线路未完成真实联调，勿继续把它作为个人账号的默认设置步骤。
+
 网页确认公司 → 后端调用 WorkBuddy Local Assistant OpenAPI → 已授权的企查查工商连接器 → 回传企业字段 → X-Ray 校验并纳入模型，结合数据库主题参考、公开资料、全部保留的评价材料和收支情景，输出风险及确信度。无需粘贴提示词、手动运行队列或安装项目自定义 MCP。
 
 ## 配置入口
@@ -33,7 +35,7 @@ WORKBUDDY_QCC_TIMEOUT=150
 
 ## 自动取数与证据边界
 
-- 默认 `QCC_PROVIDER=workbuddy`，查询失败不会回退旧 Cookie、浏览器、HAR 或直连 QCC API。旧实现仅在显式 `direct` 时使用，历史研究入口另有独立设置。
+- 选择 `QCC_PROVIDER=workbuddy` 后，查询失败不会回退旧 Cookie、浏览器、HAR 或直连 QCC API。旧实现仅在显式 `direct` 时使用，历史研究入口另有独立设置。
 - 先确认完整公司名；品牌和门店关键词仍经公开搜索寻找候选。当前不通过 WorkBuddy 模糊匹配工商主体。
 - 工商登记必须精确确认当前公司。接受的工具为 `get_company_registration_info`、`get_financial_data`、`get_change_records`、`get_annual_reports`。工具名称和参数实际可用性仍需账号联调确认。
 - 后端自动发送取数协议，回复必须对应本次随机请求编号、公司名和采集时间。只读发送消息之后的增量回复，不把其他对话内容加入证据。结果需包含工具名、查询参数、原始 JSON、带时区的时间。纯文字总结、错误响应、其他企业、过期材料和夹带凭据的内容会拒绝。

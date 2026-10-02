@@ -1,4 +1,5 @@
 import asyncio
+import json
 from contextlib import asynccontextmanager
 from types import SimpleNamespace
 import pytest
@@ -6,6 +7,50 @@ from app.services import consumer_qcc_mcp as qcc
 from app.api import consumer as api
 from app.schemas.consumer import AnalysisInput
 from fastapi import Response
+
+
+def test_bundled_config_and_env_precedence_without_secret_in_status(monkeypatch):
+    qcc.BUNDLED_CONFIG.write_text(json.dumps({'url':qcc.DEFAULT_URL,'api_key':'Bearer bundled-test-key'}),encoding='utf-8')
+    assert qcc.credentials()==(qcc.DEFAULT_URL,'bundled-test-key')
+    assert qcc.configured()
+    assert 'bundled-test-key' not in json.dumps(qcc.status())
+    monkeypatch.setenv('QCC_MCP_API_KEY','Bearer override-test-key')
+    assert qcc.credentials()[1]=='override-test-key'
+    monkeypatch.setenv('QCC_MCP_API_KEY','invalid\nheader')
+    assert not qcc.configured()
+
+
+def test_missing_financial_records_are_not_evidence():
+    rows=qcc.to_evidence('get_financial_data',{'企业名称':'测试有限公司','搜索结果':'未发现任何记录'},'测试有限公司','2026-10-02T12:00:00Z')
+    assert rows==[]
+
+
+def test_dated_records_keep_context_and_show_truncation():
+    data={'企业名称':'测试有限公司','变更记录信息':[
+        {'变更日期':'2025-08-06','变更项目':'经营范围变更','变更后内容':['业务范围'*100]*12},
+        {'变更日期':'2024-01-05','变更项目':'地址变更','变更后内容':'测试地址'},
+        {'变更日期':'2023-01-05','变更项目':'股东变更','变更后内容':'历史股东'}]}
+    rows=qcc.to_evidence('get_change_records',data,'测试有限公司','2026-10-02T12:00:00Z')
+    assert len(rows)<=6 and any('2024-01-05' in r.excerpt for r in rows)
+    assert all('部分字段和记录' in r.page_status for r in rows)
+    assert all(len(r.excerpt)<=480 for r in rows)
+
+
+def test_primary_identity_cannot_match_nested_related_company():
+    assert qcc.primary_names({'企业名称':'其他有限公司','投资企业':{'企业名称':'测试有限公司'}})=={'其他有限公司'}
+
+
+def test_mcp_status_api_never_opens_cookie_setup(monkeypatch):
+    from fastapi.testclient import TestClient
+    from app.main import app
+    monkeypatch.setenv('QCC_PROVIDER','mcp')
+    monkeypatch.setenv('QCC_MCP_API_KEY','private-test-key')
+    http=TestClient(app,base_url='http://127.0.0.1',client=('127.0.0.1',123))
+    response=http.get('/api/consumer/qcc-session')
+    assert response.json()['provider']=='qcc_mcp' and response.json()['configured']
+    assert response.json()['configurable'] is False
+    assert 'private-test-key' not in response.text
+    assert http.post('/api/consumer/qcc-session',json={'cookie':'test-only'}).status_code==409
 
 
 def test_registered_individual_business_does_not_need_company_suffix():

@@ -19,7 +19,7 @@ export function QccSession({active}:{active:boolean}) {
         const value:Session=await response.json();
         if(stopped)return;
         setSession(value);
-        if(value.provider!=='workbuddy' && value.configurable && !prompted.current && (!value.configured || value.status==='login_required' || value.status==='verification_required')) {
+        if(value.provider!=='workbuddy' && value.provider!=='qcc_mcp' && value.configurable && !prompted.current && (!value.configured || value.status==='login_required' || value.status==='verification_required')) {
           prompted.current=true;setOpen(true);
         }
       } catch { /* The other research channels can continue. */ }
@@ -42,6 +42,11 @@ export function QccSession({active}:{active:boolean}) {
     finally {setSaving(false);}
   }
   if(session?.provider==='workbuddy')return <WorkBuddyConnection session={session} onChange={value=>setSession({...value,provider:'workbuddy'})}/>;
+  if(session?.provider==='qcc_mcp')return <section aria-label="企查查连接状态">
+    <strong>企查查 · 官方 MCP 直连</strong>
+    <p role="status">{session.message}</p>
+    <small>企业资料直接纳入风险判断；无需 WorkBuddy 应用或网页 Cookie。</small>
+  </section>;
   if(!session?.configurable)return null;
   return <>
     <button className="ghost" onClick={()=>setOpen(true)}>企查查登录与 Cookie{session.configured?' · 已配置':''}</button>

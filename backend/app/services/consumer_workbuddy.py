@@ -24,7 +24,7 @@ MESSAGES = {
 
 
 def selected():
-    return client.setting('QCC_PROVIDER', 'workbuddy').lower() != 'direct'
+    return client.setting('QCC_PROVIDER', 'mcp').lower() == 'workbuddy'
 
 
 def status():
