@@ -54,7 +54,7 @@ CONSUMER_CLOUD_MODEL=qwen/qwen3.8-27b:free
 
 企查查支持官方授权 API 736 或官方 Streamable HTTP MCP。到 [企查查智能体平台](https://agent.qcc.com/guide)获取账号密钥与接入 URL，配置 `QCC_MCP_URL`、`QCC_MCP_API_KEY`，并按服务器 `tools/list` 设置工具名与关键词参数。已有 API 736 账号可以继续用 `QCC_APP_KEY`、`QCC_SECRET_KEY`。参见 [企查查说明](docs/QCC_INTEGRATION.md)。配置存在不代表权限或额度已经联调成功。
 
-**本人 Cookie 网页方式**：本机页面提供登录与 Cookie 配置弹窗。本人在企查查登录并打开公司页面，从 F12 → Network → 该页面请求 → Request Headers 复制 Cookie 的值到弹窗，重新查询。凭据默认只保存在后端内存；重启清除，不进入模型、日志、Git 或浏览器持久化存储。也可在本机 `.env` 设置 `QCC_WEB_COOKIE`。只对搜索结果中真实取得的 `www.qcc.com/firm/<公司ID>.html` 发正常 GET，不构造私有接口或签名；不携带 Cookie 跟随重定向。会话失效提示登录，限流或人工验证则停止该来源并继续其他渠道。公网页面不能配置会话。没有本人 Cookie 时，这条登录读取路径不能算账号联调通过。
+**Cookie 网页方式**：仓库附带 `configs/qcc-web-session.json`，后端在未设置非空 `QCC_WEB_COOKIE` 时自动读取，新检出无需再次复制 Cookie。读取优先级为：本次网页弹窗配置（包括清除）→ `.env`／环境变量 → 仓库会话文件。弹窗覆盖只驻留内存，重启恢复文件配置；删除会话文件并移除本机环境配置可停用持久会话。该文件包含经账号所有者明确授权公开的登录会话，不进入前端构建、模型或运行日志。Cookie 会过期，并可能受设备、网络和网站验证限制，附带配置不代表企查查正文读取已成功。需要更新时，在企查查登录并打开公司页面，从 F12 → Network → 该页面请求 → Request Headers 复制 Cookie 的值到本机弹窗，或更新本机 `.env` 后重启。只对搜索结果中真实取得的 `www.qcc.com/firm/<公司ID>.html` 发正常 GET，不构造私有接口或签名；不携带 Cookie 跟随重定向。会话失效提示登录，限流或人工验证则停止该来源并继续其他渠道。公网页面不能配置会话。没有本人 Cookie 时，这条登录读取路径不能算账号联调通过。
 
 如网页资料由 XHR 动态加载，可把本人有权查看的响应导出为 HAR，再运行 `python import-qcc-har.py --file 本地文件.har --company 公司全称`。只提取精确匹配公司的工商字段，丢弃请求头、凭据和请求参数，标注为历史导入、未在线复验；原始 HAR 不要提交仓库。
 

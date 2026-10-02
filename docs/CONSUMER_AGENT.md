@@ -29,7 +29,7 @@
 
 ## API
 
-- `GET/POST /api/consumer/qcc-session`：查询状态／本机配置本人 Cookie，默认仅驻留内存。
+- `GET/POST /api/consumer/qcc-session`：查询状态／本机配置 Cookie。默认加载仓库会话文件，本机非空环境配置可覆盖；网页弹窗覆盖仅驻留内存。
 - `GET /api/consumer/capabilities`：配置状态、模型名、训练概况，无密钥。
 - `POST /api/consumer/discovery`：关键词、可选位置，返回真实候选和来源。
 - `POST /api/consumer/jobs`：提交 investigation_id、candidate_id 和消费条件，202 返回随机 job_id。

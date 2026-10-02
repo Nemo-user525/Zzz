@@ -11,6 +11,43 @@ URL='https://www.qcc.com/firm/c75e42376577558cd17cbb2d5b3dbc16.html'
 NAME='测试服务有限公司'
 
 
+@pytest.fixture(autouse=True)
+def isolated_session(monkeypatch, tmp_path):
+    monkeypatch.setattr(session,'BUNDLED_SESSION',tmp_path/'qcc-web-session.json')
+    monkeypatch.setattr(session,'session_cookie',None)
+    monkeypatch.setattr(session,'last_status','not_configured')
+    monkeypatch.setattr(session,'last_http_status',None)
+    monkeypatch.setattr(session,'last_error_code',None)
+    monkeypatch.delenv('QCC_WEB_COOKIE',raising=False)
+
+
+def test_bundled_session_loads_without_env_and_outside_project_cwd(monkeypatch, tmp_path):
+    session.BUNDLED_SESSION.write_text(json.dumps({'cookie':'session=bundled-test'}),encoding='utf-8')
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv('QCC_WEB_COOKIE','')
+    assert session.cookie()=='session=bundled-test'
+    assert session.status()['configured'] is True
+    assert 'bundled-test' not in json.dumps(session.status())
+
+
+def test_env_and_operator_session_override_bundled_cookie(monkeypatch):
+    session.BUNDLED_SESSION.write_text(json.dumps({'cookie':'session=bundled-test'}),encoding='utf-8')
+    monkeypatch.setenv('QCC_WEB_COOKIE','session=env-test')
+    assert session.cookie()=='session=env-test'
+    session.configure('session=operator-test')
+    assert session.cookie()=='session=operator-test'
+    session.configure('')
+    assert not session.cookie() and not session.status()['configured']
+
+
+def test_missing_or_invalid_bundled_session_does_not_break_startup():
+    assert session.cookie()==''
+    for raw in ('invalid json','[]','{}','{"cookie":null}','{"cookie":42}',
+                json.dumps({'cookie':'session=x\r\nX-Header: x'}),json.dumps({'cookie':'x='+'a'*16384})):
+        session.BUNDLED_SESSION.write_text(raw,encoding='utf-8')
+        assert session.cookie()==''
+
+
 def test_cookie_only_goes_to_company_page_and_redirect_is_not_followed(monkeypatch):
     monkeypatch.setattr(session,'session_cookie','session=test-secret')
     async def addresses(*args):pass

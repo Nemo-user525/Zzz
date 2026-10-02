@@ -1,12 +1,15 @@
 """An operator's QCC web session, restricted to normal company-detail GETs."""
 import asyncio
 import hashlib
+import json
 import os
 import re
+from pathlib import Path
 from urllib.parse import urlsplit
 import httpx
 
 GATE = asyncio.Semaphore(1)
+BUNDLED_SESSION = Path(__file__).resolve().parents[3] / 'configs' / 'qcc-web-session.json'
 session_cookie = None
 last_status = 'not_configured'
 last_http_status = None
@@ -14,12 +17,25 @@ last_error_code = None
 
 
 def cookie():
-    return os.getenv('QCC_WEB_COOKIE','').strip() if session_cookie is None else session_cookie
+    if session_cookie is not None:
+        return session_cookie
+    value = os.getenv('QCC_WEB_COOKIE','').strip()
+    if value:
+        return value
+    try:
+        value = json.loads(BUNDLED_SESSION.read_text(encoding='utf-8')).get('cookie','')
+    except (OSError, UnicodeError, ValueError, AttributeError):
+        return ''
+    return value.strip() if valid_cookie(value) else ''
+
+
+def valid_cookie(value):
+    return isinstance(value,str) and len(value)<=16384 and all(32<=ord(c)<=126 for c in value) and (not value or '=' in value)
 
 
 def configure(value):
     global session_cookie, last_status, last_http_status, last_error_code
-    if len(value)>16384 or any(ord(c)<32 or ord(c)>126 for c in value) or (value and '=' not in value):
+    if not valid_cookie(value):
         raise ValueError('Cookie 格式无效，请复制请求头 Cookie 的值。')
     session_cookie=value.strip()
     last_status='ready' if session_cookie else 'not_configured'

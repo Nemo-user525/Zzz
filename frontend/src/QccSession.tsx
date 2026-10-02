@@ -47,7 +47,7 @@ export function QccSession({active}:{active:boolean}) {
     {session.status==='access_denied'&&<small>企查查拒绝网页访问，需在官网核对账户权限与访问状态。</small>}
     {open&&<Drawer viewKey="qcc-session" onClose={close}>
       <h2>登录企查查并配置本人 Cookie</h2>
-      <p>用于读取你有权访问的公司网页。弹窗输入只保存在本机后端内存；如工程 .env 已配置 Cookie，重启后会读取该配置。</p>
+      <p>用于读取你有权访问的公司网页。项目会自动加载已配置的会话；你可在此更新或清除本次会话。弹窗输入只保存在本机后端内存，重启后恢复项目配置。</p>
       <p><a href="https://www.qcc.com/" target="_blank" rel="noreferrer">打开企查查并登录 ↗</a></p>
       <ol><li>本人完成企查查登录，打开要查询的公司页面。</li><li>按 F12，在 Network 中刷新页面，选择该公司页面请求，在 Request Headers 中复制 Cookie 的值。</li><li>在下面粘贴值，不包含「Cookie:」前缀，再重新查询。</li></ol>
       <form onSubmit={e=>{e.preventDefault();void save(cookie);}}>
