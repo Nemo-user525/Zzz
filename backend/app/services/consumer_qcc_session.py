@@ -49,7 +49,7 @@ def status():
 def company_page(url):
     try:
         p=urlsplit(url)
-        return p.scheme=='https' and p.hostname=='www.qcc.com' and not p.username and not p.password and p.port in (None,443) and not p.query and not p.fragment and bool(re.fullmatch(r'/firm/[a-fA-F0-9]{32}\.html',p.path))
+        return p.scheme=='https' and p.hostname=='www.qcc.com' and not p.username and not p.password and p.port in (None,443) and not p.query and not p.fragment and bool(re.fullmatch(r'/firm[/_][a-fA-F0-9]{32}\.html',p.path))
     except ValueError:return False
 
 
@@ -85,22 +85,33 @@ async def read(source):
                     data+=chunk
                     if len(data)>1_000_000:raise ValueError('too_large')
         raw=data.decode('utf-8',errors='replace')
-        if any(term in raw[:20000] for term in ('访问超频','安全验证','访问验证','验证码')):
+        text=web.clean(raw)[:24000]
+        if '访问超频' in text:
             last_status='rate_limited'
             source.page_status='企查查要求人工验证或限制访问；未自动重试，其他来源继续调查。'
             return ''
-        if any(term in raw[:20000] for term in ('请登录后','登录后可查看')):
+        if any(term in text for term in ('安全验证','访问验证','验证码')) or re.search(r'\bvar\s+arg1\s*=',text):
+            last_status='verification_required'
+            last_error_code='browser_verification'
+            source.page_status='企查查返回浏览器验证内容，未取得公司正文；请在官网完成验证，其他来源继续调查。'
+            return ''
+        if any(term in text for term in ('请登录后','登录后可查看')):
             last_status='login_required'
             source.page_status='企查查要求登录后查看，请在本机弹窗更新本人 Cookie。'
             return ''
-        text=web.clean(raw)[:24000]
         if len(text)<80:raise ValueError('dynamic_or_empty')
+        company=re.search(r'[\u4e00-\u9fffA-Za-z0-9（）()·]{4,100}(?:有限责任公司|股份有限公司|有限公司|公司)',web.clean(source.title))
+        if company and company.group() not in text:raise ValueError('company_mismatch')
+        if not any(term in text for term in ('统一社会信用代码','工商信息','登记状态','法定代表人','注册资本','营业执照')):
+            raise ValueError('no_company_details')
         last_status='accessible'
         source.sha256=hashlib.sha256(data).hexdigest()
         source.page_status='已使用本人网页会话读取正文；非官方 API 核验，内容仍待核对。' if secret else '已读取企查查公开正文；内容仍待核对。'
         return text
     except (httpx.HTTPError,ValueError,OSError) as exc:
-        last_error_code=str(exc) if type(exc) is ValueError and str(exc) in {'not_html','too_large','dynamic_or_empty'} else type(exc).__name__
+        last_error_code=str(exc) if type(exc) is ValueError and str(exc) in {'not_html','too_large','dynamic_or_empty','company_mismatch','no_company_details'} else type(exc).__name__
         last_status='unavailable'
-        source.page_status='企查查返回动态页面或无可用正文，保留搜索摘要。' if last_error_code=='dynamic_or_empty' else '企查查网页正文暂不可用，保留搜索摘要。'
+        source.page_status=('企查查返回动态页面或无可用正文，保留搜索摘要。' if last_error_code=='dynamic_or_empty' else
+            '企查查返回内容未包含目标公司或可识别的工商资料，未作为公司正文使用。' if last_error_code in {'company_mismatch','no_company_details'} else
+            '企查查网页正文暂不可用，保留搜索摘要。')
         return ''

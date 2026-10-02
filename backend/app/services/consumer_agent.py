@@ -265,6 +265,7 @@ async def synthesize(state):
             '必须综合reviews中的全部评价（含正面、负面、品牌归属不明和重复文本）及cashflow收支模拟，'
             '在review_impact和cashflow_impact分别说明如何影响等级或不确定性。品牌资料仅可作context理由，不能当所选公司的adverse证据。'
             '收支情景的固定百分比是假设，不是实际预测；无真实现金收支基线不能据此认定公司资金短缺。'
+            '用户数量、教练数量、宣传简介和单次诉讼胜诉不能证明当前经营稳定、正常运营或未来履约能力；缺少直接正文支持时只描述原始事实。'
             '同时给出confidence低/中/高及简短依据，这是判断证据充分度，禁止虚构准确率。保持推理简洁。'
             'reasons只能引用sources里的source_id和连续原句；数据库、调查状态、评价统计和模拟假设不是可引用来源。没有可引用事实时reasons=[]。')
         draft = await consumer_model.structured(instruction, risk_data, RiskDraft)
@@ -274,7 +275,7 @@ async def synthesize(state):
         except ValueError:
             update('风险综合已完成，正在修正评级依据的引用格式…')
             draft = await consumer_model.structured(instruction, risk_data | {'previous_answer':draft.model_dump(),
-                'correction':'上一版来源校验失败。只保留由所选原文片段直接支持的理由。超过两年且无当前后续的负面只能作context；话题聚合页不能证明其中其他新闻属于该公司；官网署名与App宣传不能证明企业存续；现金流、资金链与模拟不能引用无财务内容的网页。未知source_id、导航栏目、跨主体负面或引用系统统计必须删除。重新检查等级，必要时undetermined，reasons可为空。'}, RiskDraft, reasoning=False)
+                'correction':'上一版来源校验失败。只保留由所选原文片段直接支持的理由。超过两年且无当前后续的负面只能作context；话题聚合页不能证明其中其他新闻属于该公司；官网署名与App宣传不能证明企业存续；用户数量、宣传和单次诉讼胜诉不能推出经营稳定或履约能力；现金流、资金链与模拟不能引用无财务内容的网页。未知source_id、导航栏目、跨主体负面或引用系统统计必须删除。重新检查等级，必要时undetermined，reasons可为空。'}, RiskDraft, reasoning=False)
             synthesis_calls += 1
             risk = consumer_risk.assess(draft, state['sources'], state['identity']['name'], consumer_model.model_name(), sum(s.scope=='selected_entity' for s in eligible), reviews, cashflow, discard_invalid=True)
         return {'findings': findings, 'risk': risk, 'reviews':reviews, 'cashflow':cashflow, 'model_calls': state['model_calls'] + synthesis_calls,

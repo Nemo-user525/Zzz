@@ -36,6 +36,11 @@ def validate_reason(reason, all_sources, sources):
     if re.search(r'现金流|收支差额|资金链|流动性|资金短缺|资金压力',reason.explanation) and not any(
         re.search(r'现金流|收支|资金链|流动性|资金短缺|资金压力',c.quote) for c in reason.citations):
         raise ValueError('unsupported_financial_conclusion')
+    operating_claim = r'经营(?:情况)?稳定|持续运营|正常运营|履约能力(?:尚可|良好|较强|可靠)'
+    if re.search(operating_claim, reason.explanation) and not any(
+        all_sources[c.source_id].verification_status != 'search_excerpt' and
+        re.search(operating_claim, c.quote) for c in reason.citations):
+        raise ValueError('unsupported_operating_conclusion')
     if reason.direction=='adverse':
         def stale(citation):
             value=all_sources[citation.source_id].published_at
@@ -61,6 +66,7 @@ def assess(draft, rows, name, model, reviewed_count, reviews=None, cashflow=None
     draft = draft.model_copy(update={'reasons':valid})
     if rejected:
         draft.confidence = 'low'
+        draft.confidence_explanation = '部分综合理由缺少直接证据支持，已删除，剩余材料的支持度有限。'
         draft.explanation = '部分模型理由未通过来源核对，已整项删除；评级只采用下方保留的证据。'
         draft.review_impact = '评价阅读结果保留在下方；引用不合格的综合结论已删除。'
         draft.cashflow_impact = '收支情景保留在下方；假设情景不用于认定公司资金短缺。'
@@ -92,7 +98,9 @@ def assess(draft, rows, name, model, reviewed_count, reviews=None, cashflow=None
         decision_label={'low':'较低决策风险 · 仍需核对合同','medium':'中等决策风险 · 核实后再预付','high':'较高决策风险 · 建议暂缓预付'}[level],
         decision_basis='company_evidence', decision_explanation='依据下方企业材料与模型评估给出预付建议；具体门店归属和合同仍需核对。')
     if rejected:limits.append(f'已删除 {rejected} 项引用未通过的模型理由，确信度限制为低。')
-    return RiskAssessment(level=level, label=LABELS[level], explanation=draft.explanation, **decision,
+    explanation = ('现有材料不足以确认企业当前风险高低；已保留下方可追溯线索及评价、收支情景。预付决策按信息缺口采用谨慎等级。'
+                   if level == 'undetermined' else draft.explanation)
+    return RiskAssessment(level=level, label=LABELS[level], explanation=explanation, **decision,
         reasons=draft.reasons, model=model, model_assessed=True, reviewed_source_count=reviewed_count,
         **confidence, review_impact=draft.review_impact, cashflow_impact=draft.cashflow_impact,
         limitations=limits + ['这是基于本次公开材料的 AI 初判，不是安全保证或违约概率。',

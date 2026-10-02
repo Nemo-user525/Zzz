@@ -1,7 +1,7 @@
 """Evidence coverage and actionable leads, never an invented company score."""
 import re
 from app.schemas.consumer import Indicator
-from app.services.consumer_search import signal_matches
+from app.services.consumer_search import signal_matches, publisher_key
 
 SIGNALS = {
     'continuity': ('服务能否持续', r'停业|闭店|歇业|交接|搬迁|恢复营业|营业安排|承接', ['当前门店实际营业情况', '未来服务承接安排']),
@@ -30,7 +30,7 @@ def build(identity, sources, trace, findings):
         source_ids=[s.id for s in counter], missing=['回应是否针对同一事件', '处理是否已经落实']))
     pages = sum(s.verification_status == 'page_text' for s in sources)
     registry = sum(s.verification_status == 'provider_response' for s in sources)
-    publishers = len({s.publisher for s in sources})
+    publishers = len({publisher_key(s.url) for s in sources})
     rows.append(Indicator(id='coverage', label='判断依据够不够', status='partial' if sources else 'unknown',
         value=f'{len(sources)} 条来源 · {publishers} 个站点',
         explanation=f'取得 {pages} 份网页正文、{registry} 条工商接口材料；其余为搜索摘要。站点可能转载同一消息，数量不等于独立事实数或可信度。',

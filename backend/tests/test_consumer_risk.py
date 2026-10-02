@@ -183,6 +183,34 @@ def test_copyright_cannot_support_simulation_or_cashflow_claim():
     with pytest.raises(ValueError,match='financial_conclusion'):risk.assess(d,[a],NAME,'model',1)
 
 
+@pytest.mark.parametrize('claim', ['经营情况稳定', '主体持续运营', '法律履约能力尚可'])
+def test_promotion_and_court_victory_cannot_establish_operating_strength(claim):
+    a=row(text='拥有500万用户，曾在合同纠纷中获赔',status='page_text')
+    d=draft('low',[a],'reassuring');d.reasons[0].explanation=claim
+    with pytest.raises(ValueError,match='operating_conclusion'):
+        risk.assess(d,[a],NAME,'model',1)
+    result=risk.assess(d,[a],NAME,'model',1,discard_invalid=True)
+    assert result.decision_level=='medium' and result.confidence=='low'
+    assert not result.reasons
+
+
+def test_undetermined_summary_does_not_keep_model_claim_of_safety():
+    a=row(text='公司宣传材料',status='search_excerpt');d=draft('low',[a],'context')
+    d.explanation='当前资料确认公司经营稳定。'
+    result=risk.assess(d,[a],NAME,'model',1)
+    assert result.level=='undetermined' and '经营稳定' not in result.explanation
+
+
+def test_coverage_counts_websites_instead_of_varying_publisher_labels():
+    from app.services.consumer_indicators import build
+    from app.schemas.consumer import IdentityCandidate
+    a=row('news.example.com');b=row('www.example.com')
+    a.publisher='新闻署名';b.publisher='企业署名'
+    identity=IdentityCandidate(id='c',name=NAME,basis='来源提及',source_ids=[a.id])
+    coverage=next(i for i in build(identity,[a,b],[],[]) if i.id=='coverage')
+    assert coverage.value=='2 条来源 · 1 个站点'
+
+
 def test_sogou_uses_disclosed_destination_and_keeps_review_and_date_metadata():
     page='<h3 class="vr-title"><a href="/link?url=opaque">消费者反馈</a></h3><div class="fz-mid space-txt">测试服务有限公司退款说明</div><span>2025-05-02</span><div data-url="https://tousu.sina.com.cn/complaint/view/123/"></div>'
     rows=web.parse_sogou(page,'测试')

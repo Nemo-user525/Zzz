@@ -27,3 +27,12 @@ it('does not expose configuration on a public deployment',async()=>{
   await waitFor(()=>expect(fetch).toHaveBeenCalled());
   expect(screen.queryByRole('dialog')).toBeNull();
 });
+
+it('opens the website verification prompt even when a cookie is configured',async()=>{
+  vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>({configured:true,status:'verification_required',configurable:true})}));
+  render(<QccSession active={false}/>);
+  await screen.findByText('登录企查查并配置本人 Cookie');
+  expect(screen.getByRole('status').textContent).toContain('尚未取得公司正文');
+  expect(screen.getByRole('link',{name:'打开企查查并登录 ↗'}).getAttribute('href')).toBe('https://www.qcc.com/');
+  expect((screen.getByLabelText('企查查 Cookie') as HTMLInputElement).value).toBe('');
+});

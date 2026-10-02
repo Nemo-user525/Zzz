@@ -117,10 +117,10 @@ export function ConsumerWorkspace() {
           {conditions.amount_yuan!==null && <p>本次拟预付：{conditions.amount_yuan.toLocaleString('zh-CN')} 元</p>}
           <small>资料取得截至 {time(report.evidence_as_of)} · 各来源公开日期见详情</small><p className="consumer-message">{report.agent_status}</p></div>
         <ConsumerOutlook report={report} sourceButton={sourceButton}/>
-        <div className="consumer-indicators">{report.indicators.filter(i=>i.source_ids.length>0||i.agent_findings.length>0).map(i=><article className="consumer-panel" key={i.id}>
+        <div className="consumer-indicators">{report.indicators.filter(i=>i.source_ids.length>0||(i.id!=='counter'&&i.agent_findings.length>0)).map(i=><article className="consumer-panel" key={i.id}>
           <h3>{i.label}</h3><strong className="consumer-indicator-value">{i.value}</strong><p>{i.explanation}</p>
           {i.agent_findings.map((f,j)=><div className="consumer-finding" key={j}><b>智能体证据解释 · 待核实</b><p>{f.explanation}</p>{f.citations.map((c,k)=><blockquote key={k}>“{c.quote}”{sourceButton([c.source_id],'出处')}</blockquote>)}<p>可核实：{f.question}</p></div>)}
-          <small>还缺：{i.missing.join('；')}</small><div>{sourceButton(i.source_ids)}</div>
+          <small>还缺：{i.missing.join('；')}</small>{!!i.source_ids.length&&<div>{sourceButton(i.source_ids)}</div>}
         </article>)}</div>
         {!!report.changes.length&&<section className="consumer-panel"><h2>值得继续核对的变化线索</h2>{report.changes.map(c=><article className="consumer-change" key={c.id}><h3>{c.title}</h3><p>{c.fact_text}</p><small>发生日期：{c.event_date||'未核实'} · {c.stage}</small><p>{c.consumer_relevance}</p>{c.interpretations.map((x,j)=><p key={j}>可能解释：{x.text}</p>)}{sourceButton(c.source_ids)}</article>)}</section>}
         {!!report.questions.length&&<section className="consumer-panel"><h2>下一步，向门店问这几件事</h2><ol>{report.questions.map(q=><li key={q}>{q}</li>)}</ol>{!!report.counter_source_ids.length&&<><h3>回应与反向依据</h3><p>{report.counter_search_status}</p>{sourceButton(report.counter_source_ids)}</>}</section>}

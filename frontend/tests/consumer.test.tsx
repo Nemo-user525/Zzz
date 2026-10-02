@@ -20,6 +20,9 @@ beforeEach(()=>{
 afterEach(()=>cleanup());
 
 it('puts risk above evidence and hides empty result categories',async()=>{
+  vi.mocked(consumerApi.analyse).mockResolvedValue({...report,indicators:[...report.indicators,
+    {id:'counter',label:'回应与后续处理',status:'searched',value:'已检索，未找到可用回应',explanation:'未找到回应',source_ids:[],missing:[],
+      agent_findings:[{indicator_id:'counter',explanation:'被误分类的工商变更事实',question:'是否有关？',citations:[{source_id:'s',quote:source.excerpt}]}]}]});
   await selectCandidate();
   fireEvent.click(screen.getByRole('button',{name:'查看企业变化'}));
   await screen.findByText('甲方调查结果');
@@ -29,6 +32,8 @@ it('puts risk above evidence and hides empty result categories',async()=>{
   expect(screen.queryByRole('heading',{name:'社区与消费者反馈'})).toBeNull();
   expect(screen.queryByRole('heading',{name:'值得继续核对的变化线索'})).toBeNull();
   expect(screen.queryByText('未找到')).toBeNull();
+  expect(screen.queryByRole('heading',{name:'回应与后续处理'})).toBeNull();
+  expect(screen.queryByRole('button',{name:'查看依据（0）'})).toBeNull();
   expect(screen.getByText('中等决策风险 · 先核实再预付')).toBeTruthy();
   expect(screen.getByText('判断确信度：低确信度')).toBeTruthy();
 });

@@ -281,6 +281,10 @@ async def read_page(source):
     if source.purpose == '企查查网页导入':return ''
     if consumer_qcc_session.company_page(url):
         return await consumer_qcc_session.read(source)
+    host=(urlparse(url).hostname or '').lower()
+    if host=='qcc.com' or host.endswith('.qcc.com'):
+        source.page_status='企查查链接不是受支持的公司详情地址，保留搜索摘要。'
+        return ''
     try:
         async with GATE, httpx.AsyncClient(timeout=8, trust_env=False, follow_redirects=False, headers=HEADERS) as client:
             for _ in range(4):

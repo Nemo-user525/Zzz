@@ -65,6 +65,23 @@ def test_cookie_only_goes_to_company_page_and_redirect_is_not_followed(monkeypat
         assert not session.company_page(url)
 
 
+def test_search_disclosed_legacy_company_url_uses_session_validation(monkeypatch):
+    seen=[]
+    async def read(source):
+        seen.append(source.url)
+        return 'company detail'
+    monkeypatch.setattr(session,'read',read)
+    legacy=URL.replace('/firm/','/firm_')
+    assert session.company_page(legacy)
+    assert asyncio.run(web.read_page(web.make_source(NAME,legacy,NAME,'测试')))=='company detail'
+    assert seen==[legacy]
+    for other in ('https://www.qcc.com/',legacy+'?tracking=1','https://m.qcc.com/firm/unknown.html'):
+        source=web.make_source(NAME,legacy,NAME,'测试').model_copy(update={'url':other})
+        assert asyncio.run(web.read_page(source))==''
+        assert '不是受支持' in source.page_status
+    assert seen==[legacy]
+
+
 def test_login_and_rate_limit_are_distinct(monkeypatch):
     original=httpx.AsyncClient
     async def addresses(*args):pass
@@ -74,6 +91,27 @@ def test_login_and_rate_limit_are_distinct(monkeypatch):
         source=web.make_source(NAME,URL,NAME+'公开基本信息','测试')
         assert asyncio.run(session.read(source))==''
         assert session.status()['status']==expected
+
+
+@pytest.mark.parametrize('body,expected,error',[
+    ('<html><body>{"l1":"var arg1=\'challenge\';"}'+('encoded-payload '*40)+'</body></html>', 'verification_required','browser_verification'),
+    ('<html><body>请完成安全验证'+('说明 '*80)+'</body></html>', 'verification_required','browser_verification'),
+    ('<html><body>另一家科技有限公司 法定代表人 注册资本'+('介绍 '*80)+'</body></html>', 'unavailable','company_mismatch'),
+    ('<html><body>'+NAME+('导航 '*80)+'</body></html>', 'unavailable','no_company_details'),
+    ('<html><script>const label="验证码"</script><body>'+NAME+' 工商信息 注册资本 法定代表人 '+('公司介绍 '*40)+'</body></html>', 'accessible',None),
+])
+def test_only_matching_company_details_count_as_page_text(monkeypatch,body,expected,error):
+    original=httpx.AsyncClient
+    async def addresses(*args):pass
+    monkeypatch.setattr(web,'public_addresses',addresses)
+    monkeypatch.setattr(session.httpx,'AsyncClient',lambda **kw:original(transport=httpx.MockTransport(
+        lambda request:httpx.Response(200,headers={'content-type':'text/html; charset=utf-8'},text=body))))
+    source=web.make_source(NAME,URL,NAME+'公开基本信息','测试')
+    result=asyncio.run(session.read(source))
+    assert bool(result)==(expected=='accessible')
+    assert session.status()['status']==expected
+    assert session.status()['error_code']==error
+    assert bool(source.sha256)==(expected=='accessible')
 
 
 def test_session_input_and_local_configuration_reject_credential_leaks(monkeypatch):
