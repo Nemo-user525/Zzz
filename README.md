@@ -18,11 +18,10 @@
 需要 Python 3.12+、Node.js、pnpm。首次安装依赖和模型需要网络。
 
 ```powershell
-Copy-Item .env.example .env  # 仅在没有 .env 时执行，已有配置不要覆盖
 pwsh -File .\start.ps1
 ```
 
-开发页面：`http://127.0.0.1:5173/`；API：`http://127.0.0.1:8000/docs`。脚本创建虚拟环境、安装依赖、导入数据、训练主题参考并读取 `.env`。已经安装依赖时可 `start.ps1 -SkipInstall`。Linux/macOS 使用 `bash ./start.sh`，本地推理运行时按 [Ollama 官方说明](https://ollama.com/download)安装。
+开发页面：`http://127.0.0.1:5173/`；API：`http://127.0.0.1:8000/docs`。脚本首次运行时从 `.env.example` 创建 `.env`，已有文件不会覆盖，然后创建虚拟环境、安装依赖、导入数据并训练主题参考。已经安装依赖时可 `start.ps1 -SkipInstall`。Linux/macOS 使用 `bash ./start.sh`（本轮未在新设备实测）；本地推理运行时按 [Ollama 官方说明](https://ollama.com/download)安装。
 
 ### 免费本地模型（可选）
 

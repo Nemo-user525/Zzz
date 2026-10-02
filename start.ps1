@@ -1,6 +1,7 @@
 param([switch]$SkipInstall)
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
+if (!(Test-Path -LiteralPath '.env')) { Copy-Item -LiteralPath '.env.example' -Destination '.env' }
 if (!(Test-Path '.venv\Scripts\python.exe')) { python -m venv .venv }
 if (!$SkipInstall) { & '.\.venv\Scripts\python.exe' -m pip install -q -r 'backend\requirements.txt' }
 $env:PYTHONPATH = Join-Path $PSScriptRoot 'backend'
