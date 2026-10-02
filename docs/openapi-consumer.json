@@ -1213,6 +1213,125 @@
         }
       }
     },
+    "/api/consumer/workbuddy/config": {
+      "post": {
+        "tags": [
+          "消费者实时调查"
+        ],
+        "summary": "Configure Workbuddy",
+        "operationId": "configure_workbuddy_api_consumer_workbuddy_config_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkBuddyConfig"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/consumer/workbuddy/authorize": {
+      "post": {
+        "tags": [
+          "消费者实时调查"
+        ],
+        "summary": "Authorize Workbuddy",
+        "operationId": "authorize_workbuddy_api_consumer_workbuddy_authorize_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/consumer/workbuddy/callback": {
+      "get": {
+        "tags": [
+          "消费者实时调查"
+        ],
+        "summary": "Workbuddy Callback",
+        "operationId": "workbuddy_callback_api_consumer_workbuddy_callback_get",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Code"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "State"
+            }
+          },
+          {
+            "name": "error",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Error"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/consumer/capabilities": {
       "get": {
         "tags": [
@@ -3944,6 +4063,36 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "WorkBuddyConfig": {
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 2,
+            "title": "Client Id"
+          },
+          "client_secret": {
+            "type": "string",
+            "maxLength": 4096,
+            "minLength": 2,
+            "format": "password",
+            "title": "Client Secret",
+            "writeOnly": true
+          },
+          "redirect_uri": {
+            "type": "string",
+            "maxLength": 2048,
+            "title": "Redirect Uri"
+          }
+        },
+        "type": "object",
+        "required": [
+          "client_id",
+          "client_secret",
+          "redirect_uri"
+        ],
+        "title": "WorkBuddyConfig"
       },
       "app__schemas__company_research__DiscoveryInput": {
         "properties": {

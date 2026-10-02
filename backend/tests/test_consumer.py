@@ -27,7 +27,13 @@ def test_registry_navigation_tabs_are_not_adverse_event_evidence():
 
 
 @pytest.fixture
-def rig(monkeypatch):
+def rig(monkeypatch, tmp_path):
+    from app.services import workbuddy_client
+    monkeypatch.setattr(workbuddy_client, 'ROOT', tmp_path)
+    monkeypatch.setattr(workbuddy_client, 'APP_FILE', tmp_path / 'app.json')
+    monkeypatch.setattr(workbuddy_client, 'TOKEN_FILE', tmp_path / 'token.json')
+    for name in ('WORKBUDDY_CLIENT_ID', 'WORKBUDDY_CLIENT_SECRET', 'WORKBUDDY_ACCESS_TOKEN'):
+        monkeypatch.delenv(name, raising=False)
     monkeypatch.setenv('LLM_PROVIDER','offline')
     monkeypatch.delenv('CONSUMER_MODEL_PROVIDER',raising=False)
     monkeypatch.delenv('QCC_MCP_URL',raising=False)
@@ -195,6 +201,7 @@ def test_forged_or_expired_candidate_cannot_select_other_company(rig):
 
 
 def test_registry_identity_mismatch_is_excluded(rig,monkeypatch):
+    monkeypatch.setenv('QCC_PROVIDER','direct')
     monkeypatch.setattr(consumer_registry.qcc,'credentials',lambda:('test-key','test-secret'))
     async def lookup(query):
         return {'company':{'name':'其他企业有限公司'}}

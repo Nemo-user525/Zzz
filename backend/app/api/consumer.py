@@ -1,10 +1,12 @@
 import asyncio
 from fastapi import APIRouter, Response, HTTPException, Request
-from pydantic import BaseModel, SecretStr
+from pydantic import BaseModel, SecretStr, Field
+from fastapi.responses import RedirectResponse
 from urllib.parse import urlsplit
 from app.schemas.consumer import DiscoveryInput, AnalysisInput, Discovery, Analysis
 from app.services import consumer, consumer_criteria, consumer_model, qcc, consumer_progress
-from app.services import consumer_qcc_session
+from app.services import consumer_qcc_session, consumer_workbuddy, workbuddy_client
+import logging
 import os
 import time
 import uuid
@@ -12,6 +14,16 @@ import uuid
 router = APIRouter(prefix='/api/consumer', tags=['消费者实时调查'])
 gate = asyncio.Semaphore(3)
 jobs = {}
+
+
+class _HideOAuthCode(logging.Filter):
+    def filter(self, record):
+        if isinstance(record.args, tuple) and len(record.args) == 5 and str(record.args[2]).startswith(workbuddy_client.CALLBACK):
+            record.args = (*record.args[:2], workbuddy_client.CALLBACK, *record.args[3:])
+        return True
+
+
+logging.getLogger('uvicorn.access').addFilter(_HideOAuthCode())
 
 
 def local_operator(request):
@@ -28,6 +40,7 @@ class SessionInput(BaseModel):
 @router.post('/qcc-session')
 async def set_qcc_session(body: SessionInput, request: Request):
     if not local_operator(request):raise HTTPException(403,detail='仅可在本机页面配置企查查会话')
+    if consumer_workbuddy.selected():raise HTTPException(409,detail='当前使用 WorkBuddy 企查查连接器，请在 WorkBuddy 管理授权')
     try:consumer_qcc_session.configure(body.cookie.get_secret_value())
     except ValueError as exc:raise HTTPException(422,detail=str(exc))
     return consumer_qcc_session.status()
@@ -36,16 +49,71 @@ async def set_qcc_session(body: SessionInput, request: Request):
 @router.get('/qcc-session')
 def qcc_session_status(request: Request, response: Response):
     response.headers['Cache-Control']='no-store'
+    if consumer_workbuddy.selected():return consumer_workbuddy.status() | {'configurable':bool(local_operator(request))}
     return consumer_qcc_session.status() | {'configurable':bool(local_operator(request))}
+
+
+def workbuddy_operator(request):
+    origin = request.headers.get('origin')
+    if not local_operator(request) or (origin and urlsplit(origin).netloc != request.url.netloc):
+        raise HTTPException(403, detail='仅可在本机页面配置 WorkBuddy')
+
+
+class WorkBuddyConfig(BaseModel):
+    client_id: str = Field(min_length=2, max_length=256)
+    client_secret: SecretStr = Field(min_length=2, max_length=4096)
+    redirect_uri: str = Field(max_length=2048)
+
+
+@router.post('/workbuddy/config')
+def configure_workbuddy(body: WorkBuddyConfig, request: Request, response: Response):
+    workbuddy_operator(request)
+    try:
+        workbuddy_client.configure(body.client_id.strip(), body.client_secret.get_secret_value().strip(), body.redirect_uri.strip())
+    except workbuddy_client.WorkBuddyError as exc:
+        raise HTTPException(422, detail=str(exc)) from None
+    response.headers['Cache-Control'] = 'no-store'
+    return workbuddy_client.status()
+
+
+@router.post('/workbuddy/authorize')
+def authorize_workbuddy(request: Request, response: Response):
+    workbuddy_operator(request)
+    try:
+        if urlsplit(workbuddy_client.redirect_uri()).hostname != request.url.hostname:
+            raise HTTPException(422, detail='请用注册回调地址的同一主机名打开本页再授权')
+        url, browser = workbuddy_client.begin_auth()
+    except workbuddy_client.WorkBuddyError as exc:
+        raise HTTPException(422, detail=str(exc)) from None
+    response.set_cookie('xray_wb_auth', browser, max_age=600, httponly=True, samesite='lax', secure=request.url.scheme == 'https', path=workbuddy_client.CALLBACK)
+    response.headers['Cache-Control'] = 'no-store'
+    return {'authorization_url':url}
+
+
+@router.get('/workbuddy/callback')
+async def workbuddy_callback(request: Request, code: str = '', state: str = '', error: str = ''):
+    outcome = 'connected'
+    try:
+        if error:
+            raise workbuddy_client.WorkBuddyError('auth_required')
+        await workbuddy_client.finish_auth(state, request.cookies.get('xray_wb_auth', ''), code)
+    except workbuddy_client.WorkBuddyError as exc:
+        outcome = exc.code
+    response = RedirectResponse('/?workbuddy=' + outcome, status_code=303, headers={'Cache-Control':'no-store', 'Referrer-Policy':'no-referrer'})
+    response.delete_cookie('xray_wb_auth', path=workbuddy_client.CALLBACK)
+    return response
 
 
 @router.get('/capabilities')
 def capabilities(request: Request):
+    workbuddy = consumer_workbuddy.selected()
+    connection = consumer_workbuddy.status() if workbuddy else consumer_qcc_session.status()
     return {'search': 'public_360_bing_sogou',
             'search_providers': ['360 公开网页', 'Bing 公开 RSS', '搜狗公开网页'] + (['Tavily'] if os.getenv('TAVILY_API_KEY') else []) + (['博查'] if os.getenv('BOCHA_API_KEY') else []),
-            'qcc_configured': all(qcc.credentials()) or bool(os.getenv('QCC_MCP_URL') and os.getenv('QCC_MCP_API_KEY')), 'llm_mode': consumer_model.effective_mode(),
+            'qcc_provider': 'workbuddy' if workbuddy else 'direct',
+            'qcc_configured': connection['configured'] if workbuddy else (all(qcc.credentials()) or bool(os.getenv('QCC_MCP_URL') and os.getenv('QCC_MCP_API_KEY'))), 'llm_mode': consumer_model.effective_mode(),
             'model_name': consumer_model.model_name(),
-            'qcc_web_session':consumer_qcc_session.status(), 'qcc_session_configurable':bool(local_operator(request)),
+            'qcc_web_session':connection, 'qcc_session_configurable':bool(local_operator(request)) and not workbuddy,
             'agent_framework': 'LangGraph', 'agent_enabled': consumer_model.effective_mode() != 'offline',
             'xiaohongshu': 'public_search_index_only', 'criteria': consumer_criteria.reference('')}
 

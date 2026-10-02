@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Drawer } from './Drawer';
+import { WorkBuddyConnection } from './WorkBuddyConnection';
 
-type Session = {configured:boolean; status:string; configurable:boolean};
+type Session = {configured:boolean; status:string; configurable:boolean; provider?:string; app_configured?:boolean; message?:string};
 export function QccSession({active}:{active:boolean}) {
   const [session,setSession]=useState<Session|null>(null);
   const [open,setOpen]=useState(false);
@@ -18,13 +19,13 @@ export function QccSession({active}:{active:boolean}) {
         const value:Session=await response.json();
         if(stopped)return;
         setSession(value);
-        if(value.configurable && !prompted.current && (!value.configured || value.status==='login_required' || value.status==='verification_required')) {
+        if(value.provider!=='workbuddy' && value.configurable && !prompted.current && (!value.configured || value.status==='login_required' || value.status==='verification_required')) {
           prompted.current=true;setOpen(true);
         }
       } catch { /* The other research channels can continue. */ }
     };
     void read();
-    const timer=active?setInterval(()=>void read(),15000):undefined;
+    const timer=setInterval(()=>void read(),15000);
     return ()=>{stopped=true;if(timer)clearInterval(timer);};
   },[active]);
   const close=()=>{setCookie('');setOpen(false);};
@@ -40,6 +41,7 @@ export function QccSession({active}:{active:boolean}) {
     } catch(error) {setMessage(error instanceof Error?error.message:'会话配置失败');}
     finally {setSaving(false);}
   }
+  if(session?.provider==='workbuddy')return <WorkBuddyConnection session={session} onChange={value=>setSession({...value,provider:'workbuddy'})}/>;
   if(!session?.configurable)return null;
   return <>
     <button className="ghost" onClick={()=>setOpen(true)}>企查查登录与 Cookie{session.configured?' · 已配置':''}</button>

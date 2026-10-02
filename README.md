@@ -52,11 +52,13 @@ CONSUMER_CLOUD_MODEL=qwen/qwen3.8-27b:free
 
 公开网页检索无需密钥。设置 `TAVILY_API_KEY`、`BOCHA_API_KEY` 后可同时使用授权搜索服务；这些服务的额度和费用由各自账号决定。
 
-企查查支持官方授权 API 736 或官方 Streamable HTTP MCP。到 [企查查智能体平台](https://agent.qcc.com/guide)获取账号密钥与接入 URL，配置 `QCC_MCP_URL`、`QCC_MCP_API_KEY`，并按服务器 `tools/list` 设置工具名与关键词参数。已有 API 736 账号可以继续用 `QCC_APP_KEY`、`QCC_SECRET_KEY`。参见 [企查查说明](docs/QCC_INTEGRATION.md)。配置存在不代表权限或额度已经联调成功。
+**企查查默认通过 WorkBuddy 自动查询**（`QCC_PROVIDER=workbuddy`）。本机网页点击 **配置 WorkBuddy**：打开官方开放平台创建应用、登记页面给出的 OAuth 回调地址，并申请 `user.localassistant.readable` 和 `user.localassistant.invokable` 两项权限。将 Client ID / Secret 填入配置页保存，应用审核启用后点击“授权连接 WorkBuddy”。这是平台要求的应用授权；WorkBuddy 内已连接企查查不能替代这一步。详见 [配置与验收说明](docs/WORKBUDDY_QCC.md)。
 
-**Cookie 网页方式**：仓库附带 `configs/qcc-web-session.json`，后端在未设置非空 `QCC_WEB_COOKIE` 时自动读取，新检出无需再次复制 Cookie。读取优先级为：本次网页弹窗配置（包括清除）→ `.env`／环境变量 → 仓库会话文件。弹窗覆盖只驻留内存，重启恢复文件配置；删除会话文件并移除本机环境配置可停用持久会话。该文件包含经账号所有者明确授权公开的登录会话，不进入前端构建、模型或运行日志。Cookie 会过期，并可能受设备、网络和网站验证限制，附带配置不代表企查查正文读取已成功。需要更新时，在企查查登录并打开公司页面，从 F12 → Network → 该页面请求 → Request Headers 复制 Cookie 的值到本机弹窗，或更新本机 `.env` 后重启。只对搜索结果中真实取得的 `www.qcc.com/firm/<公司ID>.html` 或 `www.qcc.com/firm_<公司ID>.html` 发正常 GET，不构造私有接口或签名；不携带 Cookie 跟随重定向。会话失效提示登录；网页返回编码验证内容时提示前往官网验证，验证页与不匹配的公司页面不计入正文。限流或人工验证时继续其他渠道。公网页面不能配置会话。没有本人 Cookie 时，这条登录读取路径不能算账号联调通过。
+保持 WorkBuddy 本地助理在线，并在其中授权“企查查（工商信息）”连接器。以后在网页确认公司，后端自动发送查询、读取本次回复，校验公司名和采集时间后，把工商、财务、变更、年报字段与公开检索、用户评价及数据库参考一起交给模型。无需手工启动桥接任务或复制提示词。默认等待 150 秒，可设置 `WORKBUDDY_QCC_TIMEOUT`（10–300 秒）；权限不足、离线、限流或超时会保留真实状态。
 
-如网页资料由 XHR 动态加载，可把本人有权查看的响应导出为 HAR，再运行 `python import-qcc-har.py --file 本地文件.har --company 公司全称`。只提取精确匹配公司的工商字段，丢弃请求头、凭据和请求参数，标注为历史导入、未在线复验；原始 HAR 不要提交仓库。
+配置页将应用凭据与 OAuth 令牌分别保存到忽略的 `data/runtime/workbuddy-app.json`、`workbuddy-oauth.json`，也支持服务端环境变量配置。网页保存的完整应用配置优先于环境变量；不读取 WorkBuddy 桌面端的内部登录令牌。换电脑需配置应用并重新授权。返回材料标注“WorkBuddy 回传、未独立在线复验”：消息回传本身不能证明企查查工具确实执行，本机尚待应用审核授权后的真实联调，不能把测试响应称为真实工商数据。
+
+旧 API 736、直连 MCP、Cookie 和 HAR 适配器仅在明确设置 `QCC_PROVIDER=direct` 后启用，见 [旧路线说明](docs/QCC_INTEGRATION.md)。历史研究入口的 API 736 设置独立保留。
 
 小红书及其他社区目前使用公开搜索索引，并非官方平台全量 API；登录内容、删除内容和未收录页面不在覆盖范围。企查查不使用破解密钥或绕过鉴权。
 
@@ -101,6 +103,7 @@ $env:PYTHONPATH='backend'
 | [消费者智能体实现](docs/CONSUMER_AGENT.md) | 模型、预算、评级、异步接口 |
 | [评价、收支与确信度方法](docs/CONSUMER_RISK_METHOD.md) | 全部评价覆盖、真实现金基线、情景公式与评级边界 |
 | [企查查授权接入](docs/QCC_INTEGRATION.md) | API / MCP 配置与边界 |
+| [WorkBuddy 自动接入](docs/WORKBUDDY_QCC.md) | 配置入口、应用授权、自动查询与真实验收 |
 | [本轮验收](docs/CONSUMER_ACCEPTANCE.md) | 实测结果、未完成的账号联调 |
 | [数据说明](docs/DATASET_CARD.md) | 历史研究样本与质量局限 |
 | [当前 OpenAPI](docs/openapi-consumer.json) | 从运行时代码导出的契约 |

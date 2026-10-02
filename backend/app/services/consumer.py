@@ -109,7 +109,7 @@ async def analysis(body):
             questions.append(f'“{changes[0].title[:55]}”涉及这家门店吗，目前处理到哪一步？')
         intention = {'initial_purchase': '新购买的服务', 'top_up': '新增服务与原有余额', 'renewal': '续费后的服务', 'explore': '拟了解的服务'}[body.intent]
         questions.append(f'由哪个主体承接{intention}，调整服务时由谁处理未履行部分？')
-    unavailable = not any(t.status == 'completed' for t in state['trace'] if t.action in {*consumer_agent.TOPICS, '企查查', '企查查 MCP', '智能体补查', '品牌门店补查', '品牌小红书补查', '数据库建议复核'} or t.action.startswith('品牌'))
+    unavailable = not any(t.status == 'completed' for t in state['trace'] if t.action in {*consumer_agent.TOPICS, '企查查', '企查查 MCP', 'WorkBuddy 企查查', '智能体补查', '品牌门店补查', '品牌小红书补查', '数据库建议复核'} or t.action.startswith('品牌'))
     if unavailable:
         for source in sources:
             source.cached = True

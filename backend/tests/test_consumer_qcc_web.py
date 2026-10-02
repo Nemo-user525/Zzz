@@ -13,6 +13,7 @@ NAME='测试服务有限公司'
 
 @pytest.fixture(autouse=True)
 def isolated_session(monkeypatch, tmp_path):
+    monkeypatch.setenv('QCC_PROVIDER','direct')
     monkeypatch.setattr(session,'BUNDLED_SESSION',tmp_path/'qcc-web-session.json')
     monkeypatch.setattr(session,'session_cookie',None)
     monkeypatch.setattr(session,'last_status','not_configured')

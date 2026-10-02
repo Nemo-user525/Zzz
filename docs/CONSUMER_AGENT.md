@@ -16,6 +16,8 @@
 
 收支基线只接受有原文或授权接口支持的同期间经营现金流入/流出总额，校验金额、单位、日期与主体；营业收入、利润、融资不能替代现金收付款。缺基线时使用指数敏感性试算。情景计算和确信度证据门槛见 [方法说明](CONSUMER_RISK_METHOD.md)。
 
+企业查询默认调用 WorkBuddy Local Assistant OpenAPI：检查在线状态、发送含唯一请求编号的取数任务、增量读取该消息之后的回复。接受本次公司匹配的原始工商 JSON，转换为带来源和采集时间的证据，再进入上述分批阅读及最终综合。对话中其他消息不进入模型。此接口返回的是助理消息，不能独立证明其底层工具执行；来源标注“WorkBuddy 回传、未独立在线复验”。未配置、失败和空结果不生成企业资料。应用授权、原始字段约束与预算见 [WorkBuddy 自动接入](WORKBUDDY_QCC.md)。
+
 ## 评级与校验
 
 - low：具体正向依据充分，至少 3 个网站、2 种渠道、2 份正文或接口支持，且未出现尚待核实的停业、退款等显著不利线索。并非未来安全承诺。
@@ -29,7 +31,11 @@
 
 ## API
 
-- `GET/POST /api/consumer/qcc-session`：查询状态／本机配置 Cookie。默认加载仓库会话文件，本机非空环境配置可覆盖；网页弹窗覆盖仅驻留内存。
+- `GET /api/consumer/qcc-session`：当前企业数据线路的配置状态，无凭据。默认返回 WorkBuddy 应用授权状态，不代表已取得工商数据。
+- `POST /api/consumer/workbuddy/config`：仅本机同源配置应用凭据和回调，持久化到忽略目录。
+- `POST /api/consumer/workbuddy/authorize`：发起 OAuth，返回官方授权页地址并设置短期 HttpOnly 校验 Cookie。
+- `GET /api/consumer/workbuddy/callback`：验证一次性 state 和浏览器会话，服务端换取令牌；回到主页并清除校验 Cookie。
+- `POST /api/consumer/qcc-session`：仅显式 `QCC_PROVIDER=direct` 时允许本机配置旧 Cookie 路线；默认模式返回 409。
 - `GET /api/consumer/capabilities`：配置状态、模型名、训练概况，无密钥。
 - `POST /api/consumer/discovery`：关键词、可选位置，返回真实候选和来源。
 - `POST /api/consumer/jobs`：提交 investigation_id、candidate_id 和消费条件，202 返回随机 job_id。
@@ -41,6 +47,6 @@
 
 ## 对应文件
 
-`services/consumer_search.py`：公开搜索/API、去重与网页读取；`consumer_agent.py`：图与批量解释；`consumer_model.py`：推理模型传输；`consumer_risk.py`：证据门槛；`consumer_qcc_mcp.py`：授权 MCP；`api/consumer.py`：任务接口；`frontend/src/ConsumerWorkspace.tsx`：风险与证据 UI。
+`services/consumer_search.py`：公开搜索/API、去重与网页读取；`consumer_agent.py`：图与批量解释；`consumer_model.py`：推理模型传输；`consumer_risk.py`：证据门槛；`workbuddy_client.py`：官方 OpenAPI 和 OAuth；`consumer_workbuddy.py`：自动取数与证据校验；`consumer_qcc_mcp.py`：旧直连 MCP；`api/consumer.py`：任务接口；`frontend/src/ConsumerWorkspace.tsx`：风险与证据 UI；`WorkBuddyConnection.tsx`：应用配置入口。
 
 实际验证及未联调项目见 [本轮验收](CONSUMER_ACCEPTANCE.md)。
