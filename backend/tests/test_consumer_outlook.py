@@ -64,6 +64,13 @@ def test_app_promotion_cannot_support_overall_customer_sentiment():
         risk.assess(draft,[a],NAME,'test',1)
 
 
+@pytest.mark.parametrize('text', ['领取三天免费健身体验卡，团操课任选，门店通用！', '品牌电影联名奖牌上线啦！'])
+def test_marketing_offer_is_not_positive_customer_feedback(text):
+    a=source(text,'weibo.com');item=observation(a,'positive')
+    result=outlook.summarize_reviews(outlook.validate_reviews([item],[a]),[a])
+    assert result.counts['positive']==0 and result.observations[0]['kind']=='non_review'
+
+
 def test_no_financial_records_means_index_sensitivity_not_fictional_yuan():
     result=outlook.simulate([],[],NAME)
     assert result.mode=='sensitivity_only' and '非企业实际金额' in result.unit

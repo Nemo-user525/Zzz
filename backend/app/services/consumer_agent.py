@@ -80,6 +80,15 @@ class State(TypedDict, total=False):
     cashflow: CashflowAssessment
 
 
+async def risk_draft(instruction, data):
+    try:
+        return await consumer_model.structured(instruction, data, RiskDraft), 1
+    except ValueError:
+        update('最终输出格式未通过，正在用同一证据重试结构化评级…')
+        return await consumer_model.structured(instruction + ' 上一轮未生成可校验的完整JSON。基于同一证据简洁输出，禁止补造引文。',
+                                               data, RiskDraft, reasoning=False), 2
+
+
 def reference(rows):
     return criteria.reference(' '.join(s.excerpt for s in rows if s.scope == 'selected_entity'))
 
@@ -268,8 +277,8 @@ async def synthesize(state):
             '用户数量、教练数量、宣传简介和单次诉讼胜诉不能证明当前经营稳定、正常运营或未来履约能力；缺少直接正文支持时只描述原始事实。'
             '同时给出confidence低/中/高及简短依据，这是判断证据充分度，禁止虚构准确率。保持推理简洁。'
             'reasons只能引用sources里的source_id和连续原句；数据库、调查状态、评价统计和模拟假设不是可引用来源。没有可引用事实时reasons=[]。')
-        draft = await consumer_model.structured(instruction, risk_data, RiskDraft)
-        synthesis_calls += 1
+        draft, draft_calls = await risk_draft(instruction, risk_data)
+        synthesis_calls += draft_calls
         try:
             risk = consumer_risk.assess(draft, state['sources'], state['identity']['name'], consumer_model.model_name(), sum(s.scope=='selected_entity' for s in eligible), reviews, cashflow)
         except ValueError:
@@ -286,6 +295,8 @@ async def synthesize(state):
         return {'findings': findings, 'reviews':reviews, 'cashflow':cashflow,
                 'model_calls':state['model_calls']+synthesis_calls,
                 'risk': RiskAssessment(explanation='最终模型评估未完成；已核对的证据与评价予以保留。企业风险仍未知，预付决策采用信息不足时的谨慎规则。',
+                    review_impact=f'已审阅 {reviews.reviewed_count}/{reviews.collected_count} 条评价材料；最终综合未完成，逐条结果保留在下方。',
+                    cashflow_impact='收支情景已生成并保留；最终综合未完成，假设情景不用于认定公司资金短缺。',
                     reviewed_source_count=sum(s.id in reviewed_ids and s.scope=='selected_entity' for s in eligible)), 'model_failed': True,
                 'trace': state['trace'] + [Step(action='智能体解释', status='failed', detail=f'最终评估未完成（{type(exc).__name__}）；已保留 {len(reviewed_ids)} 条资料的阅读结果，决策风险使用公开的谨慎规则') ]}
 

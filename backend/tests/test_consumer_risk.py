@@ -211,6 +211,18 @@ def test_coverage_counts_websites_instead_of_varying_publisher_labels():
     assert coverage.value=='2 条来源 · 1 个站点'
 
 
+def test_incomplete_thinking_output_retries_same_evidence_as_structured_answer(monkeypatch):
+    from app.services import consumer_agent
+    calls=[];data={'sources':[{'id':'kept','excerpt':'原始材料'}]}
+    async def structured(instruction,payload,schema,**kwargs):
+        calls.append((payload,kwargs.get('reasoning',True)))
+        if len(calls)==1:raise ValueError('incomplete_model_response')
+        return RiskDraft(level='undetermined',explanation='资料不足，需进一步核对。',reasons=[])
+    monkeypatch.setattr(model,'structured',structured)
+    result,count=asyncio.run(consumer_agent.risk_draft('评估',data))
+    assert result.level=='undetermined' and count==2 and calls==[(data,True),(data,False)]
+
+
 def test_sogou_uses_disclosed_destination_and_keeps_review_and_date_metadata():
     page='<h3 class="vr-title"><a href="/link?url=opaque">消费者反馈</a></h3><div class="fz-mid space-txt">测试服务有限公司退款说明</div><span>2025-05-02</span><div data-url="https://tousu.sina.com.cn/complaint/view/123/"></div>'
     rows=web.parse_sogou(page,'测试')
