@@ -23,9 +23,9 @@ def summary(row: Company) -> dict:
 def health():
     with SessionLocal() as db:
         company_count = db.query(func.count(func.distinct(Fact.company_id))).filter(Fact.verification_status == "verified").scalar() or 0
-        source_count = db.query(Source).filter(Source.accessible == True).count()
+        source_count = db.query(func.count(func.distinct(Fact.source_id))).join(Source, Source.id == Fact.source_id).filter(Fact.verification_status == 'verified', Source.accessible == True).scalar() or 0
         as_of = db.query(func.max(Company.updated_at)).scalar()
-    return {"status": "ok", "database_ready": True, "verified_company_count": company_count, "verified_source_count": source_count, "as_of": as_of, "llm_mode": effective_mode()}
+    return {"status": "ok", "database_ready": True, "verified_company_count": company_count, "verified_source_count": source_count, "as_of": as_of, "llm_mode": effective_mode(), 'coverage_scope': 'legacy_demo_only', 'as_of_semantics': '旧演示企业最新资料公开日，不代表全库更新完成；研究库见 /api/v2/dataset/quality'}
 
 
 @router.get("/demo-scenario")
@@ -55,9 +55,10 @@ def company(company_id: str):
         row = db.get(Company, company_id)
         if not row:
             not_found("公司", company_id)
-        facts = db.query(Fact).filter(Fact.company_id == company_id, Fact.field != "控股子公司管理股风险").order_by(Fact.id).all()
-        financials = [{"field": f.field, "value_yuan": float(f.value_yuan) if f.value_yuan is not None else None, "period": f.period, "unit": f.unit, "source_id": f.source_id, "scope": f.scope, "audited": f.audited, "excerpt": f.excerpt, "verification_status": f.verification_status} for f in facts]
-        return {**summary(row), "short_name": row.short_name, "uscc": row.uscc, "listed": row.listed, "financials": financials, "unknowns": ["供应商与该客户的历史付款记录未取得", "最新子公司上市状态尚未复核", "统一社会信用代码暂无法核实"]}
+        rules = json.loads((ROOT / 'data/legacy_evidence_rules.json').read_text(encoding='utf-8'))
+        facts = [f for f in db.query(Fact).filter(Fact.company_id == company_id).order_by(Fact.id).all() if rules['facts'].get(f.id) == 'financial']
+        financials = [{"id": f.id, "category": "financial", "page": f.page, "verification_method": "exact_text_and_legacy_review_attestation", "reviewer_note": "旧文件人工标记仅为历史自述，未具名复核", "field": f.field, "value_yuan": float(f.value_yuan) if f.value_yuan is not None else None, "period": f.period, "unit": f.unit, "source_id": f.source_id, "scope": f.scope, "audited": f.audited, "excerpt": f.excerpt, "verification_status": f.verification_status} for f in facts]
+        return {**summary(row), "short_name": row.short_name, "uscc": row.uscc, "listed": row.listed, "financials": financials, "unknowns": rules['companies'].get(company_id, {}).get('unknowns', ['当前企业覆盖缺口尚未逐项复核'])}
 
 
 @router.get("/companies/{company_id}/risk-events")
@@ -75,7 +76,22 @@ def source(source_id: str):
         row = db.get(Source, source_id)
         if not row:
             not_found("来源", source_id)
-        return {k: getattr(row, k) for k in ("id", "type", "institution", "title", "url", "notice_number", "published_at", "fetched_at", "page", "sha256", "accessible", "excerpt")}
+        return {k: getattr(row, k) for k in ("id", "type", "institution", "title", "url", "notice_number", "published_at", "fetched_at", "page", "sha256", "accessible", "excerpt")} | {'fetch_status': 'not_checked_this_request', 'local_available': (ROOT / row.local_file).is_file(), 'integrity_status': 'matched_at_import' if row.accessible else 'failed_at_import', 'verification_status': 'legacy_assertions_checked_individually'}
+
+
+@router.get('/sources/{source_id}/document')
+def local_document(source_id: str):
+    import hashlib
+    from fastapi.responses import FileResponse
+    with SessionLocal() as db:
+        row = db.get(Source, source_id)
+        if not row: not_found('来源', source_id)
+        path = (ROOT / row.local_file).resolve()
+        if not path.is_relative_to((ROOT / 'data/source_docs').resolve()) or not path.is_file():
+            raise HTTPException(404, detail={'code':'local_document_missing','message':'本地原文未缓存','details':[]})
+        if hashlib.sha256(path.read_bytes()).hexdigest().lower() != row.sha256.lower():
+            raise HTTPException(409, detail={'code':'integrity_mismatch','message':'本地原文哈希不符','details':[]})
+        return FileResponse(path, media_type='application/pdf', headers={'Content-Disposition':'inline','Cache-Control':'private, no-cache','X-Content-Type-Options':'nosniff'})
 
 
 @router.get("/risk-events/{event_id}/explanation")
@@ -109,7 +125,9 @@ def source_candidates(source_id: str):
 def ensure_company(company_id: str):
     with SessionLocal() as db:
         if not db.get(Company, company_id):
-            not_found("公司", company_id)
+            from app.db.history import Entity
+            if not db.get(Entity, company_id):
+                not_found("公司", company_id)
 
 
 def verified_event_ids(company_id: str) -> list[str]:

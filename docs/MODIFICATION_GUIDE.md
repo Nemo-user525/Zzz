@@ -1,3 +1,35 @@
+# 当前修改导航：历史证据库增量（2026-10-02）
+
+这是“想改哪块，去哪一个文件”的统一入口。下半部分保留原交易页面的详细字段说明；本节覆盖新增能力。修改事实前先看 DATASET_CARD、SOURCE_POLICY 和 POINT_IN_TIME_POLICY，不能改前端文字来补不存在的数据。
+
+| 想修改什么 | 主要文件 | 改哪一项／联动验证 |
+|---|---|---|
+| 用户角色、主标题、按钮、核对卡章节 | `data/use_cases.json` | profiles 中 target_user / decision_goal / headline / primary_action / output_template；支持已有字段的新角色不改企业模型 |
+| 原交易 UI、颜色、布局 | `frontend/src/App.tsx`、`style.css` | 三栏、图表与卡片；现金数值仍来自 API |
+| 历史回放 UI、企业日期选择、联网入口 | `frontend/src/HistoryWorkspace.tsx`、`history.css` | 企业+日期状态、后续结果、候选搜索、来源抽屉；不要删旧响应防护 |
+| 真实研究企业范围、行业抽样、日期、关键词、预算 | `configs/universe.json` | companies / cohort / queries / start / end / limit / max_pages；discover 后只增加候选 |
+| 新核对事实、财务数值、事件和阶段 | `data/curated/assertions.json` | 公告 ID、hash、页码、主体、短摘录、agent 时间；财务含 raw_value/raw_unit、table_locator；运行 validate |
+| 原演示数据与支持规则 | `data/verified/*.json`、`data/source_manifest.json`、`data/legacy_evidence_rules.json` | 保持旧 ID、来源关系与具体事件证据；运行 seed，别在 JSX 硬编码 |
+| 数据表、索引与加法迁移 | `backend/app/db/history.py`、`models.py` | 改模型要考虑已有 SQLite；禁止删库代替迁移 |
+| 线上来源、限速、下载校验 | `backend/app/services/acquisition.py` | CNINFO 适配器、HTTPS/域名/体积/类型/重试；新增来源先核许可 |
+| CLI、原文导入、核验与标签管线 | `backend/app/data_pipeline.py` | doctor/discover/fetch/extract/validate/import-pdf/build-labels；修改后复跑独立数据库 |
+| 历史日期过滤、结果查询、全文检索、对照 | `backend/app/services/history.py` | snapshot/outcomes/search_pages/compare_entities/version；必须在后端隔离未来 |
+| 结果标签类型与阶段条件 | `data_pipeline.py:check_event_claim`、`docs/LABEL_POLICY.md` | 必须同时有原始证据和语义规则，不能把“拟议”变为“已发生” |
+| API 路径、字段、错误结构 | `backend/app/api/history.py`、`schemas/history.py`、`frontend/src/api/history.ts` | 同步运行时 `docs/openapi-v2.json`，旧接口兼容说明在 openapi.yaml |
+| 离线原文页呈现 | `backend/app/api/history.py` | /sources/.../document、/pages/{page}、/viewer；路径/hash 必须检查 |
+| 虚构订单金额、现金与默认条款 | `data/demo_scenarios.json` | 单位人民币元，不是真实公司财报；不要与 curated 混用 |
+| 现金算法、成本规则、方案参数 | `backend/app/services/cashflow.py`、`schemas/api.py` | Decimal、cash_ledger、warnings、cost_payment_rule；回归 3万→33万及分批尾差 |
+| 模型解释的限制与回退 | `backend/app/services/llm.py` | 当前保守只接受已有解释/原文；无密钥仍运行，不生成信用分 |
+| 启动与恢复 | `start.ps1` / `start.sh`、`rebuild-research.ps1` / `.sh` | 首次下载需要网络；研究原文不在 GitHub 中 |
+| 回归测试 | `backend/tests/test_history.py`、`test_import.py`、`frontend/tests/` | 事实/时间/金额/状态/竞态；不要让测试依赖线上采集 |
+| 交接和实际数量 | `docs/TEAM_HANDOFF.md`、`DATA_QUALITY_REPORT.md`、`DATASET_CARD.md` | 以数据库质量 API/导出为准，别手改数字冒充采集 |
+
+本轮运行：后端 58 项、前端 8 项、生产构建通过。更新操作详见 [INGEST_RUNBOOK](INGEST_RUNBOOK.md)。没有已核验资料的用户场景要显示缺口；需要新算法时加独立服务，不塞进企业事实模型。
+
+以下为原交易演示的详细导航（历史版本中的提交/覆盖数量不代表新增研究库）：
+
+---
+
 # X-Ray 修改导航：想改什么，就从这里找
 
 更新日期：2026-10-02。对应 `feat/db-frontend` 分支、API 契约 `docs/openapi.yaml` v1.0.0。本文根据当前实现整理；表格中的完整路径均从**项目根目录**算起，即包含 `README.md`、`backend/`、`frontend/`、`data/` 的目录。正文中的 `App.tsx` 等简称沿用表格已列出的文件路径。搜索给出的函数名、字段名或 CSS 选择器即可定位，不依赖容易变化的行号。

@@ -1347,3 +1347,11 @@ select:focus-visible {
 .topbar {
   background: #0a1b25;
 }
+@media (max-width: 800px) {
+  .topbar { height: auto; min-height: 64px; flex-wrap: wrap; gap: 10px; padding: 12px 16px; }
+  .topbar .brand { order: 1; flex: 1; min-width: 120px; }
+  .topbar .reset { order: 2; flex: none; margin: 0; white-space: nowrap; }
+  .topbar .view-switch { order: 3; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .view-switch button { min-width: 0; padding: 9px 6px; font-size: 12px; }
+  .panel { scroll-margin-top: 145px; }
+}

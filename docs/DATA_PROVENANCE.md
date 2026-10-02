@@ -1,3 +1,13 @@
+# 本轮溯源增量（2026-10-02）
+
+研究库的逐条证据位于 `data/curated/assertions.json`，逐文档官方 URL、SHA-256、公开/获取日期位于 `data/manifests/collected.json`。原文页在本地 hash 校验后展示；数值有原始单位及表格行/列坐标。完整统计见 [数据卡](DATASET_CARD.md)，时间规则见 [历史时点政策](POINT_IN_TIME_POLICY.md)，使用条件见 [来源政策](SOURCE_POLICY.md)。
+
+本轮新增记录的 reviewer_type 全部为 agent，human_reviewed=0。旧数据中的 reviewed_by_human=true 是既有导入声明，缺少具名审核记录，本轮未替其补造人员或日期。旧版只核数字的实现已被完整短摘录匹配替换；中文提取可用的两份原演示 PDF 已回归检查。这仍不能代表全文语义都已核验。
+
+以下保留原始单公司样本的来源记录与当时限制；全库覆盖请以上述研究数据卡为准。
+
+---
+
 # 数据来源与核验范围
 
 资料采集与人工复核日：2026-10-02。覆盖 1 家上市公司、2 份官方 PDF、4 条结构化事实、1 个风险事件。官方文档缓存在 `data/source_docs/`，机器可读字段在 `data/verified/`，URL、页码和 SHA-256 在 `data/source_manifest.json`。

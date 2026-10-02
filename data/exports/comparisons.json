@@ -1,0 +1,429 @@
+[
+  {
+    "company_id": "cninfo-gfbj0835870",
+    "as_of": "2023-04-23",
+    "window_days": 180,
+    "method_version": "cashflow-industry-size-1",
+    "status": "insufficient",
+    "matches": [],
+    "excluded": [
+      {
+        "company_id": "cninfo-9900003434",
+        "name": "正邦科技",
+        "reasons": [
+          "研究行业分类不一致",
+          "未找到此时点已公开的入池依据",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-9900004625",
+        "name": "大华股份",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-9900005965",
+        "name": "美的集团",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-9900012688",
+        "name": "海康威视",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-9900013433",
+        "name": "康得新复合材料集团股份有限公司",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-9900013442",
+        "name": "保力新能源科技股份有限公司",
+        "reasons": [
+          "研究行业分类不一致",
+          "未找到此时点已公开的入池依据",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-9900014448",
+        "name": "立讯精密",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-9900026561",
+        "name": "兆易创新科技集团股份有限公司",
+        "reasons": [
+          "研究行业分类不一致",
+          "未找到此时点已公开的入池依据",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-gfbj0839097",
+        "name": "泽达易盛（天津）科技股份有限公司",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-gshk0000981",
+        "name": "中芯国际集成电路制造有限公司",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-gssh0600060",
+        "name": "海信视像",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-gssh0600460",
+        "name": "杭州士兰微电子股份有限公司",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-gssh0600518",
+        "name": "康美药业股份有限公司",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-gssh0600690",
+        "name": "海尔智家",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-gssh0600839",
+        "name": "四川长虹",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-gssz0000100",
+        "name": "TCL科技",
+        "reasons": [
+          "研究行业分类不一致",
+          "未找到此时点已公开的入池依据",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-gssz0000651",
+        "name": "格力电器",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-gssz0000725",
+        "name": "京东方A",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "halo-688173",
+        "name": "希荻微电子集团股份有限公司",
+        "reasons": [
+          "研究行业分类不一致",
+          "未找到此时点已公开的入池依据",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      }
+    ],
+    "candidate_count": 19,
+    "dataset_version": "a32cd3cf4cce505a",
+    "limitations": [
+      "未找到合格对照，不强配相反结果",
+      "匹配不证明因果关系；尚未完成全候选池同强度观察"
+    ],
+    "input_features": {},
+    "id": "ac559c360a31b7ce58b4bb13"
+  },
+  {
+    "company_id": "halo-688173",
+    "as_of": "2026-10-02",
+    "window_days": 180,
+    "method_version": "cashflow-industry-size-1",
+    "status": "insufficient",
+    "matches": [],
+    "excluded": [
+      {
+        "company_id": "cninfo-9900003434",
+        "name": "正邦科技",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-9900004625",
+        "name": "大华股份",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-9900005965",
+        "name": "美的集团",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-9900012688",
+        "name": "海康威视",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-9900013433",
+        "name": "康得新复合材料集团股份有限公司",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-9900013442",
+        "name": "保力新能源科技股份有限公司",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-9900014448",
+        "name": "立讯精密",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-9900026561",
+        "name": "兆易创新科技集团股份有限公司",
+        "reasons": [
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-gfbj0835870",
+        "name": "广东紫晶信息存储技术股份有限公司",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-gfbj0839097",
+        "name": "泽达易盛（天津）科技股份有限公司",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-gshk0000981",
+        "name": "中芯国际集成电路制造有限公司",
+        "reasons": [
+          "规模相差超过两倍",
+          "不满足经营现金流为负的预设信号",
+          "集团独立性尚未核实",
+          "未完成同等强度的观察覆盖"
+        ]
+      },
+      {
+        "company_id": "cninfo-gssh0600060",
+        "name": "海信视像",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-gssh0600460",
+        "name": "杭州士兰微电子股份有限公司",
+        "reasons": [
+          "规模相差超过两倍",
+          "不满足经营现金流为负的预设信号",
+          "集团独立性尚未核实",
+          "未完成同等强度的观察覆盖"
+        ]
+      },
+      {
+        "company_id": "cninfo-gssh0600518",
+        "name": "康美药业股份有限公司",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-gssh0600690",
+        "name": "海尔智家",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-gssh0600839",
+        "name": "四川长虹",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-gssz0000100",
+        "name": "TCL科技",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-gssz0000651",
+        "name": "格力电器",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      },
+      {
+        "company_id": "cninfo-gssz0000725",
+        "name": "京东方A",
+        "reasons": [
+          "研究行业分类不一致",
+          "缺少当时可用的规模或现金流特征"
+        ]
+      }
+    ],
+    "candidate_count": 19,
+    "dataset_version": "a32cd3cf4cce505a",
+    "limitations": [
+      "未找到合格对照，不强配相反结果",
+      "匹配不证明因果关系；尚未完成全候选池同强度观察"
+    ],
+    "input_features": {
+      "total_assets_yuan": {
+        "id": "claim-1225532542-total_assets_yuan",
+        "category": "financial",
+        "field": "total_assets_yuan",
+        "value": "2448077798.22",
+        "evidence_ids": [
+          "claim-1225532542-total_assets_yuan:669758baf88b785a"
+        ],
+        "document_id": "1225532542-669758baf88b785a",
+        "excerpt": "总资产2,448,077,798.22",
+        "page": 3,
+        "published_at": "2026-08-29",
+        "available_at": "2026-08-30",
+        "verification_status": "source_supported",
+        "reviewer_type": "agent",
+        "reviewed_at": "2026-10-02T01:55:20.019910+00:00",
+        "affected_entity": "希荻微电子集团股份有限公司",
+        "issuer_name": "希荻微电子集团股份有限公司",
+        "period_end": "2026-06-30",
+        "scope": "报告摘要主要财务数据（原文列示口径）",
+        "unit": "CNY",
+        "audited": false,
+        "raw_value": "2,448,077,798.22",
+        "raw_unit": "元",
+        "table_column": "本报告期/本报告期末第一数值列"
+      },
+      "revenue_yuan": {
+        "id": "claim-1225532542-revenue_yuan",
+        "category": "financial",
+        "field": "revenue_yuan",
+        "value": "528740366.73",
+        "evidence_ids": [
+          "claim-1225532542-revenue_yuan:669758baf88b785a"
+        ],
+        "document_id": "1225532542-669758baf88b785a",
+        "excerpt": "营业收入528,740,366.73",
+        "page": 3,
+        "published_at": "2026-08-29",
+        "available_at": "2026-08-30",
+        "verification_status": "source_supported",
+        "reviewer_type": "agent",
+        "reviewed_at": "2026-10-02T01:55:20.033216+00:00",
+        "affected_entity": "希荻微电子集团股份有限公司",
+        "issuer_name": "希荻微电子集团股份有限公司",
+        "period_end": "2026-06-30",
+        "scope": "报告摘要主要财务数据（原文列示口径）",
+        "unit": "CNY",
+        "audited": false,
+        "raw_value": "528,740,366.73",
+        "raw_unit": "元",
+        "table_column": "本报告期/本报告期末第一数值列"
+      },
+      "operating_cashflow_yuan": {
+        "id": "claim-1225532542-operating_cashflow_yuan",
+        "category": "financial",
+        "field": "operating_cashflow_yuan",
+        "value": "-85787630.14",
+        "evidence_ids": [
+          "claim-1225532542-operating_cashflow_yuan:669758baf88b785a"
+        ],
+        "document_id": "1225532542-669758baf88b785a",
+        "excerpt": "经营活动产生的现金流量净额-85,787,630.14",
+        "page": 3,
+        "published_at": "2026-08-29",
+        "available_at": "2026-08-30",
+        "verification_status": "source_supported",
+        "reviewer_type": "agent",
+        "reviewed_at": "2026-10-02T01:55:20.046280+00:00",
+        "affected_entity": "希荻微电子集团股份有限公司",
+        "issuer_name": "希荻微电子集团股份有限公司",
+        "period_end": "2026-06-30",
+        "scope": "报告摘要主要财务数据（原文列示口径）",
+        "unit": "CNY",
+        "audited": false,
+        "raw_value": "-85,787,630.14",
+        "raw_unit": "元",
+        "table_column": "本报告期/本报告期末第一数值列"
+      }
+    },
+    "id": "a827f775fc16db8dd5f54615"
+  }
+]

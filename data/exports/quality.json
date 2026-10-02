@@ -1,0 +1,29 @@
+{
+  "dataset_version": "a32cd3cf4cce505a",
+  "entities": 20,
+  "documents": 235,
+  "unique_document_hashes": 235,
+  "local_documents": 235,
+  "parsed_documents": 233,
+  "supported_documents": 15,
+  "assertion_statuses": {
+    "source_supported": 22
+  },
+  "events": 11,
+  "outcome_statuses": {
+    "observed_positive": 6
+  },
+  "human_reviewed": 0,
+  "publication_range": [
+    "2019-08-31",
+    "2026-09-30"
+  ],
+  "last_fetched_at": "2026-10-02T01:15:25.520001+00:00",
+  "last_reviewed_at": "2026-10-02T01:55:20.046280+00:00",
+  "limitations": [
+    "历史案例经结果筛选；候选池不等于合格对照",
+    "公告数量不等于已支持断言数量",
+    "人工复核数只统计真实 human 记录，agent 不计入",
+    "没有全市场覆盖或预测评估"
+  ]
+}

@@ -14,6 +14,7 @@ export function ScenarioEditor({ inputs, setInput }: Props) {
   const shipments = inputs.shipments ?? [{ day: 0, fraction: 1 }];
   return (
     <div className="advanced-grid">
+      <label>成本支付规则<select value={inputs.cost_payment_rule || 'per_shipment_not_before_cost_day'} onChange={e => setInput('cost_payment_rule', e.target.value as SimulationInput['cost_payment_rule'])}><option value="per_shipment_not_before_cost_day">按批次支出，不早于设定成本日（兼容原演示）</option><option value="fixed_day">全部成本于设定成本日支付</option></select></label>
       <label>
         订单额（万元）
         <NumberInput

@@ -11,7 +11,7 @@ seed_module = importlib.import_module('app.db.seed')
 
 @pytest.fixture
 def workspace(tmp_path, monkeypatch):
-    shutil.copytree(ROOT / 'data', tmp_path / 'data', ignore=shutil.ignore_patterns('*.sqlite3'))
+    shutil.copytree(ROOT / 'data', tmp_path / 'data', ignore=shutil.ignore_patterns('*.sqlite3', 'raw', 'extracted', 'backups', 'manifests', 'exports'))
     engine = create_engine(f'sqlite:///{tmp_path / "test.sqlite3"}')
     @event.listens_for(engine, 'connect')
     def foreign_keys(conn, _):

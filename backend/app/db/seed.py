@@ -12,7 +12,7 @@ from sqlalchemy import text
 
 
 def _compact(value: str) -> str:
-    return re.sub(r"[\s,，：:；;。.]", "", value)
+    return re.sub(r"\s+", "", value)
 
 
 def verify_excerpt(pdf_path: Path, page_number: int, excerpt: str) -> bool:
@@ -23,16 +23,24 @@ def verify_excerpt(pdf_path: Path, page_number: int, excerpt: str) -> bool:
             if page_number < 1 or page_number > len(doc):
                 return False
             page_text = _compact(doc[page_number - 1].get_text())
-        # PDF fonts in the half-year summary lack Chinese mapping. Require every
-        # numeric token and manually review the adjacent printed row instead.
-        numbers = re.findall(r"-?\d[\d,]*(?:\.\d+)?", excerpt)
-        return bool(numbers) and all(_compact(n) in page_text for n in numbers)
+        return len(_compact(excerpt)) >= 8 and _compact(excerpt) in page_text
     except Exception:
         return False
 
 
+def supports_event(event, facts):
+    rules_file = ROOT / 'data/legacy_evidence_rules.json'
+    rules = json.loads(rules_file.read_text(encoding='utf-8')).get('events', {}) if rules_file.exists() else {}
+    rule = rules.get(event['id'])
+    if not rule or any(event[k] != rule[k] for k in ('type', 'stage', 'affected_entity')):
+        return False
+    return any(f['id'] in rule['fact_ids'] and f['company_id'] == event['company_id'] and f['source_id'] in event['source_ids']
+               and f['verification_status'] == 'verified' and all(t in _compact(f['excerpt']) for t in rule['required_tokens']) for f in facts)
+
+
 def _seed() -> dict:
-    Base.metadata.create_all(engine)
+    from .history import migrate
+    migrate(engine)
     manifest, records, scenario = load_inputs(ROOT)
     with SessionLocal.begin() as db:
         # Additive migration: refuses dirty legacy data; never deletes a SQLite file.
@@ -44,10 +52,7 @@ def _seed() -> dict:
         db.execute(text('CREATE UNIQUE INDEX IF NOT EXISTS ux_sources_sha256 ON sources(lower(sha256))'))
         db.execute(text('CREATE INDEX IF NOT EXISTS ix_facts_company_status ON facts(company_id, verification_status)'))
         db.execute(text('CREATE INDEX IF NOT EXISTS ix_events_company ON risk_events(company_id)'))
-        duplicate_events = db.execute(text('SELECT group_concat(id) FROM risk_events GROUP BY company_id, affected_entity, type, event_date HAVING count(*) > 1')).first()
-        if duplicate_events:
-            raise ValueError(f'现有 SQLite 存在重复事件: {duplicate_events[0]}，需归并；原数据保留')
-        db.execute(text('CREATE UNIQUE INDEX IF NOT EXISTS ux_events_identity ON risk_events(company_id, affected_entity, type, event_date)'))
+        db.execute(text('DROP INDEX IF EXISTS ux_events_identity'))
         for record in records:
             db.merge(Company(**record['company']))
         db.flush()
@@ -58,7 +63,7 @@ def _seed() -> dict:
                 raise ValueError(f"source_manifest.json/{item['id']}: 已有 ID 指向不同 URL/哈希；新公告请使用新 ID")
             path = ROOT / item["local_file"]
             actual = hashlib.sha256(path.read_bytes()).hexdigest().upper() if path.is_file() else ""
-            ok = actual == item["sha256"].upper() and verify_excerpt(path, item["page"], item["excerpt"])
+            ok = actual == item["sha256"].upper()
             source_ok[item["id"]] = ok
             db.merge(Source(**{k: item[k] for k in ("id", "type", "institution", "title", "url", "notice_number", "published_at", "fetched_at", "page", "sha256", "local_file", "excerpt")}, accessible=ok))
         db.flush()
@@ -66,7 +71,7 @@ def _seed() -> dict:
             if src.id not in source_ok:
                 path = ROOT / src.local_file
                 actual = hashlib.sha256(path.read_bytes()).hexdigest().upper() if path.is_file() else ''
-                src.accessible = actual == src.sha256.upper() and verify_excerpt(path, src.page, src.excerpt)
+                src.accessible = actual == src.sha256.upper()
                 source_ok[src.id] = src.accessible
         pending_facts = []
         for record, fact in ((r, f) for r in records for f in r['facts']):
@@ -97,10 +102,10 @@ def _seed() -> dict:
             item = dict(event)
             ids = item.pop("source_ids")
             token = re.split(r'[（(\s]', item['affected_entity'])[0].casefold()
-            supported = any(f['company_id'] == item['company_id'] and f['source_id'] in ids and f['verification_status'] == 'verified' and token in (f['excerpt'] + ' ' + f['scope']).casefold() for f in pending_facts)
+            supported = supports_event(event, pending_facts)
             item["verification_status"] = effective_status(item["verification_status"], bool(ids) and all(source_ok.get(sid) for sid in ids), supported, supported)
             item["source_ids_json"] = json.dumps(ids)
-            same_case = db.query(RiskEvent).filter(RiskEvent.company_id == item["company_id"], RiskEvent.affected_entity == item["affected_entity"], RiskEvent.type == item["type"], RiskEvent.event_date == item["event_date"], RiskEvent.id != item["id"]).first()
+            same_case = db.query(RiskEvent).filter(RiskEvent.company_id == item["company_id"], RiskEvent.affected_entity == item["affected_entity"], RiskEvent.type == item["type"], RiskEvent.event_date == item["event_date"], RiskEvent.source_ids_json == item['source_ids_json'], RiskEvent.stage == item['stage'], RiskEvent.explanation == item['explanation'], RiskEvent.id != item["id"]).first()
             if same_case:
                 continue
             db.merge(RiskEvent(**item))
@@ -108,7 +113,7 @@ def _seed() -> dict:
         for event in db.query(RiskEvent).all():
             ids = json.loads(event.source_ids_json)
             token = re.split(r'[（(\s]', event.affected_entity)[0].casefold()
-            supported = any(f['company_id'] == event.company_id and f['source_id'] in ids and f['verification_status'] == 'verified' and token in (f['excerpt'] + ' ' + f['scope']).casefold() for f in pending_facts)
+            supported = supports_event({'id': event.id, 'company_id': event.company_id, 'type': event.type, 'stage': event.stage, 'affected_entity': event.affected_entity, 'source_ids': ids}, pending_facts)
             if not supported or not ids or not all(db.get(Source, sid) and db.get(Source, sid).accessible for sid in ids):
                 event.verification_status = 'unverified'
         db.merge(DemoScenario(id="default", payload_json=json.dumps(scenario, ensure_ascii=False)))

@@ -6,6 +6,7 @@ export type VerificationStatus =
   | "unverified"
   | "missing";
 export type SimulationInput = {
+  cost_payment_rule?: 'per_shipment_not_before_cost_day' | 'fixed_day';
   company_id: string;
   opening_cash_yuan: number;
   safety_floor_yuan: number;
@@ -40,6 +41,8 @@ export type SimulationInputWire = Omit<
     >
   >;
 export type SimulationResult = {
+  cash_ledger?: {day:number; amount_yuan:number; kind:string; label:string; outside_view:boolean}[];
+  warnings?: string[];
   cash_curve: { day: number; balance_yuan: number }[];
   minimum_balance_yuan: number;
   minimum_day: number;
@@ -66,6 +69,8 @@ export type Health = {
   llm_mode: "offline" | "openai" | "openai_compatible";
 };
 export type Financial = {
+  id?: string;
+  page?: number;
   field: string;
   value_yuan: number | null;
   period: string;

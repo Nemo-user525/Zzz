@@ -13,6 +13,8 @@ import { useSimulation } from "./useSimulation";
 import { Drawer } from "./Drawer";
 import { InputValidity } from "./NumberInput";
 import { ScenarioEditor } from "./ScenarioEditor";
+import { HistoryWorkspace } from './HistoryWorkspace';
+import { localPdf, type Snapshot } from './api/history';
 import type {
   Company,
   Financial,
@@ -56,6 +58,8 @@ const fieldCategory = (key: string) =>
         : "公开资料";
 
 function App() {
+  const [view, setView] = useState<'history' | 'trade'>('trade');
+  const [historyContext, setHistoryContext] = useState<Snapshot | null>(null);
   const [health, setHealth] = useState<Health | null>(null);
   const [profile, setProfile] = useState<UseCase | null>(null);
   const [profiles, setProfiles] = useState<UseCase[]>([]);
@@ -128,7 +132,7 @@ function App() {
             const src = await api.source(id);
             sourceCache.current[id] = src;
             try {
-              localStorage.setItem("xray-source-v1:" + id, JSON.stringify(src));
+              localStorage.setItem("xray-source-v2:" + id, JSON.stringify(src));
             } catch {
               /* Storage unavailable; memory cache remains. */
             }
@@ -162,14 +166,14 @@ function App() {
       setSource(src);
       setSourceNote("");
       try {
-        localStorage.setItem("xray-source-v1:" + id, JSON.stringify(src));
+        localStorage.setItem("xray-source-v2:" + id, JSON.stringify(src));
       } catch {}
     } catch (e) {
       if (seq !== sourceSequence.current) return;
       let cached: Source | undefined = sourceCache.current[id];
       try {
         cached ??= JSON.parse(
-          localStorage.getItem("xray-source-v1:" + id) || "null",
+          localStorage.getItem("xray-source-v2:" + id) || "null",
         );
       } catch {}
       if (
@@ -193,6 +197,8 @@ function App() {
     setDrawer(null);
   }
   function reset() {
+    setHistoryContext(null);
+    setBoot(v => v + 1);
     setInputs(original.current ? structuredClone(original.current) : null);
     setRunning(false);
     setInvalid(new Set());
@@ -205,9 +211,20 @@ function App() {
         null,
     );
   }
+  function useHistoricalCompany(s: Snapshot) {
+    setHistoryContext(s);
+    setCompany({id:s.company.id, legal_name:s.company.name, short_name:s.company.name, ticker:s.company.ticker, industry:s.company.industry, coverage:`历史公开资料回放 ${s.as_of}；${s.coverage.visible_document_count} 份文档`, updated_at:s.coverage.latest_visible_publication || s.as_of, uscc:null, listed:false, financials:[], unknowns:s.limitations});
+    setEvents([]); setInvalid(new Set()); setRunning(false); closeDrawer();
+    setInputs(original.current ? {...structuredClone(original.current), company_id:s.company.id} : null);
+    setView('trade');
+  }
   const current = useMemo(() => result || null, [result]);
   function cardField(key: string) {
     if (!company || !result) return null;
+    if (historyContext && ['risk_events', 'financials', 'source_links'].includes(key)) {
+      const facts = historyContext.facts.filter(f => key === 'source_links' || f.category === (key === 'financials' ? 'financial' : 'event'));
+      return facts.length ? <>{facts.map(f => <p key={f.id}>{f.excerpt} <a href={localPdf(f.document_id, f.page)} target="_blank" rel="noreferrer">原文第 {f.page} 页</a> · {f.verification_status === 'source_supported' ? '原文支持 · agent 核对' : '待核对'} · {f.published_at}</p>)}</> : <p>此历史时点尚无该类别的原文支持断言；不能据此认定无风险。</p>;
+    }
     const fields: Record<string, () => React.ReactNode> = {
       legal_name: () => (
         <p>
@@ -443,16 +460,18 @@ function App() {
             </div>
           </div>
           <div className="top-meta">
-            <span className="status-dot" /> 本地 API ·{" "}
+            <span className="status-dot" /> 原始演示库 · 本地 API ·{" "}
             {health?.verified_company_count ?? "—"} 家企业 ·{" "}
             {health?.verified_source_count ?? "—"} 份官方来源{" "}
-            <span className="divider" /> 资料截至 {health?.as_of || "—"}
+            <span className="divider" /> 旧演示资料最新公开日 {health?.as_of || "—"}
           </div>
+          <nav className="view-switch" aria-label="工作区"><button className="ghost" onClick={() => setView('history')}>企业检索与历史回放</button><button className="ghost" onClick={() => setView('trade')}>交易现金推演</button></nav>
           <button className="ghost reset" onClick={reset}>
             ↺ 重置演示
           </button>
         </header>
-        <main>
+        {view === 'history' && <HistoryWorkspace key={boot} onSimulate={useHistoricalCompany}/>}
+        <main hidden={view !== 'trade'}>
           <section className="hero">
             <div className="eyebrow">
               交易前 · 现金底线核对台 <span>虚构交易演示</span>
@@ -514,6 +533,7 @@ function App() {
                 </div>
                 <span className="outlined">按条核验</span>
               </div>
+              {historyContext && <div className="history-context"><b>当前交易对手来自历史快照 {historyContext.as_of}</b><p>主体上市状态未由历史快照推断；不使用希荻微的财务数据。下方订单为本方虚构压力情景。</p>{historyContext.facts.map(f => <p key={f.id}>{f.field}：{f.excerpt} <a href={localPdf(f.document_id, f.page)} target="_blank" rel="noreferrer">原文第 {f.page} 页</a></p>)}</div>}
               <div className="identity">
                 <div className="identity-mark">
                   {company?.short_name?.slice(0, 1) || "企"}
@@ -525,7 +545,7 @@ function App() {
                     <span>
                       {!company
                         ? "身份载入中"
-                        : company.listed
+                        : historyContext ? '历史研究主体' : company.listed
                           ? "已上市"
                           : "非上市"}{" "}
                       · {company?.ticker || "代码未披露"}
@@ -550,7 +570,7 @@ function App() {
               <div className="small-label">
                 风险线索 <span>公开事实</span>
               </div>
-              {events.filter((e) => e.verification_status === "verified")
+              {!historyContext && events.filter((e) => e.verification_status === "verified")
                 .length === 0 && (
                 <div className="unknown-box">
                   <b>覆盖资料内暂无已核实记录</b>
@@ -581,14 +601,14 @@ function App() {
                   ))}
                 </div>
               ))}
-              {company?.financials.length === 0 && (
+              {!historyContext && company?.financials.length === 0 && (
                 <p className="helper">
                   覆盖资料内暂无已核实财务记录，不能据此认定无风险。
                 </p>
               )}
-              <div className="small-label finance-label">
+              {!historyContext && <div className="small-label finance-label">
                 财务事实 <span>人民币 · 元转万元</span>
-              </div>
+              </div>}
               {company?.financials.map((f) => (
                 <button
                   className="fact-row"
@@ -727,12 +747,12 @@ function App() {
                   签约 / 预付款
                   <br />第 0 天
                 </span>
-                {(inputs?.shipments || [{ day: 0, fraction: 1 }]).map(
+                {(inputs?.shipments || [{ day: 0, fraction: 1 }]).filter(s => s.fraction > 0).map(
                   (ship, i) => (
                     <span className="t-dot" key={"ship" + i}>
                       第 {i + 1} 批发货 {Math.round(ship.fraction * 100)}%<br />
                       发货第 {ship.day} 天 · 成本第{" "}
-                      {Math.max(inputs?.cost_day ?? 0, ship.day)} 天<br />
+                      {inputs?.cost_payment_rule === 'fixed_day' ? inputs.cost_day : Math.max(inputs?.cost_day ?? 0, ship.day)} 天<br />
                       {inputs?.prepayment_rate === 1
                         ? "全额预付，无余款"
                         : `回款第 ${ship.day + (inputs?.payment_term_days ?? 0) + (inputs?.delay_days ?? 0)} 天${ship.day + (inputs?.payment_term_days ?? 0) + (inputs?.delay_days ?? 0) > (inputs?.horizon_days ?? 90) ? "（视窗外）" : ""}`}
@@ -753,7 +773,7 @@ function App() {
                 )}
               </div>
               <p className="helper">
-                成本与回款总额可在「这怎么算的」中核对；分批成本日取成本支付日与该批发货日中较晚者。逐笔金额明细暂未提供。
+                逐笔成本和回款金额取自后端资金流水，见「这怎么算的」。成本规则可在详细参数中切换；按日终净额计算。
               </p>
             </section>
             <section id="terms" className="panel control-panel">
@@ -958,7 +978,7 @@ function App() {
                     <span>本地文件核验</span>
                     <strong>
                       {source.accessible
-                        ? "哈希与引用数字检查通过"
+                        ? "本地文件与记录哈希一致"
                         : "缺失或核验失败"}
                     </strong>
                   </div>
@@ -996,16 +1016,15 @@ function App() {
                 )}
                 <a
                   className="external"
-                  href={source.url + "#page=" + source.page}
+                  href={source.url + "#page=" + (selectedFact?.page || source.page)}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   打开官方原始 PDF ↗
                 </a>
+                <a className="external" href={'/api/sources/' + encodeURIComponent(source.id) + '/document#page=' + (selectedFact?.page || source.page)} target="_blank" rel="noreferrer">打开本地缓存 PDF ↗</a>
                 <p className="drawer-foot">
-                  官方链接需要外网；断网时仍可阅读已缓存的来源元数据。PDF
-                  本地文件位于仓库 data/source_docs，当前页面没有本地 PDF
-                  下载接口。自动检查仅核对哈希、页码及数字字符，中文行项目沿用已记录的人工复核范围。
+                  官方链接需要外网，本地 PDF 需要本机后端运行。文件哈希只说明完整性；事实按完整摘录定位。旧文件中的人工复核标记为历史自述，未具名复核。
                 </p>
               </>
             )}
@@ -1030,6 +1049,7 @@ function App() {
                     {v}
                   </div>
                 ))}
+                {result.cash_ledger && <><h3>后端资金流水</h3><table className="ledger-table"><thead><tr><th>发生日</th><th>项目</th><th>金额</th></tr></thead><tbody>{result.cash_ledger.map((r,i) => <tr key={i}><td>第 {r.day} 天{r.outside_view ? '（视窗外）' : ''}</td><td>{r.label}</td><td>{money(r.amount_yuan)}</td></tr>)}</tbody></table>{result.warnings?.map(w => <p key={w}>{w}</p>)}</>}
                 <div className="quote">
                   {inputs?.prepayment_rate === 1
                     ? "全额预付，无余款；上方说明中的余款 0 元不构成未来现金流。"
@@ -1049,6 +1069,7 @@ function App() {
               <>
                 <span className="section-index">可追溯输出</span>
                 <h2>{profile.output_template.title}</h2>
+                {historyContext && <div className="history-context"><h3>历史证据快照 · {historyContext.as_of}</h3><p>主体：{historyContext.company.name} · 版本 {historyContext.dataset_version}</p>{historyContext.facts.map(f => <p key={f.id}>{f.field}：{f.excerpt} <a href={localPdf(f.document_id, f.page)} target="_blank" rel="noreferrer">第 {f.page} 页原文</a></p>)}<p>后续结果没有作为本时点已知事实，也不用于生成延付天数。</p></div>}
                 <p className="drawer-lead">
                   {profile.target_user} · {profile.decision_goal}
                 </p>
