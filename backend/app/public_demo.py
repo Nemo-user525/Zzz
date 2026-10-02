@@ -1,7 +1,7 @@
 """Serve the built UI and existing API together for a temporary public demo.
 
 Only frontend/dist is served as static files; never expose the repository root.
-Run after pnpm build: python -m uvicorn app.public_demo:app --host 127.0.0.1 --port 8080
+Run after pnpm build: python -m uvicorn app.public_demo:app --host 127.0.0.1 --port 8086
 """
 from pathlib import Path
 

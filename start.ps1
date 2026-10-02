@@ -1,4 +1,4 @@
-param([switch]$SkipInstall)
+param([switch]$SkipInstall, [switch]$Demo)
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 if (!(Test-Path -LiteralPath '.env')) { Copy-Item -LiteralPath '.env.example' -Destination '.env' }
@@ -18,6 +18,18 @@ try {
   if (!$SkipInstall) { & $pnpmCmd install }
   if ($LASTEXITCODE -ne 0) { throw '前端依赖安装失败' }
 } finally { Pop-Location }
+if ($Demo) {
+  Push-Location 'frontend'
+  try {
+    & node node_modules/typescript/bin/tsc -b
+    if ($LASTEXITCODE -ne 0) { throw '前端 TypeScript 构建失败' }
+    & node node_modules/vite/bin/vite.js build
+    if ($LASTEXITCODE -ne 0) { throw '前端页面构建失败' }
+  } finally { Pop-Location }
+  Write-Host '分析页面: http://127.0.0.1:8086/'
+  & '.\.venv\Scripts\python.exe' -m uvicorn app.public_demo:app --env-file .env --host 127.0.0.1 --port 8086
+  exit $LASTEXITCODE
+}
 $apiArgs = @('-m','uvicorn','app.main:app','--host','127.0.0.1','--port','8000')
 if (Test-Path -LiteralPath '.env') { $apiArgs += @('--env-file','.env') }
 $api = Start-Process -FilePath (Join-Path $PSScriptRoot '.venv\Scripts\python.exe') -ArgumentList $apiArgs -PassThru -WindowStyle Hidden -RedirectStandardOutput (Join-Path $PSScriptRoot 'backend.out.log') -RedirectStandardError (Join-Path $PSScriptRoot 'backend.err.log')
