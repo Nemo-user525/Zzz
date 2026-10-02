@@ -24,5 +24,5 @@ if (!$cloudflared) {
 
 Write-Host "正在为 $localUrl 创建临时 HTTPS 地址；下方日志中的 https://*.trycloudflare.com 可在其他网络打开。"
 Write-Host '保持本终端和分析页终端运行；按 Ctrl+C 关闭公网入口。'
-& $cloudflared tunnel --url "http://127.0.0.1:$Port" --no-autoupdate
+& $cloudflared tunnel --url "http://127.0.0.1:$Port" --no-autoupdate --protocol http2
 exit $LASTEXITCODE
