@@ -46,6 +46,24 @@ def test_review_reprints_are_visible_but_not_double_counted():
     assert result.counts['negative']==1 and result.observations[1]['duplicate_of']==a.id
 
 
+def test_expansion_news_is_not_customer_feedback_but_actual_experiences_remain():
+    a=source('2015年成立于杭州，迄今已经开出1300家门店，在行业背景下迅速崛起。','weibo.com')
+    b=source('品牌成立于2015年，我办卡后退款未处理，已投诉。','douban.com')
+    items=outlook.validate_reviews([observation(a,'positive'),observation(b)],[a,b])
+    result=outlook.summarize_reviews(items,[a,b])
+    assert result.reviewed_count==2 and result.counts['positive']==0 and result.counts['negative']==1
+    assert result.observations[0]['kind']=='non_review' and result.observations[0]['quote']==a.excerpt
+
+
+def test_app_promotion_cannot_support_overall_customer_sentiment():
+    a=source('下载健身APP即可预约健身课程，拥有私人定制方案。')
+    draft=RiskDraft(level='low',explanation='评价仍需核对。',reasons=[{
+        'explanation':'收集的评价样本整体反馈中性偏正面。','direction':'reassuring',
+        'citations':[{'source_id':a.id,'quote':a.excerpt}]}])
+    with pytest.raises(ValueError,match='review_conclusion'):
+        risk.assess(draft,[a],NAME,'test',1)
+
+
 def test_no_financial_records_means_index_sensitivity_not_fictional_yuan():
     result=outlook.simulate([],[],NAME)
     assert result.mode=='sensitivity_only' and '非企业实际金额' in result.unit

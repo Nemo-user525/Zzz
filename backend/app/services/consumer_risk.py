@@ -59,6 +59,10 @@ def assess(draft, rows, name, model, reviewed_count, reviews=None, cashflow=None
     valid, rejected = [], 0
     for reason in draft.reasons:
         try:
+            if re.search(r'评价样本|收集的评价|整体反馈|评价.*倾向|口碑', reason.explanation):
+                feedback = {o['source_id'] for o in reviews.observations if o['kind'] != 'non_review'}
+                if not any(c.source_id in feedback for c in reason.citations):
+                    raise ValueError('unsupported_review_conclusion')
             valid.append(validate_reason(reason, all_sources, sources))
         except ValueError:
             if not discard_invalid:raise

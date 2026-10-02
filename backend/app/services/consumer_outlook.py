@@ -18,6 +18,12 @@ def validate_reviews(observations, rows):
         raise ValueError('review_coverage_incomplete')
     for item in observations:
         item.quote = web.ground_quote(item.quote, expected[item.source_id].excerpt)
+        corporate = re.search(r'成立于|注册资本|融资|开出.{0,12}家门店|迅速崛起|经营范围|股东', item.quote)
+        experience = re.search(r'本人|我(?:在|的|买|办|去|用|退)|消费者|顾客|投诉|退款|退费|体验|客服|排队|都可以使用|服务态度', item.quote)
+        if item.kind != 'non_review' and corporate and not experience:
+            item.kind = 'non_review'
+            item.sentiment = 'unclear'
+            item.summary = '原文仅支持企业背景或扩张信息，未包含可定位的顾客体验，不计入评价倾向。'
     return observations
 
 
