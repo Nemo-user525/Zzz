@@ -115,6 +115,70 @@ class Indicator(Strict):
     agent_findings: list[AgentFinding] = Field(default_factory=list)
 
 
+class RiskReason(Strict):
+    explanation: str = Field(min_length=6, max_length=400)
+    direction: Literal['adverse', 'reassuring', 'context']
+    citations: list[Citation] = Field(min_length=1, max_length=4)
+
+
+class ReviewObservation(Strict):
+    source_id: str
+    kind: Literal['customer_feedback', 'discussion', 'non_review']
+    sentiment: Literal['positive', 'negative', 'mixed', 'unclear']
+    summary: str = Field(min_length=6, max_length=180)
+    quote: str = Field(min_length=4, max_length=160)
+
+
+class CashflowFact(Strict):
+    kind: Literal['operating_inflow', 'operating_outflow']
+    amount_text: str = Field(pattern=r'^\d+(?:,\d{3})*(?:\.\d+)?$')
+    unit: Literal['元', '万元', '亿元']
+    period: str = Field(pattern=r'^\d{4}(?:-(?:0[1-9]|1[0-2]))?$')
+    citation: Citation
+
+
+class ReviewAssessment(Strict):
+    status: Literal['not_reviewed', 'completed'] = 'not_reviewed'
+    collected_count: int = 0
+    reviewed_count: int = 0
+    independent_content_count: int = 0
+    counts: dict[str, int] = Field(default_factory=dict)
+    observations: list[dict] = Field(default_factory=list)
+    limitation: str = '仅覆盖本次收集的公开评价材料；不代表平台全部评论或总体满意率。'
+
+
+class CashflowAssessment(Strict):
+    mode: Literal['evidence_anchored', 'sensitivity_only'] = 'sensitivity_only'
+    unit: str = '基准月收款=100的指数，非企业实际金额'
+    horizon_months: int = 6
+    baseline: dict = Field(default_factory=dict)
+    facts: list[CashflowFact] = Field(default_factory=list)
+    scenarios: list[dict] = Field(default_factory=list)
+    driver_source_ids: list[str] = Field(default_factory=list)
+    limitations: list[str] = Field(default_factory=list)
+
+
+class RiskAssessment(Strict):
+    decision_level: Literal['low', 'medium', 'high'] = 'medium'
+    decision_label: str = '中等决策风险 · 先核实再预付'
+    decision_basis: Literal['company_evidence', 'information_gap'] = 'information_gap'
+    decision_explanation: str = '信息不足时按谨慎预付规则给出中等决策风险，建议按次或短期购买；这不表示公司存在不良经营事件。'
+    level: Literal['low', 'medium', 'high', 'undetermined'] = 'undetermined'
+    label: str = '证据不足，暂不评级'
+    explanation: str = '尚未完成有来源支持的模型评估。'
+    reasons: list[RiskReason] = Field(default_factory=list, max_length=6)
+    limitations: list[str] = Field(default_factory=list)
+    model: str = ''
+    model_assessed: bool = False
+    reviewed_source_count: int = 0
+    confidence: Literal['low', 'medium', 'high'] = 'low'
+    confidence_label: str = '低确信度'
+    confidence_explanation: str = '尚未完成证据评估，无法支持稳定判断。'
+    confidence_dimensions: list[dict] = Field(default_factory=list)
+    review_impact: str = '用户评价尚未完成逐条评估。'
+    cashflow_impact: str = '未完成基于材料的收支情景评估。'
+
+
 class Analysis(Strict):
     analysis_id: str
     company_id: str
@@ -139,3 +203,7 @@ class Analysis(Strict):
     agent_framework: str = 'LangGraph'
     agent_model_used: bool = False
     agent_rounds: int = 0
+    risk: RiskAssessment = Field(default_factory=RiskAssessment)
+    source_stats: dict = Field(default_factory=dict)
+    reviews: ReviewAssessment = Field(default_factory=ReviewAssessment)
+    cashflow: CashflowAssessment = Field(default_factory=CashflowAssessment)

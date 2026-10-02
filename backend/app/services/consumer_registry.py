@@ -3,11 +3,16 @@ import hashlib
 import json
 from fastapi import HTTPException
 from app.schemas.consumer import Evidence, Step
-from app.services import qcc
+from app.services import qcc, consumer_qcc_mcp, consumer_qcc_web
 
 
 async def lookup(query, exact=False):
+    if consumer_qcc_mcp.configured():
+        return await consumer_qcc_mcp.lookup(query, exact)
     if not all(qcc.credentials()):
+        rows, name = consumer_qcc_web.lookup(query, exact)
+        if rows:
+            return rows, Step(action='企查查网页导入',status='cached',detail='使用本人网页响应导入的企业字段，未执行本次在线工商核验',source_ids=[r.id for r in rows]), name
         return [], Step(action='企查查', status='not_configured', detail='未配置企查查 API 736；未执行工商核验'), None
     try:
         data = await qcc.lookup(query)

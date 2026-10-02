@@ -1157,6 +1157,62 @@
         }
       }
     },
+    "/api/consumer/qcc-session": {
+      "get": {
+        "tags": [
+          "消费者实时调查"
+        ],
+        "summary": "Qcc Session Status",
+        "operationId": "qcc_session_status_api_consumer_qcc_session_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "消费者实时调查"
+        ],
+        "summary": "Set Qcc Session",
+        "operationId": "set_qcc_session_api_consumer_qcc_session_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/consumer/capabilities": {
       "get": {
         "tags": [
@@ -1244,6 +1300,118 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/consumer/jobs": {
+      "post": {
+        "tags": [
+          "消费者实时调查"
+        ],
+        "summary": "Start Job",
+        "operationId": "start_job_api_consumer_jobs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalysisInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/consumer/jobs/{ident}": {
+      "get": {
+        "tags": [
+          "消费者实时调查"
+        ],
+        "summary": "Get Job",
+        "operationId": "get_job_api_consumer_jobs__ident__get",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "消费者实时调查"
+        ],
+        "summary": "Cancel Job",
+        "operationId": "cancel_job_api_consumer_jobs__ident__delete",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
           },
           "422": {
             "description": "Validation Error",
@@ -1565,6 +1733,20 @@
             "type": "integer",
             "title": "Agent Rounds",
             "default": 0
+          },
+          "risk": {
+            "$ref": "#/components/schemas/RiskAssessment"
+          },
+          "source_stats": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Source Stats"
+          },
+          "reviews": {
+            "$ref": "#/components/schemas/ReviewAssessment"
+          },
+          "cashflow": {
+            "$ref": "#/components/schemas/CashflowAssessment"
           }
         },
         "additionalProperties": false,
@@ -1694,6 +1876,110 @@
           "label"
         ],
         "title": "Cashflow"
+      },
+      "CashflowAssessment": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "evidence_anchored",
+              "sensitivity_only"
+            ],
+            "title": "Mode",
+            "default": "sensitivity_only"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit",
+            "default": "基准月收款=100的指数，非企业实际金额"
+          },
+          "horizon_months": {
+            "type": "integer",
+            "title": "Horizon Months",
+            "default": 6
+          },
+          "baseline": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Baseline"
+          },
+          "facts": {
+            "items": {
+              "$ref": "#/components/schemas/CashflowFact"
+            },
+            "type": "array",
+            "title": "Facts"
+          },
+          "scenarios": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Scenarios"
+          },
+          "driver_source_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Driver Source Ids"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "CashflowAssessment"
+      },
+      "CashflowFact": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "operating_inflow",
+              "operating_outflow"
+            ],
+            "title": "Kind"
+          },
+          "amount_text": {
+            "type": "string",
+            "pattern": "^\\d+(?:,\\d{3})*(?:\\.\\d+)?$",
+            "title": "Amount Text"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "元",
+              "万元",
+              "亿元"
+            ],
+            "title": "Unit"
+          },
+          "period": {
+            "type": "string",
+            "pattern": "^\\d{4}(?:-(?:0[1-9]|1[0-2]))?$",
+            "title": "Period"
+          },
+          "citation": {
+            "$ref": "#/components/schemas/Citation"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "amount_text",
+          "unit",
+          "period",
+          "citation"
+        ],
+        "title": "CashflowFact"
       },
       "Change": {
         "properties": {
@@ -2895,6 +3181,218 @@
         ],
         "title": "ResearchInput"
       },
+      "ReviewAssessment": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "not_reviewed",
+              "completed"
+            ],
+            "title": "Status",
+            "default": "not_reviewed"
+          },
+          "collected_count": {
+            "type": "integer",
+            "title": "Collected Count",
+            "default": 0
+          },
+          "reviewed_count": {
+            "type": "integer",
+            "title": "Reviewed Count",
+            "default": 0
+          },
+          "independent_content_count": {
+            "type": "integer",
+            "title": "Independent Content Count",
+            "default": 0
+          },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Counts"
+          },
+          "observations": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Observations"
+          },
+          "limitation": {
+            "type": "string",
+            "title": "Limitation",
+            "default": "仅覆盖本次收集的公开评价材料；不代表平台全部评论或总体满意率。"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ReviewAssessment"
+      },
+      "RiskAssessment": {
+        "properties": {
+          "decision_level": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Decision Level",
+            "default": "medium"
+          },
+          "decision_label": {
+            "type": "string",
+            "title": "Decision Label",
+            "default": "中等决策风险 · 先核实再预付"
+          },
+          "decision_basis": {
+            "type": "string",
+            "enum": [
+              "company_evidence",
+              "information_gap"
+            ],
+            "title": "Decision Basis",
+            "default": "information_gap"
+          },
+          "decision_explanation": {
+            "type": "string",
+            "title": "Decision Explanation",
+            "default": "信息不足时按谨慎预付规则给出中等决策风险，建议按次或短期购买；这不表示公司存在不良经营事件。"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "undetermined"
+            ],
+            "title": "Level",
+            "default": "undetermined"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "default": "证据不足，暂不评级"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation",
+            "default": "尚未完成有来源支持的模型评估。"
+          },
+          "reasons": {
+            "items": {
+              "$ref": "#/components/schemas/RiskReason"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "title": "Reasons"
+          },
+          "limitations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Limitations"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "default": ""
+          },
+          "model_assessed": {
+            "type": "boolean",
+            "title": "Model Assessed",
+            "default": false
+          },
+          "reviewed_source_count": {
+            "type": "integer",
+            "title": "Reviewed Source Count",
+            "default": 0
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "title": "Confidence",
+            "default": "low"
+          },
+          "confidence_label": {
+            "type": "string",
+            "title": "Confidence Label",
+            "default": "低确信度"
+          },
+          "confidence_explanation": {
+            "type": "string",
+            "title": "Confidence Explanation",
+            "default": "尚未完成证据评估，无法支持稳定判断。"
+          },
+          "confidence_dimensions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Confidence Dimensions"
+          },
+          "review_impact": {
+            "type": "string",
+            "title": "Review Impact",
+            "default": "用户评价尚未完成逐条评估。"
+          },
+          "cashflow_impact": {
+            "type": "string",
+            "title": "Cashflow Impact",
+            "default": "未完成基于材料的收支情景评估。"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RiskAssessment"
+      },
+      "RiskReason": {
+        "properties": {
+          "explanation": {
+            "type": "string",
+            "maxLength": 400,
+            "minLength": 6,
+            "title": "Explanation"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "adverse",
+              "reassuring",
+              "context"
+            ],
+            "title": "Direction"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/Citation"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 1,
+            "title": "Citations"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "explanation",
+          "direction",
+          "citations"
+        ],
+        "title": "RiskReason"
+      },
       "SearchHit": {
         "properties": {
           "document_id": {
@@ -2983,6 +3481,21 @@
           "limitations"
         ],
         "title": "SearchResponse"
+      },
+      "SessionInput": {
+        "properties": {
+          "cookie": {
+            "type": "string",
+            "format": "password",
+            "title": "Cookie",
+            "writeOnly": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "cookie"
+        ],
+        "title": "SessionInput"
       },
       "Shipment": {
         "properties": {

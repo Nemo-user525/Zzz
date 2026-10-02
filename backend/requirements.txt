@@ -7,3 +7,4 @@ httpx>=0.27,<1
 pymupdf>=1.25,<2
 langgraph==1.2.12
 python-dotenv>=1,<2
+mcp==1.30.0

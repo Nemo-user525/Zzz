@@ -29,6 +29,9 @@ def test_registry_navigation_tabs_are_not_adverse_event_evidence():
 @pytest.fixture
 def rig(monkeypatch):
     monkeypatch.setenv('LLM_PROVIDER','offline')
+    monkeypatch.delenv('CONSUMER_MODEL_PROVIDER',raising=False)
+    monkeypatch.delenv('QCC_MCP_URL',raising=False)
+    monkeypatch.delenv('QCC_MCP_API_KEY',raising=False)
     monkeypatch.delenv('QCC_APP_KEY',raising=False)
     monkeypatch.delenv('QCC_SECRET_KEY',raising=False)
     monkeypatch.setattr(criteria, 'reference', lambda text: REFERENCE)
@@ -92,12 +95,18 @@ def test_brand_only_sources_do_not_become_company_indicators(rig,monkeypatch):
 def test_langgraph_model_actually_selects_tools_and_synthesizes(rig,monkeypatch):
     monkeypatch.setattr(agent.llm,'effective_mode',lambda:'openai_compatible')
     calls=[]
-    async def model(instruction,payload,schema):
+    async def model(instruction,payload,schema,**kwargs):
         calls.append(payload)
         assert payload['criteria']['sample_count']==5
         assert 'amount_yuan' not in payload['context']
         if schema==agent.Plan:
+            assert kwargs['reasoning'] is False
             return agent.Plan(search_terms=['最新门店承接公告'] if len(calls)==1 else [])
+        if schema==agent.RiskDraft:
+            assert kwargs.get('reasoning',True) is True
+            assert payload['reviews']['status']=='completed'
+            assert len(payload['cashflow']['scenarios'])==3
+            return agent.RiskDraft(level='undetermined',explanation='资料不足，需要核实门店和后续情况。',reasons=[])
         s=payload['sources'][0]
         return agent.Findings(findings=[AgentFinding(indicator_id='refund',explanation='该片段提及退款安排，需要核对是否涉及本次门店。',citations=[{'source_id':s['id'],'quote':s['excerpt']}],question='公告所列退款是否包含这家门店的课包？')])
     monkeypatch.setattr(consumer_model,'structured',model)
@@ -105,19 +114,22 @@ def test_langgraph_model_actually_selects_tools_and_synthesizes(rig,monkeypatch)
     assert r.agent_model_used and r.agent_rounds==1 and not r.fallback
     assert (NAME+' 最新门店承接公告','智能体补查') in rig[0]
     assert any(i.agent_findings for i in r.indicators)
-    assert r.criteria['matches'] and len(calls)==3
+    assert r.criteria['matches'] and len(calls)==4
+    assert r.risk.model_assessed and r.risk.level=='undetermined'
 
 
 def test_agent_loop_is_bounded_even_if_model_keeps_requesting_tools(rig,monkeypatch):
     monkeypatch.setattr(agent.llm,'effective_mode',lambda:'openai_compatible')
     count=0
-    async def model(instruction,payload,schema):
+    async def model(instruction,payload,schema,**kwargs):
         nonlocal count
         count+=1
+        if schema==agent.RiskDraft:
+            return agent.RiskDraft(level='undetermined',explanation='资料不足，不能评级。',reasons=[])
         return agent.Plan(search_terms=[f'补查资料{count}']) if schema==agent.Plan else agent.Findings(findings=[])
     monkeypatch.setattr(consumer_model,'structured',model)
     r=investigate(discover())
-    assert r.agent_rounds==2 and count==3
+    assert r.agent_rounds==2 and count==4
 
 
 @pytest.mark.parametrize('bad',['unknown_id','altered_quote','other_company'])
@@ -132,7 +144,7 @@ def test_rejects_fabricated_or_cross_company_citations(bad):
 
 def test_model_failure_never_becomes_successful_ai_report(rig,monkeypatch):
     monkeypatch.setattr(agent.llm,'effective_mode',lambda:'openai_compatible')
-    async def fail(*args):
+    async def fail(*args,**kwargs):
         raise ValueError('invalid JSON')
     monkeypatch.setattr(consumer_model,'structured',fail)
     r=investigate(discover())
@@ -142,7 +154,9 @@ def test_model_failure_never_becomes_successful_ai_report(rig,monkeypatch):
 
 def test_no_arbitrary_page_tool_url_is_accepted(rig,monkeypatch):
     monkeypatch.setattr(agent.llm,'effective_mode',lambda:'openai_compatible')
-    async def model(instruction,payload,schema):
+    async def model(instruction,payload,schema,**kwargs):
+        if schema==agent.RiskDraft:
+            return agent.RiskDraft(level='undetermined',explanation='资料不足，不能评级。',reasons=[])
         return agent.Plan(read_source_ids=['http://127.0.0.1/secret']) if schema==agent.Plan else agent.Findings(findings=[])
     monkeypatch.setattr(consumer_model,'structured',model)
     r=investigate(discover())

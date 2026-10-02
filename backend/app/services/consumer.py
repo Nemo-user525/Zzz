@@ -5,7 +5,7 @@ import re
 import uuid
 from fastapi import HTTPException
 from app.db import consumer as cache
-from app.schemas.consumer import Discovery, IdentityCandidate, Step, Analysis, Change, Interpretation
+from app.schemas.consumer import Discovery, IdentityCandidate, Step, Analysis, Change, Interpretation, RiskAssessment
 from app.services import consumer_search as web, consumer_agent, consumer_indicators
 from app.services.consumer_registry import lookup
 
@@ -17,11 +17,14 @@ def extract_names(text):
     names = []
     for match in COMPANY.finditer(text):
         name = match.group()
-        for prefix in ('经营主体为', '运营主体为', '版权所有', '公司名称', '企业名称', '由', '关于', '欢迎来到'):
+        for prefix in ('经营主体为', '运营主体为', '版权所有', '公司名称', '企业名称', '由', '关于', '欢迎来到', '为您提供', '怎么样', '基本信息', '注册'):
             if prefix in name:
                 name = name.split(prefix)[-1]
         if re.search(r'\d{2,4}年|\d{1,2}月|\d{1,2}日|成立于|注册于', name):
             continue  # A sentence such as "成立于2021年11月26日的有限责任公司" is not a legal name.
+        normalized = name.replace('（','(').replace('）',')')
+        if normalized.count('(') != normalized.count(')'):
+            continue
         if 6 <= len(name) <= 60 and name not in names:
             names.append(name)
     return names
@@ -34,7 +37,7 @@ async def discovery(body):
         web.search(body.query + ' 所属公司 企查查', '核对公司名称'))
     registry, registry_step, registry_name = await lookup(body.query)
     trace = [p[1] for p in pairs] + [registry_step]
-    sources = web.dedupe(registry + [s for rows, _ in pairs for s in rows if web.relevant(s, body.query)])[:18]
+    sources = web.diverse(registry + [s for rows, _ in pairs for s in rows if web.relevant(s, body.query)], limit=36)
     if not sources and all(t.status == 'failed' for _, t in pairs):
         old = cache.get(query=body.query, location=body.location)
         if old:
@@ -58,6 +61,11 @@ async def discovery(body):
             source.verification_status = 'page_text'
     candidates = []
     for name, ids in list(names.items())[:18]:
+        # Another source can supply the clean legal name; navigation prefixes remain noise.
+        if any(name != other and name.endswith(other) and
+               (name[:-len(other)] in {'地址','注册地址','基本信息','注册','怎么样','所属公司','经营主体'} or name[:-len(other)].endswith(('是','为','提供','关于','分公司')) or any(noise in name[:-len(other)] for noise in ('开通','预约','认证服务','快速申请','热搜榜','品牌介绍','企业信息','法律诉讼等','IT技术服务')))
+               for other, other_ids in names.items()):
+            continue
         ids = [s.id for s in sources if s.id in ids and name in s.title + s.excerpt]
         if ids:
             candidates.append(IdentityCandidate(id=hashlib.sha256(name.encode()).hexdigest()[:20], name=name,
@@ -101,22 +109,29 @@ async def analysis(body):
             questions.append(f'“{changes[0].title[:55]}”涉及这家门店吗，目前处理到哪一步？')
         intention = {'initial_purchase': '新购买的服务', 'top_up': '新增服务与原有余额', 'renewal': '续费后的服务', 'explore': '拟了解的服务'}[body.intent]
         questions.append(f'由哪个主体承接{intention}，调整服务时由谁处理未履行部分？')
-    unavailable = not any(t.status == 'completed' for t in state['trace'] if t.action in {*consumer_agent.TOPICS, '企查查', '智能体补查', '品牌门店补查', '品牌小红书补查', '数据库建议复核'})
+    unavailable = not any(t.status == 'completed' for t in state['trace'] if t.action in {*consumer_agent.TOPICS, '企查查', '企查查 MCP', '智能体补查', '品牌门店补查', '品牌小红书补查', '数据库建议复核'} or t.action.startswith('品牌'))
     if unavailable:
         for source in sources:
             source.cached = True
     model_used = state['model_calls'] > 0
-    agent_status = ('在线模型已参与工具规划或证据解释' if model_used else '未完成在线模型调用，仅执行真实检索和规则指标')
+    agent_status = ('推理模型已参与工具规划或证据解释' if model_used else '未完成推理模型调用，仅执行真实检索和规则指标')
     if state['model_failed']:
         agent_status += '；部分模型调用或引用校验失败，已标记回退'
     return Analysis(analysis_id=uuid.uuid4().hex, company_id=identity.id, generated_at=web.now(),
         evidence_as_of=previous.generated_at if unavailable else web.now(), mode='cached_evidence' if unavailable else 'live_search_agent' if model_used else 'live_search_rules',
         fallback=state['model_failed'], coverage_status='unverified_leads' if sources else 'insufficient_evidence',
-        identity=identity, summary=f'已取得 {len(sources)} 条来源材料。以下指标说明证据与缺口，不是安全评分或跑路预测。',
+        identity=identity, summary=f'已取得 {len(sources)} 条来源材料，覆盖 {len({web.publisher_key(s.url) for s in sources})} 个网站。风险为公开资料初判，各项依据可在下方核对。',
         changes=changes, questions=list(dict.fromkeys(questions))[:3],
         unknowns=['查询时间不等于证据公开日期；本次未确认的日期和变化趋势保持未知。',
             '小红书为公开网页索引，未接入平台私有数据或登录内容。', reference['limitation'],
             *(['本轮补查全部失败，仅保留之前取得的材料。'] if unavailable else [])],
         sources=sources, trace=trace, criteria=reference, counter_search_status=counter.value,
         counter_source_ids=counter.source_ids, agent_status=agent_status, indicators=indicators,
-        agent_model_used=model_used, agent_rounds=state['rounds'])
+        agent_model_used=model_used, agent_rounds=state['rounds'],
+        risk=RiskAssessment(explanation='本轮联网补查失败，历史材料不足以评级。') if unavailable else state['risk'],
+        reviews=state['reviews'], cashflow=state['cashflow'],
+        source_stats={'total': len(sources), 'websites': len({web.publisher_key(s.url) for s in sources}),
+            'company': sum(s.scope == 'selected_entity' for s in sources),
+            'community': sum(s.channel == 'community' for s in sources),
+            'body_or_api': sum(s.verification_status != 'search_excerpt' for s in sources),
+            'search_queries': sum(t.action in {*consumer_agent.TOPICS, '智能体补查', '数据库建议复核'} or t.action.startswith('品牌') for t in state['trace'])})
