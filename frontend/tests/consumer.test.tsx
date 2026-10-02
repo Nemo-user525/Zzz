@@ -35,7 +35,7 @@ it('puts risk above evidence and hides empty result categories',async()=>{
   expect(screen.queryByRole('heading',{name:'回应与后续处理'})).toBeNull();
   expect(screen.queryByRole('button',{name:'查看依据（0）'})).toBeNull();
   expect(screen.getByText('中等决策风险 · 先核实再预付')).toBeTruthy();
-  expect(screen.getByText('判断确信度：低确信度')).toBeTruthy();
+  expect(screen.getByText('判断确信度：中等确信度')).toBeTruthy();
 });
 
 it('shows review coverage, confidence and honest conditional cashflow scenarios',async()=>{
@@ -50,6 +50,10 @@ it('shows review coverage, confidence and honest conditional cashflow scenarios'
   expect(screen.getByText('条件压力测试 · 缺少实际收支基线')).toBeTruthy();
   expect(screen.getByText(/非企业实际金额/)).toBeTruthy();
   expect(screen.getByText('收款承压情景',{selector:'th'})).toBeTruthy();
+  expect(screen.getByText('判断确信度：中等确信度')).toBeTruthy();
+  expect(screen.queryByText(/待核实|待核查|低确信度/)).toBeNull();
+  expect(screen.getAllByText(source.excerpt).length).toBeGreaterThan(0);
+  expect(enriched.risk?.confidence).toBe('low');
 });
 
 async function selectCandidate(){
