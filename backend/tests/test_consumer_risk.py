@@ -43,6 +43,21 @@ def test_unresolved_brand_complaints_prevent_low_risk():
     assert risk.assess(d,rows+[brand],NAME,'test',3).level=='undetermined'
 
 
+def test_established_qcc_registration_plus_independent_service_evidence_allows_low():
+    qcc=row('agent.qcc.com','；登记状态：存续；成立日期：2010-03-02',status='provider_response')
+    qcc.publisher='企查查官方 MCP';qcc.channel='registry'
+    service=row('city.gov.cn','近期官方公示仍在提供课程服务',status='page_text')
+    result=risk.assess(draft('low',[qcc,service],'reassuring'),[qcc,service],NAME,'test',2)
+    assert result.level=='low' and result.decision_level=='low'
+    qcc.excerpt=NAME+'；'+json.dumps({'registration_status':'存续','established_at':'2010-03-02'},ensure_ascii=False)
+    assert risk.established_qcc_registration([qcc],NAME)
+    qcc.cached=True
+    assert risk.assess(draft('low',[qcc,service],'reassuring'),[qcc,service],NAME,'test',2).level=='undetermined'
+    qcc.cached=False
+    qcc.verification_status='search_excerpt'
+    assert risk.assess(draft('low',[qcc,service],'reassuring'),[qcc,service],NAME,'test',2).level=='undetermined'
+
+
 def test_search_date_is_labeled_as_search_metadata_not_event_date():
     s=row(text='发布说明')
     s=web.make_source(NAME,s.url,'2020年5月6日 - '+s.excerpt,'检索')

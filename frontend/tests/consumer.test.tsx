@@ -19,43 +19,6 @@ beforeEach(()=>{
 });
 afterEach(()=>cleanup());
 
-it('puts risk above evidence and hides empty result categories',async()=>{
-  vi.mocked(consumerApi.analyse).mockResolvedValue({...report,indicators:[...report.indicators,
-    {id:'counter',label:'回应与后续处理',status:'searched',value:'已检索，未找到可用回应',explanation:'未找到回应',source_ids:[],missing:[],
-      agent_findings:[{indicator_id:'counter',explanation:'被误分类的工商变更事实',question:'是否有关？',citations:[{source_id:'s',quote:source.excerpt}]}]}]});
-  await selectCandidate();
-  fireEvent.click(screen.getByRole('button',{name:'查看企业变化'}));
-  await screen.findByText('甲方调查结果');
-  const risk=screen.getByLabelText('风险等级');
-  const evidence=screen.getByRole('heading',{name:'全部证据来源'});
-  expect(risk.compareDocumentPosition(evidence)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  expect(screen.queryByRole('heading',{name:'社区与消费者反馈'})).toBeNull();
-  expect(screen.queryByRole('heading',{name:'值得继续核对的变化线索'})).toBeNull();
-  expect(screen.queryByText('未找到')).toBeNull();
-  expect(screen.queryByRole('heading',{name:'回应与后续处理'})).toBeNull();
-  expect(screen.queryByRole('button',{name:'查看依据（0）'})).toBeNull();
-  expect(screen.getByText('中等决策风险 · 先核实再预付')).toBeTruthy();
-  expect(screen.getByText('判断确信度：中等确信度')).toBeTruthy();
-});
-
-it('shows review coverage, confidence and honest conditional cashflow scenarios',async()=>{
-  const enriched:RiskAnalysis={...report,
-    risk:{level:'medium',label:'中等风险 · 需核实',explanation:'当前材料存在有待核实的服务线索。',reasons:[],limitations:[],model:'local-test',model_assessed:true,reviewed_source_count:1,confidence:'low',confidence_label:'低确信度',review_impact:'评价中的退款问题需要核对后续。',cashflow_impact:'缺少真实收支，只能检验条件压力。'},
-    reviews:{status:'completed',collected_count:1,reviewed_count:1,independent_content_count:1,counts:{negative:1},observations:[{source_id:'s',kind:'customer_feedback',sentiment:'negative',summary:'用户反馈存在退款问题，尚待核实。',quote:source.excerpt,scope:'brand_context',duplicate_of:null}],limitation:'仅限本次公开材料'},
-    cashflow:{mode:'sensitivity_only',unit:'指数，非企业实际金额',horizon_months:6,baseline:{period:'未知',description:'基线是试算假设'},facts:[],driver_source_ids:['s'],limitations:['不代表企业真实未来金额'],scenarios:[{name:'收款承压情景',inflow_change_pct:-20,outflow_change_pct:10,assumption:'试算假设',cumulative_net_min:-100,cumulative_net_max:50,months:[{month:1,inflow:100,outflow_min:80,outflow_max:120,net_min:-20,net_max:20}]}]}};
-  vi.mocked(consumerApi.analyse).mockResolvedValue(enriched);
-  await selectCandidate();fireEvent.click(screen.getByRole('button',{name:'查看企业变化'}));
-  await screen.findByText('中等风险 · 需核实');
-  expect(screen.getByText('已审阅 1 / 1 条材料')).toBeTruthy();
-  expect(screen.getByText('条件压力测试 · 缺少实际收支基线')).toBeTruthy();
-  expect(screen.getByText(/非企业实际金额/)).toBeTruthy();
-  expect(screen.getByText('收款承压情景',{selector:'th'})).toBeTruthy();
-  expect(screen.getByText('判断确信度：中等确信度')).toBeTruthy();
-  expect(screen.queryByText(/待核实|待核查|低确信度/)).toBeNull();
-  expect(screen.getAllByText(source.excerpt).length).toBeGreaterThan(0);
-  expect(enriched.risk?.confidence).toBe('low');
-});
-
 async function selectCandidate(){
   render(<App/>);
   fireEvent.change(screen.getByLabelText('门店、品牌或公司名称'),{target:{value:'测试门店'}});
@@ -63,36 +26,76 @@ async function selectCandidate(){
   fireEvent.click(await screen.findByRole('radio',{name:'甲方服务有限公司'}));
 }
 
-it('defaults to consumer view, needs identity confirmation and never loads cashflow endpoints',async()=>{
+it('opens result sections as pages and returns to the summary',async()=>{
+  await selectCandidate();
+  fireEvent.click(screen.getByRole('button',{name:'查看企业变化'}));
+  await screen.findByRole('heading',{name:'中等风险，慎重！！！'});
+  expect(screen.queryByRole('heading',{name:'全部证据'})).toBeNull();
+  fireEvent.click(screen.getByRole('button',{name:/全部证据/}));
+  expect(screen.getByRole('heading',{name:'全部证据'})).toBeTruthy();
+  expect(screen.getByText(source.excerpt)).toBeTruthy();
+  fireEvent.click(screen.getByRole('button',{name:'← 返回查询结果'}));
+  expect(screen.getByRole('heading',{name:'中等风险，慎重！！！'})).toBeTruthy();
+  expect(screen.queryByRole('heading',{name:'全部证据'})).toBeNull();
+});
+
+
+it('keeps reviews and cashflow in separate pages',async()=>{
+  const enriched:RiskAnalysis={...report,
+    risk:{level:'medium',label:'中等风险 · 需核实',explanation:'当前材料存在有待核实的服务线索。',reasons:[],limitations:[],model:'local-test',model_assessed:true,reviewed_source_count:1,confidence:'low',confidence_label:'低确信度',review_impact:'评价中的退款问题需要核对后续。',cashflow_impact:'缺少真实收支，只能检验条件压力。'},
+    reviews:{status:'completed',collected_count:1,reviewed_count:1,independent_content_count:1,counts:{negative:1},observations:[{source_id:'s',kind:'customer_feedback',sentiment:'negative',summary:'用户反馈存在退款问题，尚待核实。',quote:source.excerpt,scope:'brand_context',duplicate_of:null}],limitation:'仅限本次公开材料'},
+    cashflow:{mode:'sensitivity_only',unit:'指数，非企业实际金额',horizon_months:6,baseline:{period:'未知',description:'基线是试算假设'},facts:[],driver_source_ids:['s'],limitations:['不代表企业真实未来金额'],scenarios:[{name:'收款承压情景',inflow_change_pct:-20,outflow_change_pct:10,assumption:'试算假设',cumulative_net_min:-100,cumulative_net_max:50,months:[{month:1,inflow:100,outflow_min:80,outflow_max:120,net_min:-20,net_max:20}]}]}};
+  vi.mocked(consumerApi.analyse).mockResolvedValue(enriched);
+  await selectCandidate();fireEvent.click(screen.getByRole('button',{name:'查看企业变化'}));
+  await screen.findByRole('heading',{name:'中等风险，慎重！！！'});
+  fireEvent.click(screen.getByRole('button',{name:/消费者怎么说/}));
+  expect(screen.getByText('已审阅 1 / 1 条材料')).toBeTruthy();
+  expect(screen.queryByText('收款承压情景',{selector:'th'})).toBeNull();
+  fireEvent.click(screen.getByRole('button',{name:'← 返回查询结果'}));
+  fireEvent.click(screen.getByRole('button',{name:/未来收支试算/}));
+  expect(screen.getByText('收款承压情景',{selector:'th'})).toBeTruthy();
+  expect(screen.queryByText('已审阅 1 / 1 条材料')).toBeNull();
+  expect(enriched.risk?.confidence).toBe('low');
+});
+
+
+it('needs identity confirmation before analysis and retains the analysis request',async()=>{
   await selectCandidate();
   expect(consumerApi.analyse).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole('button',{name:'查看企业变化'}));
-  await screen.findByText('甲方调查结果');
+  await screen.findByRole('heading',{name:'中等风险，慎重！！！'});
   expect(consumerApi.analyse).toHaveBeenCalledWith('inv','a',expect.objectContaining({amount_yuan:null,service_duration_months:null,intent:'initial_purchase'}),expect.any(AbortSignal),expect.any(Function));
+  fireEvent.click(screen.getByRole('button',{name:/这家公司是谁/}));
+  expect(screen.getByText('甲方调查结果')).toBeTruthy();
   expect(api.demo).not.toHaveBeenCalled(); expect(api.simulate).not.toHaveBeenCalled(); expect(api.compare).not.toHaveBeenCalled();
 });
 
-it('supports initial purchase, top up, renewal and source drawer',async()=>{
+
+it('opens evidence details as a page with a return button',async()=>{
   await selectCandidate();
   for(const intent of ['top_up','renewal','explore','initial_purchase']) fireEvent.change(screen.getByLabelText('消费意图'),{target:{value:intent}});
   fireEvent.click(screen.getByRole('button',{name:'查看企业变化'}));
-  await screen.findByText('甲方调查结果');
-  fireEvent.click(screen.getByRole('button',{name:'查看依据（1）'}));
-  expect(screen.getByRole('dialog')).toBeTruthy();
-  expect(screen.getAllByText('甲方服务有限公司的公开材料').length).toBeGreaterThan(0);
-  fireEvent.keyDown(screen.getByRole('dialog'),{key:'Escape'});
+  await screen.findByRole('heading',{name:'中等风险，慎重！！！'});
+  fireEvent.click(screen.getByRole('button',{name:/全部证据/}));
+  fireEvent.click(screen.getByRole('button',{name:'查看详情（1）'}));
+  expect(screen.getByRole('heading',{name:'证据详情'})).toBeTruthy();
   expect(screen.queryByRole('dialog')).toBeNull();
+  fireEvent.click(screen.getByRole('button',{name:'← 返回上一页'}));
+  expect(screen.getByRole('heading',{name:'全部证据'})).toBeTruthy();
 });
 
-it('clears prior analysis on candidate or intent change',async()=>{
+
+it('returns to the query form for a new analysis',async()=>{
   await selectCandidate();fireEvent.click(screen.getByRole('button',{name:'查看企业变化'}));
-  await screen.findByText('甲方调查结果');
+  await screen.findByRole('heading',{name:'中等风险，慎重！！！'});
+  fireEvent.click(screen.getByRole('button',{name:'重新查询'}));
   fireEvent.change(screen.getByLabelText('消费意图'),{target:{value:'renewal'}});
-  expect(screen.queryByText('甲方调查结果')).toBeNull();
-  fireEvent.click(screen.getByRole('button',{name:'查看企业变化'}));await screen.findByText('甲方调查结果');
-  fireEvent.click(screen.getByRole('radio',{name:'乙方服务有限公司'}));
-  expect(screen.queryByText('甲方调查结果')).toBeNull();
+  expect(screen.queryByRole('heading',{name:'中等风险，慎重！！！'})).toBeNull();
+  fireEvent.click(screen.getByRole('button',{name:'查看企业变化'}));
+  await screen.findByRole('heading',{name:'中等风险，慎重！！！'});
+  expect(consumerApi.analyse).toHaveBeenLastCalledWith('inv','a',expect.objectContaining({intent:'renewal'}),expect.any(AbortSignal),expect.any(Function));
 });
+
 
 it('ignores a stale response after the query changes',async()=>{
   let finish!:(x:Discovery)=>void;

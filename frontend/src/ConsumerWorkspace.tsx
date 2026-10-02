@@ -2,15 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { api } from './api/client';
 import { consumerApi, type RiskAnalysis, type Capabilities, type Conditions, type Discovery, type Evidence } from './api/consumer';
 import type { UseCase } from './api/types';
-import { Drawer } from './Drawer';
-import { ConsumerOutlook } from './ConsumerOutlook';
+import { ConsumerReportPages, type ReportPage } from './ConsumerReportPages';
 import { QccSession } from './QccSession';
-import { confidenceLabel, displayText } from './consumerPresentation';
+import { displayText } from './consumerPresentation';
 import './consumer.css';
+import './consumer-pages.css';
 
 const time = (value:string) => new Date(value).toLocaleString('zh-CN');
-const modeLabel = (mode:string) => ({live_search_agent:'实时检索 + 推理模型参与',live_search_rules:'实时检索 + 规则指标',cached_evidence:'历史资料 · 本次补查失败'}[mode] || mode);
-const evidenceLabel = (s:Evidence) => ({page_text:'已读取原文',search_excerpt:'搜索摘要 · 未核实',provider_response:'接口返回 · 未核对原始公示'}[s.verification_status]);
 
 export function ConsumerWorkspace() {
   const [profile,setProfile] = useState<UseCase|null>(null);
@@ -26,6 +24,7 @@ export function ConsumerWorkspace() {
   const [pending,setPending] = useState<'search'|'analyse'|null>(null);
   const [error,setError] = useState('');
   const [detail,setDetail] = useState<Evidence[]|null>(null);
+  const [reportPage,setReportPage] = useState<ReportPage>('overview');
   const seq = useRef(0);
   const controller = useRef<AbortController|null>(null);
   useEffect(()=>{if(report) riskTop.current?.scrollIntoView?.({behavior:'smooth',block:'start'});},[report]);
@@ -37,7 +36,7 @@ export function ConsumerWorkspace() {
     return () => {active=false; boot.abort(); controller.current?.abort(); seq.current++;};
   },[]);
   function invalidate(clearSearch=false) {
-    seq.current++; controller.current?.abort(); setPending(null); setProgress(''); setReport(null); setDetail(null); setError('');
+    seq.current++; controller.current?.abort(); setPending(null); setProgress(''); setReport(null); setDetail(null); setReportPage('overview'); setError('');
     if (clearSearch) {setDiscovery(null); setSelected('');}
   }
   async function search() {
@@ -56,7 +55,7 @@ export function ConsumerWorkspace() {
     controller.current=new AbortController(); setPending('analyse');
     try {
       const value=await consumerApi.analyse(discovery.investigation_id,selected,conditions,controller.current.signal,message=>{if(seq.current===current)setProgress(message);});
-      if (seq.current===current) setReport(value);
+      if (seq.current===current) {setReport(value);setReportPage('overview');}
     } catch(e) {if(seq.current===current) setError(e instanceof Error ? e.message : '调查失败，请重试');}
     finally {if(seq.current===current) setPending(null);}
   }
@@ -65,12 +64,18 @@ export function ConsumerWorkspace() {
     const rows=allSources.filter(s => ids.includes(s.id));
     return <button type="button" className="ghost" disabled={!rows.length} onClick={() => setDetail(rows)}>{label}（{rows.length}）</button>;
   }
+  function go(page:ReportPage) {setReportPage(page);riskTop.current?.scrollIntoView?.({behavior:'smooth',block:'start'});}
   function changeCondition<K extends keyof Conditions>(key:K,value:Conditions[K]) {invalidate(); setConditions(c => ({...c,[key]:value}));}
-  const trace=report?.trace || discovery?.trace || [];
   return <div className="app-shell consumer-shell">
     <header className="topbar"><div className="brand"><span className="brand-icon">✦</span><div><strong>X-RAY</strong><small>企业变化解释器</small></div></div>
       <nav aria-label="工作区"><a href="?view=history">企业检索与历史回放</a><a href="?view=trade">原交易演示</a></nav></header>
     <main className="consumer-main">
+      {detail && !report ? <section className="consumer-panel consumer-page"><h2>证据详情</h2><p>逐条看资料的来源和时间，再判断是不是你要查的门店。</p>
+        {detail.map(s=><article className="consumer-source" key={s.id}><h3>{s.title}</h3><p>{s.publisher}</p><blockquote>{s.excerpt}</blockquote><p>公开日期：{s.published_at||'没有标明'} · 取得时间：{time(s.fetched_at)}</p><p>{s.page_status}</p><a href={s.url} target="_blank" rel="noreferrer">打开来源 ↗</a></article>)}
+        <button type="button" className="consumer-page-back" onClick={()=>setDetail(null)}>← 返回上一页</button>
+      </section> : report ? <div ref={riskTop}><ConsumerReportPages report={report} page={reportPage} onPage={go}
+        onNewSearch={()=>{setReport(null);setReportPage('overview');setDetail(null);window.scrollTo({top:0,behavior:'smooth'});}}
+        sourceButton={sourceButton} detail={detail} onCloseDetail={()=>setDetail(null)}/></div> : <>
       <section className="consumer-hero"><div className="eyebrow">办卡 · 买课 · 充值 · 续费之前</div>
         <h1>{profile?.headline || '这家店，现在值得长期信任吗？'}</h1>
         <p>{profile?.subtitle || '查清背后的经营主体，看懂近期变化，再决定是否办卡、买课、充值或续费。'}</p>
@@ -104,35 +109,7 @@ export function ConsumerWorkspace() {
         </div><p>不填金额和时长也能查询。金额只用于说明本次消费投入，不改变企业判断。</p>
         <button className="consumer-primary" disabled={pending==='analyse'}>{pending==='analyse'?'正在读取资料…':report?'重新分析':profile?.primary_action || '查看企业变化'}</button>
       </form>}
-      {report && <section aria-label="企业变化与消费判断卡" className="consumer-report">
-        <div ref={riskTop} className={'consumer-risk risk-'+(report.risk?.decision_level||report.risk?.level||'medium')} aria-label="风险等级">
-          <div><span className="eyebrow">{report.identity.name} · 预付消费决策风险</span><h2>{report.risk?.decision_label||report.risk?.label||'中等决策风险 · 先核实再预付'}</h2><strong className="confidence-badge">判断确信度：{confidenceLabel(report.risk)}</strong><p>{report.risk?.decision_explanation}</p><p>企业证据评级：{report.risk?.label||'尚未完成'}。{displayText(report.risk?.explanation||'尚未完成有来源支持的模型评估。')}</p></div>
-          <div className="risk-stats"><strong>{report.sources.length}<small>条真实资料</small></strong><strong>{report.source_stats?.websites??new Set(report.sources.map(s=>s.publisher)).size}<small>个来源网站</small></strong><strong>{report.risk?.reviewed_source_count??0}<small>条公司资料经模型阅读</small></strong></div>
-          {report.risk?.reasons.map((r,i)=><div className="risk-reason" key={i}><p>{displayText(r.explanation)}</p>{sourceButton(r.citations.map(c=>c.source_id),'评级依据')}</div>)}
-          <small>{report.risk?.model_assessed?`${report.risk.model} · 已完成证据评估`:'模型评估尚未完成'}。{report.risk?.decision_basis==='information_gap'?'决策等级来自信息缺口的谨慎规则，并非公司不良经营结论。':'企业材料仅适用于所选公司，门店归属需单独核对。'}</small>
-          <details><summary>为什么是这个确信度</summary><p>{displayText(report.risk?.confidence_explanation||'尚未完成证据评估，确信度不代表准确率或违约概率。')}</p><ul>{report.risk?.confidence_dimensions?.map(x=><li key={x.label}>{x.label}：{displayText(x.value)}</li>)}</ul></details>
-          {!!report.risk?.limitations.length&&<details><summary>了解评级依据与范围</summary><ul>{report.risk.limitations.map(x=><li key={x}>{displayText(x)}</li>)}</ul></details>}
-          <a href="#consumer-evidence">向下查看全部证据 ↓</a>
-        </div>
-        <div className="consumer-panel"><span className="eyebrow">{modeLabel(report.mode)}</span><h2>{report.identity.name}</h2><p>{displayText(report.identity.relationship_status)}</p><p>{displayText(report.summary)}</p>
-          {conditions.amount_yuan!==null && <p>本次拟预付：{conditions.amount_yuan.toLocaleString('zh-CN')} 元</p>}
-          <small>资料取得截至 {time(report.evidence_as_of)} · 各来源公开日期见详情</small><p className="consumer-message">{displayText(report.agent_status)}</p></div>
-        <ConsumerOutlook report={report} sourceButton={sourceButton}/>
-        <div className="consumer-indicators">{report.indicators.filter(i=>i.source_ids.length>0||(i.id!=='counter'&&i.agent_findings.length>0)).map(i=><article className="consumer-panel" key={i.id}>
-          <h3>{i.label}</h3><strong className="consumer-indicator-value">{displayText(i.value)}</strong><p>{displayText(i.explanation)}</p>
-          {i.agent_findings.map((f,j)=><div className="consumer-finding" key={j}><b>智能体证据解释</b><p>{displayText(f.explanation)}</p>{f.citations.map((c,k)=><blockquote key={k}>“{c.quote}”{sourceButton([c.source_id],'出处')}</blockquote>)}<p>可核实：{displayText(f.question)}</p></div>)}
-          <small>还缺：{i.missing.join('；')}</small>{!!i.source_ids.length&&<div>{sourceButton(i.source_ids)}</div>}
-        </article>)}</div>
-        {!!report.changes.length&&<section className="consumer-panel"><h2>值得继续核对的变化线索</h2>{report.changes.map(c=><article className="consumer-change" key={c.id}><h3>{c.title}</h3><p>{c.fact_text}</p><small>发生日期：{c.event_date||'未核实'} · {c.stage}</small><p>{displayText(c.consumer_relevance)}</p>{c.interpretations.map((x,j)=><p key={j}>可能解释：{displayText(x.text)}</p>)}{sourceButton(c.source_ids)}</article>)}</section>}
-        {!!report.questions.length&&<section className="consumer-panel"><h2>下一步，向门店问这几件事</h2><ol>{report.questions.map(q=><li key={q}>{displayText(q)}</li>)}</ol>{!!report.counter_source_ids.length&&<><h3>回应与反向依据</h3><p>{report.counter_search_status}</p>{sourceButton(report.counter_source_ids)}</>}</section>}
-        {!!report.sources.length&&<section id="consumer-evidence" className="consumer-panel"><div className="consumer-section-head"><h2>全部证据来源</h2><span>{report.sources.length} 条 · 去重后</span></div><p>点击资料查看原文链接、取得时间与核验状态。社区反馈代表发布者的陈述。</p>{(['government','registry','community','public_web'] as const).map(channel=>{
-          const rows=report.sources.filter(s=>s.channel===channel);if(!rows.length)return null;
-          return <section className="evidence-group" key={channel}><h3>{{government:'官方公示',registry:'企业登记与风险接口',community:'社区与消费者反馈',public_web:'新闻与相关网页'}[channel]} <small>{rows.length}</small></h3>{rows.map(s=><article className="evidence-row" key={s.id}><div><h4>{s.title}</h4><small>{s.publisher} · {evidenceLabel(s)}{s.scope==='brand_context'?' · 品牌资料，未计入公司评级':''}</small><p>{s.excerpt}</p></div>{sourceButton([s.id],'查看详情')}</article>)}</section>;
-        })}</section>}
-        <details className="consumer-panel"><summary>数据库参考、调查范围与局限</summary><p>数据库提供复核主题，智能体根据本次真实资料独立补查和解释。</p><p>已训练主题样本：{report.criteria.sample_count} 条 · 具名人工复核：{report.criteria.human_reviewed_count??0} 条 · 智能体补查：{report.agent_rounds} 轮</p><p>{report.criteria.limitation}</p><p>{report.criteria.evaluation}</p>{report.criteria.matches.map(m=><p key={m.category}>匹配复核主题：{m.category}。{m.review_focus}（训练样本不作为当前企业的证据）</p>)}<ul>{report.unknowns.map(u=><li key={u}>{displayText(u)}</li>)}</ul></details>
-      </section>}
-      {!!trace.length && <details className="consumer-panel"><summary>查看调查过程与接口状态（{trace.length} 步）</summary><p>显示实际工具动作及结果摘要，便于核对资料取得过程。</p><ol className="consumer-trace">{trace.map((t,i)=><li key={i}><strong>{t.action}</strong> <span>{({completed:'已执行',failed:'失败',not_configured:'未配置',needs_confirmation:'待确认',user_selected:'用户选择',cached:'历史缓存'} as Record<string,string>)[t.status]||t.status}</span><p>{displayText(t.detail)}</p></li>)}</ol></details>}
+      </>}
     </main>
-    {detail && <Drawer viewKey={detail.map(s=>s.id).join(',')} onClose={()=>setDetail(null)}><h2>本次调查来源</h2>{detail.map(s=><article className="consumer-source" key={s.id}><h3>{s.title}</h3><p>{s.scope==='brand_context'?'品牌相关 · ':''}{s.publisher} · {evidenceLabel(s)}{s.cached?' · 历史缓存':''}</p><blockquote>{s.excerpt}</blockquote><p>公开日期：{s.published_at||'未知'} · {s.date_semantics}</p><p>取得时间：{time(s.fetched_at)}</p><p>{s.page_status}</p><a href={s.url} target="_blank" rel="noreferrer">{s.channel==='registry'?'查看接口说明':'打开原始链接'} ↗</a></article>)}</Drawer>}
   </div>;
 }

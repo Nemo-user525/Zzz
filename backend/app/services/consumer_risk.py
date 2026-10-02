@@ -8,6 +8,28 @@ from app.services import consumer_search as web, consumer_outlook
 LABELS = {'low': '较低风险', 'medium': '中等风险 · 需核实', 'high': '较高风险', 'undetermined': '证据不足，暂不评级'}
 
 
+def established_qcc_registration(rows, name):
+    """An active, established company may use a smaller independent evidence set.
+
+    Only this query's authorized QCC response qualifies. Search snippets and
+    imported browser data cannot establish current registration status.
+    """
+    relevant = [source.excerpt for source in rows if
+        source.scope == 'selected_entity' and source.channel == 'registry' and
+        source.verification_status == 'provider_response' and not source.cached and
+        '企查查' in source.publisher and name in source.excerpt]
+    content = '；'.join(relevant)
+    active = re.search(r'(?:登记状态|企业状态|经营状态|registration_status|["\']status["\']|状态)["\']?\s*[：:"]\s*["\']?\s*(?:存续|在业|开业|正常)', content, re.I)
+    found = re.search(r'(?:成立日期|成立时间|注册日期|established_at|startdate)["\']?\s*[：:"]\s*["\']?\s*(\d{4})[-年/.](\d{1,2})[-月/.](\d{1,2})', content, re.I)
+    if not active or not found:
+        return False
+    try:
+        founded = date(*map(int, found.groups()))
+        return (date.today() - founded).days >= 5 * 365
+    except ValueError:
+        return False
+
+
 def independent_count(rows):
     retained, sites = [], set()
     for source in rows:
@@ -89,7 +111,9 @@ def assess(draft, rows, name, model, reviewed_count, reviews=None, cashflow=None
         level = 'medium'
         limits.append('不利线索尚缺不同网站与正文/接口交叉支持，不能定为较高风险。')
     brand_concerns = any(s.scope == 'brand_context' and web.signal_matches(s, '停业|闭店|欠薪|退款|退费|投诉') for s in rows)
-    if level == 'low' and (independent_count(supporting) < 3 or
+    qcc_established = established_qcc_registration(supporting, name)
+    low_minimum = 2 if qcc_established else 3
+    if level == 'low' and (independent_count(supporting) < low_minimum or
                           sum(s.verification_status != 'search_excerpt' for s in supporting) < 2 or
                           len({s.channel for s in supporting}) < 2 or adverse or brand_concerns or
                           any(web.signal_matches(s, '停业|闭店|欠薪|无法退款|拒绝退款|经营异常') for s in sources.values())):
