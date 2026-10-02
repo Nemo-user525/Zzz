@@ -9,6 +9,7 @@ type TextMatches = {items: {document_id: string; title: string; page: number; sn
 
 export function HistoryWorkspace({onSimulate}: {onSimulate: (snapshot: Snapshot) => void}) {
   const [companies, setCompanies] = useState<ResearchCompany[]>([]);
+  const [catalogLoaded, setCatalogLoaded] = useState(false);
   const [companyId, setCompanyId] = useState('');
   const [asOf, setAsOf] = useState('2023-04-23');
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
@@ -38,7 +39,7 @@ export function HistoryWorkspace({onSimulate}: {onSimulate: (snapshot: Snapshot)
   useEffect(() => {
     const abort = new AbortController();
     Promise.all([request<{items: ResearchCompany[]}>('/companies?page_size=100', abort.signal), request<Quality>('/dataset/quality', abort.signal)])
-      .then(([list, q]) => {setCompanies(list.items); setQuality(q); setCompanyId(id => id || list.items.find(c => c.ticker === '688086')?.id || list.items[0]?.id || '');})
+      .then(([list, q]) => {setCompanies(list.items); setQuality(q); setCatalogLoaded(true); setCompanyId(id => id || list.items.find(c => c.ticker === '688086')?.id || list.items[0]?.id || '');})
       .catch(e => {if (e.name !== 'AbortError') setError(e.message);});
     return () => abort.abort();
   }, [retry]);
@@ -110,7 +111,8 @@ export function HistoryWorkspace({onSimulate}: {onSimulate: (snapshot: Snapshot)
     </div>
     {error && <p className="error-banner" role="alert">{error} <button className="ghost" onClick={() => setRetry(x => x+1)}>重试载入</button></p>}
     {pending && <p role="status">正在读取此企业与日期的证据，旧结果已隐藏…</p>}
-    {!companies.length && !pending && <p>本地历史库尚未导入。请按 INGEST_RUNBOOK 运行 restore、fetch、extract、validate。</p>}
+    {!catalogLoaded && !error && <p role="status">正在载入本地企业目录与覆盖信息…</p>}
+    {catalogLoaded && !companies.length && !pending && <p>本地历史库尚未导入。请按 INGEST_RUNBOOK 运行 restore、fetch、extract、validate。</p>}
     {visible && <div className="research-columns">
       <section className="research-block"><span className="section-index">01 / 当时可用证据</span><h2>{visible.company.name}</h2><p>{asOf} 零时前可用 · {visible.company.ticker}</p><p className="source-notice">公开日仅精确到日期的资料，从次日零时起进入回放。快照名称来自当时可用原文；未核对时只显示代码，历史别名尚未完整重建。</p>
         <p>{visible.coverage.visible_document_count} 份当时已公开候选文档 · {visible.facts.length} 条原文支持断言</p>
