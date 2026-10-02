@@ -10,6 +10,7 @@ data/xray.sqlite3
 data/backups/
 data/raw/
 data/extracted/
+data/models/
 data/manifests/runs/
 *.sqlite3
 pytest-cache-files-*/

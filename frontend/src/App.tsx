@@ -14,6 +14,7 @@ import { Drawer } from "./Drawer";
 import { InputValidity } from "./NumberInput";
 import { ScenarioEditor } from "./ScenarioEditor";
 import { HistoryWorkspace } from './HistoryWorkspace';
+import { ConsumerWorkspace } from './ConsumerWorkspace';
 import { localPdf, type Snapshot } from './api/history';
 import type {
   Company,
@@ -57,8 +58,11 @@ const fieldCategory = (key: string) =>
         ? "尚未核实"
         : "公开资料";
 
-function App() {
-  const [view, setView] = useState<'history' | 'trade'>('trade');
+export function TradeApp() {
+  const [view, setView] = useState<'history' | 'trade'>(() => {
+    const requested = new URLSearchParams(window.location.search).get('view');
+    return ['company', 'history'].includes(requested || '') ? 'history' : 'trade';
+  });
   const [historyContext, setHistoryContext] = useState<Snapshot | null>(null);
   const [health, setHealth] = useState<Health | null>(null);
   const [profile, setProfile] = useState<UseCase | null>(null);
@@ -103,6 +107,7 @@ function App() {
     setError("");
     Promise.all([api.health(), api.useCases(), api.demo()])
       .then(async ([h, p, i]) => {
+        p = {...p, use_cases:p.use_cases.filter(u => u.presentation_mode !== 'consumer_changes')};
         const [c, e] = await Promise.all([
           api.company(i.company_id),
           api.events(i.company_id),
@@ -437,7 +442,7 @@ function App() {
     };
   }, [current, inputs?.safety_floor_yuan, inputs?.horizon_days]);
 
-  if (error && !inputs)
+  if (error && !inputs && view === 'trade')
     return (
       <div className="fatal">
         <b>演示数据暂未载入</b>
@@ -465,7 +470,7 @@ function App() {
             {health?.verified_source_count ?? "—"} 份官方来源{" "}
             <span className="divider" /> 旧演示资料最新公开日 {health?.as_of || "—"}
           </div>
-          <nav className="view-switch" aria-label="工作区"><button className="ghost" onClick={() => setView('history')}>企业检索与历史回放</button><button className="ghost" onClick={() => setView('trade')}>交易现金推演</button></nav>
+          <nav className="view-switch" aria-label="工作区"><a href="?view=consumer">消费者企业变化</a><button className="ghost" aria-pressed={view === 'history'} onClick={() => setView('history')}>公司检索与四维评估</button><button className="ghost" aria-pressed={view === 'trade'} onClick={() => setView('trade')}>交易现金推演</button></nav>
           <button className="ghost reset" onClick={reset}>
             ↺ 重置演示
           </button>
@@ -933,7 +938,7 @@ function App() {
             </span>
           </footer>
         </main>
-        <nav className="mobile-nav" aria-label="演示快速导航">
+        <nav className="mobile-nav" aria-label="演示快速导航" hidden={view !== 'trade'}>
           <a href="#evidence">客户证据</a>
           <a href="#simulation">现金结果</a>
           <a href="#terms">改条款</a>
@@ -1103,4 +1108,7 @@ function App() {
     </InputValidity.Provider>
   );
 }
-export default App;
+export default function App() {
+  const requested = new URLSearchParams(window.location.search).get('view');
+  return ['trade','history','company'].includes(requested || '') ? <TradeApp/> : <ConsumerWorkspace/>;
+}

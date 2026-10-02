@@ -1,0 +1,21 @@
+.company-search{max-width:900px;margin:0 auto;padding:44px 28px 80px;color:#e2eeee}.company-search-intro h1{font-size:clamp(26px,3vw,36px);line-height:1.4;margin:14px 0}.company-search p{line-height:1.8;color:#b9ccd3}.company-query{margin:30px 0}.company-query label{display:block;margin-bottom:10px}.company-query>div{display:flex;gap:12px}.company-query input{flex:1;min-width:0;background:#102531;color:#e2eeee;border:1px solid #526b79;border-radius:7px;padding:14px;font:inherit}.company-query .primary{width:auto;min-width:130px;margin:0}.company-search small{display:block;color:#aec3cc;line-height:1.7;margin-top:12px}.company-search h2{font-size:21px;line-height:1.5}.qcc-notice{padding:20px;background:#172d39;border-left:3px solid #82cdb9;margin:22px 0}.qcc-notice h2,.qcc-notice h3{margin-top:0}.qcc-notice button{margin:4px 10px 4px 0}.qcc-identity{border-top:1px solid #38515f;padding:24px 0}.qcc-identity .primary{width:auto;padding:13px 20px}.company-search dl{margin:16px 0}.company-search dl>div{display:grid;grid-template-columns:165px 1fr;gap:15px;padding:8px 0}.company-search dt{color:#abc0c9}.company-search dd{margin:0;overflow-wrap:anywhere;white-space:pre-wrap}.qcc-records details{border-top:1px solid #38515f;padding:18px 0}.qcc-records summary{display:flex;justify-content:space-between;gap:16px;cursor:pointer}.qcc-records summary>span:last-child{color:#a8c0c9;font-size:14px}.qcc-records summary:before{content:'＋';color:#87d4c2}.qcc-records details[open]>summary:before{content:'−'}.qcc-records summary>span:first-child{flex:1}.qcc-records dl{padding:14px 18px;background:#122934;border-radius:5px}.qcc-history-link{margin-top:35px;padding-top:22px;border-top:1px solid #38515f}.company-search a{color:#89dfce}.company-search button:focus-visible,.company-search input:focus-visible,.company-search summary:focus-visible{outline:3px solid #efbb70;outline-offset:3px}.company-search button:disabled{opacity:.5}.topbar .view-switch button[aria-pressed=true]{border-color:#8bd5c4;color:#9de7d5}@media(max-width:600px){.company-search{padding:26px 18px 80px}.company-query>div{flex-direction:column}.company-query .primary{width:100%}.company-search dl>div{grid-template-columns:1fr;gap:3px}.qcc-records summary{flex-wrap:wrap}.qcc-identity .primary{width:100%}}
+.mobile-nav[hidden]{display:none!important}
+.company-search-inline{max-width:none;margin:20px 0;padding:20px;background:#132b3a;border:1px solid #365365;border-radius:12px}
+.company-search-inline .company-query{margin:0}
+.company-query-results>section{padding:18px 0;border-top:1px solid #38515f;margin-top:20px}
+.local-company-match{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 0}
+.local-company-match strong{font-weight:500}
+.local-company-match .secondary{width:auto;min-width:120px;padding:9px 12px;flex:none}
+.qcc-inline-note{font-size:14px;padding-top:14px;border-top:1px solid #38515f}
+.company-search-inline details{margin:15px 0}
+.company-search-inline .chip{margin-left:12px}
+.public-financials>button{display:block;margin:10px 0;text-align:left}
+.public-financial-result{margin-top:20px}
+.financial-table{padding:12px 0;border-top:1px solid #38515f}
+.financial-table>div{padding:10px 0;border-top:1px solid #2f4654;margin-top:14px}
+.financial-table h4{margin:10px 0}
+.financial-table summary{cursor:pointer}
+.financial-table dl>div{grid-template-columns:minmax(160px,1fr) minmax(140px,1fr)}
+.source-coverage{padding-top:20px;border-top:1px solid #38515f}
+.source-coverage li{line-height:1.8;margin:12px 0}
+@media(max-width:600px){.company-search-inline{padding:16px}.local-company-match{align-items:flex-start;flex-wrap:wrap}}

@@ -6,6 +6,7 @@ from pathlib import Path
 from sqlalchemy import select, func
 from app.db.models import ROOT, SessionLocal
 from app.db.history import Entity, Document, DocumentPage, Fragment, Assertion, HistoricalEvent, Observation, MatchRun, PipelineRun
+from app.services.company_keywords import matches as matches_keywords
 
 LIMITATIONS = ['按公开日期重建历史，不代表系统当时发出预警', '仅有日期的文档从次日零时可用，无法判断同日先后', '公开信息不等于付款历史或违约概率']
 
@@ -20,7 +21,7 @@ def version(db):
 def entities(query='', page=1, page_size=20):
     with SessionLocal() as db:
         rows = list(db.scalars(select(Entity).order_by(Entity.ticker)))
-        rows = [e for e in rows if query.lower() in (e.name + ' ' + (e.ticker or '')).lower()]
+        rows = [e for e in rows if matches_keywords(query, e.name, e.ticker, e.industry)]
         return {'items': [{'id': e.id, 'name': e.name, 'ticker': e.ticker, 'industry': e.industry, 'cohort': e.cohort} for e in rows[(page-1)*page_size:page*page_size]], 'total': len(rows), 'dataset_version': version(db)}
 
 

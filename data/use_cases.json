@@ -1,5 +1,5 @@
 {
-  "default_use_case_id": "supplier-trade-credit",
+  "default_use_case_id": "consumer-large-prepayment",
   "use_cases": [
     {
       "id": "supplier-trade-credit",
@@ -11,11 +11,48 @@
       "output_template": {
         "title": "交易核对卡",
         "sections": [
-          {"id": "identity", "title": "客户与覆盖范围", "fields": ["legal_name", "ticker", "coverage"]},
-          {"id": "evidence", "title": "公开事实与出处", "fields": ["risk_events", "financials", "source_links"]},
-          {"id": "unknowns", "title": "尚待核实", "fields": ["unknowns"]},
-          {"id": "assumptions", "title": "交易情景", "fields": ["scenario_inputs", "assumptions"]},
-          {"id": "calculation", "title": "计算与谈判动作", "fields": ["formula_breakdown", "shortfall_yuan", "comparison"]}
+          {
+            "id": "identity",
+            "title": "客户与覆盖范围",
+            "fields": [
+              "legal_name",
+              "ticker",
+              "coverage"
+            ]
+          },
+          {
+            "id": "evidence",
+            "title": "公开事实与出处",
+            "fields": [
+              "risk_events",
+              "financials",
+              "source_links"
+            ]
+          },
+          {
+            "id": "unknowns",
+            "title": "尚待核实",
+            "fields": [
+              "unknowns"
+            ]
+          },
+          {
+            "id": "assumptions",
+            "title": "交易情景",
+            "fields": [
+              "scenario_inputs",
+              "assumptions"
+            ]
+          },
+          {
+            "id": "calculation",
+            "title": "计算与谈判动作",
+            "fields": [
+              "formula_breakdown",
+              "shortfall_yuan",
+              "comparison"
+            ]
+          }
         ]
       }
     },
@@ -29,9 +66,70 @@
       "output_template": {
         "title": "账期谈判核对卡",
         "sections": [
-          {"id": "facts", "title": "客户公开事实", "fields": ["legal_name", "risk_events", "financials", "source_links"]},
-          {"id": "gaps", "title": "资料缺口", "fields": ["unknowns"]},
-          {"id": "terms", "title": "本方现金与条款", "fields": ["scenario_inputs", "formula_breakdown", "shortfall_yuan", "comparison"]}
+          {
+            "id": "facts",
+            "title": "客户公开事实",
+            "fields": [
+              "legal_name",
+              "risk_events",
+              "financials",
+              "source_links"
+            ]
+          },
+          {
+            "id": "gaps",
+            "title": "资料缺口",
+            "fields": [
+              "unknowns"
+            ]
+          },
+          {
+            "id": "terms",
+            "title": "本方现金与条款",
+            "fields": [
+              "scenario_inputs",
+              "formula_breakdown",
+              "shortfall_yuan",
+              "comparison"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "consumer-large-prepayment",
+      "presentation_mode": "consumer_changes",
+      "target_user": "准备首次办卡、购买大额课包、追加充值或续费的消费者",
+      "decision_goal": "查清门店背后的经营主体，看懂变化、解释、反向依据与资料缺口",
+      "headline": "这家店，现在值得长期信任吗？",
+      "subtitle": "查清背后的经营主体，看懂近期变化，再决定是否办卡、买课、充值或续费。",
+      "primary_action": "查看企业变化",
+      "output_template": {
+        "title": "企业变化与消费判断卡",
+        "sections": [
+          {
+            "id": "identity",
+            "title": "查到的是谁",
+            "fields": [
+              "identity"
+            ]
+          },
+          {
+            "id": "indicators",
+            "title": "消费者判断指标",
+            "fields": [
+              "indicators"
+            ]
+          },
+          {
+            "id": "evidence",
+            "title": "依据、回应与缺口",
+            "fields": [
+              "sources",
+              "counter_search_status",
+              "unknowns"
+            ]
+          }
         ]
       }
     }

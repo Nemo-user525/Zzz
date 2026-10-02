@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
-  title: X-Ray offline demo API
+  title: X-Ray legacy trade API
   version: 1.0.0
-  description: Additive history endpoints are specified in openapi-v2.json. Existing v1 arrays remain unchanged.
+  description: Consumer research and the current complete contract are in openapi-consumer.json. Historical additive endpoints are in openapi-v2.json. Existing v1 arrays remain unchanged.
 servers:
   - url: http://localhost:8000
 paths:

@@ -10,6 +10,7 @@ from app.db.models import ROOT, SessionLocal
 from app.db.history import MatchRun
 from app.services import history
 from app.services.acquisition import Cninfo
+from app.services.company_keywords import matches as matches_keywords
 from app.schemas.history import EntityPage, SnapshotResponse, OutcomeResponse, ComparisonResponse, SourceResponse, QualityResponse, DiscoveryResponse, SearchResponse
 
 router = APIRouter(prefix='/api/v2', tags=['history'])
@@ -134,7 +135,7 @@ def discovery(query: str = Query(min_length=2, max_length=80)):
              {'title': '国家企业信用信息公示系统（可能需要人工验证）', 'url': 'https://www.gsxt.gov.cn/'}]
     try:
         catalog = adapter.catalog()
-        matches = [s for s in catalog if query.lower() in (s['code'] + s['zwjc']).lower()][:10]
+        matches = [s for s in catalog if matches_keywords(query, s.get('code'), s.get('zwjc'), s.get('pinyin'))][:10]
         stock = matches[0]['code'] + ',' + matches[0]['orgId'] if len(matches) == 1 else ''
         rows, more = adapter.announcements(stock=stock, keyword='' if stock else query, size=10)
         return {'status': 'success' if rows or matches else 'empty', 'query': query, 'companies': matches, 'announcements': rows,

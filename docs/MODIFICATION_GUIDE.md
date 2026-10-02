@@ -1,3 +1,21 @@
+# 消费者真实调查修改入口（2026-10-02）
+
+最新功能说明见 [CONSUMER_AGENT.md](CONSUMER_AGENT.md)。消费者页面不是旧核对卡换标题：
+
+| 修改项 | 入口 |
+|---|---|
+| 默认角色、主文案 | `data/use_cases.json` |
+| 消费者交互与来源抽屉 | `frontend/src/ConsumerWorkspace.tsx`、`consumer.css` |
+| 前后端消费者契约 | `frontend/src/api/consumer.ts`、`backend/app/schemas/consumer.py` |
+| 真实搜索和名称消歧 | `services/consumer_search.py`、`consumer.py` |
+| LangGraph 工具循环与引用校验 | `services/consumer_agent.py` |
+| 数据库主题训练与复核准则 | `services/consumer_criteria.py` |
+| 六项指标和材料筛选 | `services/consumer_indicators.py` |
+| 在线模型、企查查接入 | `services/consumer_model.py`、`consumer_registry.py` |
+| 启动准备、现场真实验收 | `app/prepare.py`、`app/consumer_smoke.py` |
+
+下文保留旧模块导航。
+
 # 当前修改导航：历史证据库增量（2026-10-02）
 
 这是“想改哪块，去哪一个文件”的统一入口。下半部分保留原交易页面的详细字段说明；本节覆盖新增能力。修改事实前先看 DATASET_CARD、SOURCE_POLICY 和 POINT_IN_TIME_POLICY，不能改前端文字来补不存在的数据。

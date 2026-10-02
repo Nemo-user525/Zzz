@@ -122,6 +122,7 @@ export type Source = {
   excerpt: string;
 };
 export type UseCase = {
+  presentation_mode?: 'consumer_changes' | 'trade_simulation';
   id: string;
   target_user: string;
   decision_goal: string;

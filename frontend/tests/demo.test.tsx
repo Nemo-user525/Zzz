@@ -8,7 +8,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import App from "../src/App";
+import { TradeApp as App } from "../src/App";
 import { api } from "../src/api/client";
 import { useSimulation } from "../src/useSimulation";
 import fixture from "../src/api/fixtures/baseline.json";

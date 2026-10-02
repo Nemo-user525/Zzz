@@ -4,7 +4,7 @@ Set-Location $PSScriptRoot
 if (!(Test-Path '.venv\Scripts\python.exe')) { python -m venv .venv }
 if (!$SkipInstall) { & '.\.venv\Scripts\python.exe' -m pip install -q -r 'backend\requirements.txt' }
 $env:PYTHONPATH = Join-Path $PSScriptRoot 'backend'
-& '.\.venv\Scripts\python.exe' -m app.db.seed
+& '.\.venv\Scripts\python.exe' -m app.prepare
 if ($LASTEXITCODE -ne 0) { throw '数据导入失败' }
 $pnpmCmd = (Get-Command pnpm -ErrorAction SilentlyContinue).Source
 if (!$pnpmCmd) {
@@ -17,7 +17,9 @@ try {
   if (!$SkipInstall) { & $pnpmCmd install }
   if ($LASTEXITCODE -ne 0) { throw '前端依赖安装失败' }
 } finally { Pop-Location }
-$api = Start-Process -FilePath (Join-Path $PSScriptRoot '.venv\Scripts\python.exe') -ArgumentList '-m','uvicorn','app.main:app','--host','127.0.0.1','--port','8000' -PassThru -WindowStyle Hidden -RedirectStandardOutput (Join-Path $PSScriptRoot 'backend.out.log') -RedirectStandardError (Join-Path $PSScriptRoot 'backend.err.log')
+$apiArgs = @('-m','uvicorn','app.main:app','--host','127.0.0.1','--port','8000')
+if (Test-Path -LiteralPath '.env') { $apiArgs += @('--env-file','.env') }
+$api = Start-Process -FilePath (Join-Path $PSScriptRoot '.venv\Scripts\python.exe') -ArgumentList $apiArgs -PassThru -WindowStyle Hidden -RedirectStandardOutput (Join-Path $PSScriptRoot 'backend.out.log') -RedirectStandardError (Join-Path $PSScriptRoot 'backend.err.log')
 try {
   Write-Host 'API: http://127.0.0.1:8000/api/health'
   Write-Host 'Web: http://127.0.0.1:5173/'
