@@ -4,24 +4,36 @@ import json
 import os
 import re
 from copy import deepcopy
+from pathlib import Path
 from urllib.parse import urlparse
 import httpx
 from app.services import llm
 
 MODEL_GATE = asyncio.Semaphore(1)
+BUNDLED_CONFIG = Path(__file__).resolve().parents[3] / 'configs/openrouter.json'
+
+
+def cloud_config():
+    try:
+        bundled = json.loads(BUNDLED_CONFIG.read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        bundled = {}
+    key = os.getenv('OPENROUTER_API_KEY', '').strip() or str(bundled.get('api_key') or '').strip()
+    model = os.getenv('CONSUMER_CLOUD_MODEL', '').strip() or str(bundled.get('model') or 'qwen/qwen3.8-27b:free').strip()
+    return key, model
 
 
 def effective_mode():
     provider = os.getenv('CONSUMER_MODEL_PROVIDER', '').strip()
     if provider == 'auto':
-        return 'openrouter_free' if os.getenv('OPENROUTER_API_KEY', '').strip() else 'ollama'
+        return 'openrouter_free' if cloud_config()[0] else 'ollama'
     return provider or llm.effective_mode()
 
 
 def model_name():
     mode = effective_mode()
     if mode == 'openrouter_free':
-        return os.getenv('CONSUMER_CLOUD_MODEL', 'qwen/qwen3.8-27b:free')
+        return cloud_config()[1]
     if mode == 'ollama':
         return os.getenv('CONSUMER_LOCAL_MODEL', 'qwen3.5:9b')
     return os.getenv('LLM_MODEL', '')
@@ -153,7 +165,7 @@ async def structured(instruction, payload, schema, *, reasoning=True):
             return final(data['message']['content'])
         if mode == 'openrouter_free':
             model = model_name()
-            key = os.getenv('OPENROUTER_API_KEY', '').strip()
+            key = cloud_config()[0]
             if not key or not model.endswith(':free'):
                 raise ValueError('free_model_key_or_id_missing')
             # Never silently route a disappearing free model to a paid model.

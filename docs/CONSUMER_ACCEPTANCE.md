@@ -1,5 +1,11 @@
 # 消费者调查本轮验收（2026-10-02）
 
+## 免费云端模型接入
+
+- 账号所有者明确允许公开 OpenRouter 密钥；共享服务端配置保存于 `configs/openrouter.json`，本机 `.env` 同时启用 `CONSUMER_MODEL_PROVIDER=auto`。自有密钥可用环境变量覆盖共享配置。
+- 实际调用 `qwen/qwen3.8-27b:free`，开启推理并按项目现有 `Plan` schema 收到有效结构化结果；`effective_mode=openrouter_free`。这是云端模型通路验收，尚未用云端模型重跑完整的企业调查。
+- 云端请求仍先核对官方模型目录零价格；运行时不把密钥返回给前端。共享密钥在公开 GitHub 仓库可见，会共用账号配额。
+
 ## 当前企查查官方 MCP 验收
 
 - 2026-10-02 已保存账号所有者明确授权公开的 MCP 密钥，直连官方企业信息服务，无需 WorkBuddy 第三方应用。实际初始化发现 16 个工具，依照工具 schema 使用 searchKey 参数。

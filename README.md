@@ -24,7 +24,7 @@ pwsh -File .\start.ps1
 
 开发页面：`http://127.0.0.1:5173/`；API：`http://127.0.0.1:8000/docs`。脚本创建虚拟环境、安装依赖、导入数据、训练主题参考并读取 `.env`。已经安装依赖时可 `start.ps1 -SkipInstall`。Linux/macOS 使用 `bash ./start.sh`，本地推理运行时按 [Ollama 官方说明](https://ollama.com/download)安装。
 
-### 免费本地模型（默认实施路线）
+### 免费本地模型（可选）
 
 ```powershell
 pwsh -File .\setup-local-model.ps1
@@ -36,7 +36,7 @@ pwsh -File .\setup-local-model.ps1
 
 ### 免费云端切换（可选）
 
-2026-10-02 已通过 OpenRouter 模型目录核实 `qwen/qwen3.8-27b:free` 的输入/输出价格均为零，并支持推理。注册账号后只在服务端 `.env` 填写：
+2026-10-02 已通过 OpenRouter 模型目录核实 `qwen/qwen3.8-27b:free` 的输入/输出价格均为零，并完成一次真实的云端推理调用。仓库按账号所有者明确授权公开的要求，在 `configs/openrouter.json` 提供共享演示密钥；新克隆执行快速启动即可选择云端，无需下载本地模型。自有账号可在服务端 `.env` 覆盖：
 
 ```dotenv
 CONSUMER_MODEL_PROVIDER=auto
@@ -44,7 +44,7 @@ OPENROUTER_API_KEY=你的合法密钥
 CONSUMER_CLOUD_MODEL=qwen/qwen3.8-27b:free
 ```
 
-重启后端生效。`auto` 有该密钥时使用免费云端，没有时使用本地 Ollama。每次云端调用先核验目录中的零价格；免费模型下线、限流、无额度时不会切到付费模型。需要改用本地时设置 `CONSUMER_MODEL_PROVIDER=ollama`。免费额度与可用性见 [官方限制说明](https://openrouter.ai/docs/api-reference/limits)。本项目未取得云端账号密钥，因此免费云端调用不能算已验收。
+重启后端生效。`auto` 有自有或共享密钥时使用免费云端；都没有时使用本地 Ollama。每次云端调用先核验目录中的零价格；免费模型下线、限流、无额度时不会切到付费模型。需要改用本地时设置 `CONSUMER_MODEL_PROVIDER=ollama`。共享密钥公开，其他人可消耗同一免费额度；可用性依赖账号额度及服务状态。免费额度与可用性见 [官方限制说明](https://openrouter.ai/docs/api-reference/limits)。
 
 模型家族来自 [Qwen 官方 GitHub](https://github.com/QwenLM/Qwen3.8)。本地 9B 是针对当前硬件、中文理解与推理能力的适配选择，不宣称它是所有任务上的最强模型。LangGraph 是流程框架，Qwen 才是实际推理模型。
 
@@ -54,7 +54,7 @@ CONSUMER_CLOUD_MODEL=qwen/qwen3.8-27b:free
 
 **企查查默认直连官方 MCP**（`QCC_PROVIDER=mcp`），无需 WorkBuddy 第三方应用。工程发现实际工具参数后查询工商登记；确认公司后另查财务、工商变更、年报，将可归属主体的原始字段交给模型，结合公开资料、用户评价及数据库参考判断风险。没有记录的财务响应不生成证据卡片，也不代表财务正常。
 
-本仓库按账号所有者明确授权，在 `configs/qcc-mcp.json` 随附共享演示密钥，后端自动加载；它只由服务器向企查查官方 HTTPS 地址发送，不返回页面或状态接口。共享额度、密钥有效性和网络仍影响可用性，换设备仍需安装依赖与本地模型。自有密钥可用服务端 `.env` 中非空的 `QCC_MCP_API_KEY` 覆盖（可带或不带 Bearer 前缀）；`QCC_MCP_URL` 覆盖地址。详见 [企查查接入说明](docs/QCC_INTEGRATION.md)。
+本仓库按账号所有者明确授权，在 `configs/qcc-mcp.json` 随附共享演示密钥，后端自动加载；它只由服务器向企查查官方 HTTPS 地址发送，不返回页面或状态接口。共享额度、密钥有效性和网络仍影响可用性，换设备仍需安装依赖。自有密钥可用服务端 `.env` 中非空的 `QCC_MCP_API_KEY` 覆盖（可带或不带 Bearer 前缀）；`QCC_MCP_URL` 覆盖地址。详见 [企查查接入说明](docs/QCC_INTEGRATION.md)。
 
 2026-10-02 已用真实账号取得杭州乐刻网络技术有限公司的工商登记、变更和年报；财务工具对本次公司返回无记录。原始响应保存在本机忽略目录，不作为固定 demo 或训练事实。默认最多调用 4 个工具、纳入 19 段字段，长响应显示截断说明。资料来源为授权接口，仍需区分公司与具体门店，不能把存续登记直接等同于安全。
 

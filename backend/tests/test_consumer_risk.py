@@ -80,6 +80,18 @@ def test_thinking_is_removed_but_incomplete_reasoning_is_rejected():
     with pytest.raises(ValueError):model.parse_final('<think>unfinished',Plan)
 
 
+def test_shared_free_cloud_config_and_private_override(monkeypatch, tmp_path):
+    path = tmp_path / 'openrouter.json'
+    path.write_text(json.dumps({'api_key':'shared-test-key','model':'qwen/qwen3.8-27b:free'}), encoding='utf-8')
+    monkeypatch.setattr(model, 'BUNDLED_CONFIG', path)
+    monkeypatch.setenv('CONSUMER_MODEL_PROVIDER', 'auto')
+    assert model.effective_mode() == 'openrouter_free'
+    assert model.model_name() == 'qwen/qwen3.8-27b:free'
+    assert model.cloud_config()[0] == 'shared-test-key'
+    monkeypatch.setenv('OPENROUTER_API_KEY', 'private-test-key')
+    assert model.cloud_config()[0] == 'private-test-key'
+
+
 def test_ollama_requests_thinking_and_uses_only_final_json(monkeypatch):
     monkeypatch.setenv('CONSUMER_MODEL_PROVIDER','ollama')
     original=httpx.AsyncClient
