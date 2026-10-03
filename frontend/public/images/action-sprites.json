@@ -1,0 +1,65 @@
+{
+  "tool": "Built-in image_gen",
+  "assets": [
+    {
+      "kind": "observer",
+      "prompt": "Edit the supplied kneeling young female investigator illustration into ONE high-resolution animation sprite sheet, exactly 2 columns by 2 rows, FOUR equal square cells, transparent background. Preserve her recognizable bun hairstyle, rolled sleeves, trousers, kneeling pose and sophisticated hand-drawn black ink editorial line-art style. Remove ALL charts, dots, bars, diagrams, ground objects, handwriting, captions, and ground marks under the magnifying glass. Keep only the woman and the magnifying glass in her hand. Four chronological poses: top-left she looks down holding the glass low; top-right she bends her elbow to raise the glass toward her face and tilts her head; bottom-left glass close to her eye, slight blink and wrist turn; bottom-right she lowers the glass halfway. Knees, hips, grounded hand, body size, character placement, framing, and camera MUST stay pixel-consistent across cells. Genuine articulated arm/head pose changes, not four shifted copies. Each character fills 80 percent of its square cell, with all body and glass visible, anchored on same baseline. Crisp intricate black ink strokes with light gray crosshatching, white opaque clothing and transparent negative space, no color. Production website animation asset; crisp at 400px per frame. Use highest resolution. No cell borders, no labels, no text, no extra prop, no contact sheet background.",
+      "file": "hero-observer-actions.png",
+      "layout": "2 columns × 2 rows",
+      "size": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "kind": "researcher",
+      "prompt": "Create ONE high-resolution transparent animation sprite sheet, exactly 2 columns and 2 rows, FOUR equal square cells. Use the attached reference only for the sophisticated editorial black ink crosshatched illustration style. Depict a curly-haired young male researcher in round glasses, light shirt, seated at a small desk with a laptop and 3 books, all fully visible. Real four-frame action sequence: top-left both hands typing looking at laptop; top-right right hand raised to glasses; bottom-left adjusting glasses and head lifts a little; bottom-right right hand returns toward keyboard. Desk, chair, torso, legs, camera, scale and placement must stay identically fixed across cells, only arm/wrist/head change. Each scene fills 82% of cell, consistent baseline and optical center. Clean sharp high definition ink, subtle gray hatching, opaque white clothing, transparent negative space. NO magnifying glass, no annotations, no captions, no ground line, no cell borders, no shadow haze, no surrounding other characters. 4 square frames suitable for 400px display EACH. Highest resolution. Same anatomy and face all frames. Include full desk and figure without cropping.",
+      "file": "researcher-actions.png",
+      "layout": "2 columns × 2 rows",
+      "size": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "kind": "analyst",
+      "prompt": "Create ONE high-resolution transparent animation sprite sheet, exactly 2 columns and 2 rows, FOUR equal square cells. Use the attached reference only for sophisticated editorial black ink crosshatched illustration style. Depict a short-haired female analyst wearing ankle-length dark skirt and light shirt, reading a folded paper document held in both hands. NO magnifying glass. Real four-frame action sequence: top-left holding paper open looking down; top-right lifting right hand to turn paper corner, head slightly lifted; bottom-left turned page held higher, left hand steady and eyes down; bottom-right lowering paper and right hand returns. Torso, feet, camera, scale and placement must stay identically fixed across cells, only elbow/wrist/forearm/head change. Each figure fills 85% of cell HEIGHT and stays at same baseline and optical center, full body fully visible. Clean high definition fine ink, subtle gray hatching, opaque white clothing, transparent negative space. NO text, labels, annotations, ground marks, cell borders, haze, or other characters. 4 square frames suitable for 400px display EACH. Highest resolution. Same anatomy and face all frames.",
+      "file": "analyst-actions.png",
+      "layout": "2 columns × 2 rows",
+      "size": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "kind": "binoculars",
+      "prompt": "Create ONE high-resolution transparent animation sprite sheet, exactly 2 columns and 2 rows, FOUR equal square cells. Use supplied image as STYLE REFERENCE ONLY: sophisticated black ink editorial line art with crisp crosshatching, white opaque clothes, transparent empty space. Full figures completely visible. No text, labels, notes, ground marks, frames or cell borders. Keep exactly the same body placement, feet, scale and camera in all four cells; torso and feet fixed, only specified arm/head actions. High resolution, at least 1254x1254, each character fills 85% cell height. A young male field investigator wearing a soft cap, plain light jacket, dark trousers and a backpack, viewed side profile facing right. Four chronological poses: top-left he holds small binoculars at chest level, top-right raises them with bent elbows, bottom-left looks through them with slightly tilted head, bottom-right lowers binoculars halfway. Identical anatomy, standing pose and grounded shoes across all cells, matching baseline. Isolated character only.",
+      "file": "binoculars-actions.png",
+      "layout": "2 columns × 2 rows",
+      "size": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "kind": "connector",
+      "prompt": "Create ONE high-resolution transparent animation sprite sheet, exactly 2 columns and 2 rows, FOUR equal square cells. Use supplied image as STYLE REFERENCE ONLY: sophisticated black ink editorial line art with crisp crosshatching, white opaque clothes, transparent empty space. Full figures completely visible. No text, labels, notes, ground marks, frames or cell borders. Keep exactly the same body placement, feet, scale and camera in all four cells; torso and feet fixed, only specified arm/head actions. High resolution, at least 1254x1254, each character fills 85% cell height. A curly-haired female relationship analyst in light blouse and dark calf-length skirt standing beside a small freestanding evidence board on two thin legs. Board holds five blank rectangles linked by fine ink lines, no legible words. Four chronological poses: top-left arm points at lower board node, top-right she raises forearm to central node, bottom-left she turns head toward upper node and points at it, bottom-right she lowers hand halfway. Hips and feet and board completely stationary. Side profile facing right. All board and feet included.",
+      "file": "connector-actions.png",
+      "layout": "2 columns × 2 rows",
+      "size": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "kind": "guardian",
+      "prompt": "Create ONE high-resolution transparent animation sprite sheet, exactly 2 columns and 2 rows, FOUR equal square cells. Use supplied image as STYLE REFERENCE ONLY: sophisticated black ink editorial line art with crisp crosshatching, white opaque clothes, transparent empty space. Full figures completely visible. No text, labels, notes, ground marks, frames or cell borders. Keep exactly the same body placement, feet, scale and camera in all four cells; torso and feet fixed, only specified arm/head actions. High resolution, at least 1254x1254, each character fills 85% cell height. A long-haired woman field investigator in a hooded light coat, dark trousers and a plain backpack, standing side profile facing right, looking through a long handheld telescope. Four chronological poses: top-left telescope angled gently upward to the right; top-right elbows bend to raise it slightly and head tilts; bottom-left she lowers telescope to horizontal and squints through it; bottom-right she lowers it a little to look past it. Telescope, hands and elbow must stay anatomically connected. Torso, shoes and camera completely fixed. Single isolated full figure, no captions.",
+      "file": "guardian-actions.png",
+      "layout": "2 columns × 2 rows",
+      "size": [
+        1254,
+        1254
+      ]
+    }
+  ]
+}

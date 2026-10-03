@@ -3,7 +3,7 @@ import { Drawer } from './Drawer';
 
 type Connection = {configured:boolean; configurable:boolean; status:string; app_configured?:boolean; message?:string};
 
-export function WorkBuddyConnection({session,onChange}:{session:Connection;onChange:(value:Connection)=>void}) {
+export function WorkBuddyConnection({session,onChange,standalone=false}:{session:Connection;onChange:(value:Connection)=>void;standalone?:boolean}) {
   const [open,setOpen]=useState(session.configurable&&new URLSearchParams(window.location.search).get('configure')==='workbuddy');
   const [clientId,setClientId]=useState('');
   const [secret,setSecret]=useState('');
@@ -36,14 +36,14 @@ export function WorkBuddyConnection({session,onChange}:{session:Connection;onCha
   }
   const callbackStatus=new URLSearchParams(window.location.search).get('workbuddy');
   return <section aria-label="企查查连接状态">
-    <strong>企查查 · WorkBuddy 自动查询</strong>
+    <strong>企查查 · WorkBuddy {standalone ? '企业查询' : '自动查询'}</strong>
     <p role="status">{session.message}</p>
-    <small>授权后，查询企业会自动取数并纳入风险判断。请保持 WorkBuddy 本地助理在线。</small>
+    <small>{standalone ? '授权后，在这里查询已确认的公司，展示连接器回传的原始企业资料。' : '授权后，查询企业会自动取数并纳入风险判断。'}请保持 WorkBuddy 本地助理在线。</small>
     {session.configurable&&<button className="ghost" onClick={()=>setOpen(true)}>配置 WorkBuddy</button>}
     {callbackStatus&&callbackStatus!=='connected'&&<p role="alert">WorkBuddy 授权未完成，请重新连接并核对应用权限。</p>}
     {open&&<Drawer viewKey="workbuddy-connection" onClose={close}>
       <h2>连接 WorkBuddy</h2>
-      <p>只需配置并授权一次，以后由网页自动查询，无需复制提示词。</p>
+      <p>配置并授权后，由网页调用企业查询，无需复制提示词。</p>
       <p><a href="https://open.workbuddy.cn/" target="_blank" rel="noreferrer">打开 WorkBuddy 开放平台，创建应用 ↗</a>。应用需审核启用，并申请以下两项权限：</p>
       <p><code>user.localassistant.readable</code><br/><code>user.localassistant.invokable</code></p>
       <form onSubmit={e=>{e.preventDefault();void save();}}>

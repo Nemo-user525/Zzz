@@ -1,0 +1,125 @@
+.jw-xiaox-motion {
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  flex: none;
+  pointer-events: none;
+}
+
+.jw-xiaox-motion-hero,
+.jw-xiaox-motion-canvas,
+.jw-xiaox-motion-poster,
+.jw-xiaox-motion-dance-fallback,
+.jw-xiaox-motion-dance-sprite {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+}
+
+.jw-xiaox-motion-hero { transform-origin: 50% 87%; }
+.jw-xiaox-motion-poster { position: absolute; inset: 0; }
+.jw-xiaox-motion-poster.is-hidden { visibility: hidden; }
+.jw-xiaox-motion-canvas {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+.jw-xiaox-motion-canvas.is-playing { opacity: 1; }
+.jw-xiaox-motion-source { display: none !important; }
+
+.jw-xiaox-motion.is-idle > .jw-xiaox-motion-hero {
+  animation: jw-xiaox-motion-breathe 5s ease-in-out infinite;
+}
+.jw-xiaox-motion.is-listening > .jw-xiaox-motion-hero {
+  animation: jw-xiaox-motion-listen 2.2s ease-in-out infinite;
+}
+.jw-xiaox-motion.is-attention > .jw-xiaox-motion-hero {
+  transform: rotate(-5deg);
+}
+.jw-xiaox-motion-attention {
+  position: absolute;
+  top: 10%;
+  right: 13%;
+  font: 400 clamp(22px, 3vw, 36px)/1 Georgia, serif;
+  color: var(--jw-blue, #006ca8);
+  transform: rotate(12deg);
+}
+
+.jw-xiaox-motion-dance-sprite {
+  background-image: url('/images/xiaox-dance-sprite.png');
+  background-size: 200% 200%;
+  background-repeat: no-repeat;
+  background-position: 0% 0%;
+  transform-origin: 50% 88%;
+  animation: jw-xiaox-motion-dance-frames 1.2s steps(1, end) infinite,
+    jw-xiaox-motion-dance-hop .6s ease-in-out infinite;
+}
+.jw-xiaox-motion-dance-fallback {
+  transform-origin: 50% 88%;
+  animation: jw-xiaox-motion-dance-fallback 1.2s ease-in-out infinite;
+}
+
+.jw-xiaox-motion-listening {
+  position: absolute;
+  left: 50%;
+  bottom: 1%;
+  display: flex;
+  gap: 4px;
+  height: 17px;
+  align-items: center;
+  transform: translateX(-50%);
+}
+.jw-xiaox-motion-listening i {
+  display: block;
+  width: 3px;
+  height: 8px;
+  background: var(--jw-blue, #006ca8);
+  border-radius: 2px;
+  animation: jw-xiaox-motion-wave .8s ease-in-out infinite;
+}
+.jw-xiaox-motion-listening i:nth-child(2) { animation-delay: .15s; height: 14px; }
+.jw-xiaox-motion-listening i:nth-child(3) { animation-delay: .3s; }
+
+@keyframes jw-xiaox-motion-breathe {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-2%) rotate(0deg); }
+}
+@keyframes jw-xiaox-motion-listen {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(2deg) translateY(-1%); }
+}
+@keyframes jw-xiaox-motion-dance-frames {
+  0%, 100% { background-position: 0% 0%; }
+  25% { background-position: 100% 0%; }
+  50% { background-position: 0% 100%; }
+  75% { background-position: 100% 100%; }
+}
+@keyframes jw-xiaox-motion-dance-hop {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3%); }
+}
+@keyframes jw-xiaox-motion-dance-fallback {
+  0%, 100% { transform: translateX(-2%) rotate(-7deg); }
+  25% { transform: translateY(-5%) rotate(6deg); }
+  50% { transform: translateX(2%) rotate(7deg); }
+  75% { transform: translateY(-5%) rotate(-6deg); }
+}
+@keyframes jw-xiaox-motion-wave {
+  0%, 100% { transform: scaleY(.5); }
+  50% { transform: scaleY(1); }
+}
+
+.jw-xiaox-motion.is-reduced-motion *,
+.jw-xiaox-motion.is-reduced-motion > .jw-xiaox-motion-hero {
+  animation: none;
+  transform: none;
+}
+.jw-xiaox-motion.is-reduced-motion .jw-xiaox-motion-listening {
+  transform: translateX(-50%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .jw-xiaox-motion * { animation: none !important; }
+}

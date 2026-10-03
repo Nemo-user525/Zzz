@@ -1,13 +1,22 @@
-"""Serve the built UI and existing API together for a temporary public demo.
-
-Only frontend/dist is served as static files; never expose the repository root.
-Run after pnpm build: python -m uvicorn app.public_demo:app --host 127.0.0.1 --port 8086
-"""
+"""Static UI with a narrow SPA fallback; API and unknown asset 404s stay intact."""
 from pathlib import Path
-
+import re
 from fastapi.staticfiles import StaticFiles
-
+from starlette.exceptions import HTTPException
+from starlette.middleware.gzip import GZipMiddleware
 from app.main import app
 
-dist = Path(__file__).resolve().parents[2] / "frontend" / "dist"
-app.mount("/", StaticFiles(directory=dist, html=True), name="public-ui")
+class ConsumerStaticFiles(StaticFiles):
+    async def get_response(self, path, scope):
+        try:
+            return await super().get_response(path, scope)
+        except HTTPException as exc:
+            if exc.status_code != 404 or scope['method'] not in ('GET', 'HEAD'):
+                raise
+            if re.fullmatch(r'(story|method|examples/gym-card|investigations/new|investigations/[^/.]+/(identity|evidence|report))/?', path.replace(chr(92), '/')):
+                return await super().get_response('index.html', scope)
+            raise
+
+dist = Path(__file__).resolve().parents[2] / 'frontend' / 'dist'
+# Compress vector animation paths and bundles without buffering API job responses.
+app.mount('/', GZipMiddleware(ConsumerStaticFiles(directory=dist, html=True), minimum_size=1024), name='public-ui')

@@ -382,9 +382,9 @@ export function TradeApp() {
       grid: { left: 65, right: 48, top: 30, bottom: 46 },
       tooltip: {
         trigger: "axis",
-        backgroundColor: "#132130",
-        borderColor: "#3c5764",
-        textStyle: { color: "#eef7f7" },
+        backgroundColor: "#f4f4ef",
+        borderColor: "#a6aaa3",
+        textStyle: { color: "#171b18" },
         formatter: (params: any) => {
           const p = params[0];
           return `第 ${p.axisValue} 天<br/>现金余额 ${money(p.data[1])}`;
@@ -395,17 +395,17 @@ export function TradeApp() {
         min: 0,
         max: inputs?.horizon_days ?? 90,
         interval: 15,
-        axisLabel: { color: "#9eb6c1", formatter: (x: number) => `第${x}天` },
-        axisLine: { lineStyle: { color: "#304857" } },
+        axisLabel: { color: "#60655f", formatter: (x: number) => `第${x}天` },
+        axisLine: { lineStyle: { color: "#b8bdb6" } },
         splitLine: { show: false },
       },
       yAxis: {
         type: "value",
         axisLabel: {
-          color: "#9eb6c1",
+          color: "#60655f",
           formatter: (x: number) => (x / 10000).toFixed(0) + "万",
         },
-        splitLine: { lineStyle: { color: "#233a49", type: "dashed" } },
+        splitLine: { lineStyle: { color: "#cdd0c9", type: "dashed" } },
       },
       series: [
         {
@@ -415,14 +415,14 @@ export function TradeApp() {
           smooth: false,
           step: "end",
           showSymbol: false,
-          lineStyle: { color: "#59e2d0", width: 4 },
-          areaStyle: { color: "rgba(57,206,185,.13)" },
+          lineStyle: { color: "#00846a", width: 3 },
+          areaStyle: { color: "rgba(0,132,106,.09)" },
           markLine: {
             symbol: "none",
             silent: true,
-            lineStyle: { color: "#f0b975", type: "dashed", width: 2 },
+            lineStyle: { color: "#986526", type: "dashed", width: 2 },
             label: {
-              color: "#f0b975",
+              color: "#986526",
               formatter: "安全底线",
               position: "insideEndTop",
             },
@@ -435,7 +435,7 @@ export function TradeApp() {
             ? [[current.minimum_day, current.minimum_balance_yuan]]
             : [],
           symbolSize: 14,
-          itemStyle: { color: "#f48e77" },
+          itemStyle: { color: "#ae4839" },
           z: 5,
         },
       ],
@@ -455,26 +455,21 @@ export function TradeApp() {
     );
   return (
     <InputValidity.Provider value={reportValidity}>
-      <div className="app-shell">
+      <div className="app-shell workbench-shell">
         <header className="topbar">
-          <div className="brand">
-            <span className="brand-icon">✦</span>
-            <div>
-              <strong>X-RAY</strong>
-              <small>这一单，扛得住吗？</small>
-            </div>
-          </div>
-          <div className="top-meta">
-            <span className="status-dot" /> 原始演示库 · 本地 API ·{" "}
-            {health?.verified_company_count ?? "—"} 家企业 ·{" "}
-            {health?.verified_source_count ?? "—"} 份官方来源{" "}
-            <span className="divider" /> 旧演示资料最新公开日 {health?.as_of || "—"}
-          </div>
-          <nav className="view-switch" aria-label="工作区"><a href="?view=consumer">消费者企业变化</a><button className="ghost" aria-pressed={view === 'history'} onClick={() => setView('history')}>公司检索与四维评估</button><button className="ghost" aria-pressed={view === 'trade'} onClick={() => setView('trade')}>交易现金推演</button></nav>
+          <a className="brand" href="/" aria-label="见微 · 返回首页">
+            <strong>见微</strong>
+            <small>See The Change</small>
+          </a>
+          <nav className="view-switch" aria-label="工作区"><a href="/">首页</a><button className="ghost" aria-label="公司检索与四维评估" aria-pressed={view === 'history'} onClick={() => setView('history')}>企业档案</button><button className="ghost" aria-label="交易现金推演" aria-pressed={view === 'trade'} onClick={() => setView('trade')}>交易情景</button></nav>
           <button className="ghost reset" onClick={reset}>
             ↺ 重置演示
           </button>
         </header>
+        <div className="workbench-meta">
+          <span>{view === 'history' ? '企业档案 / COMPANY ARCHIVE' : '交易情景 / CASH FLOW SCENARIOS'}</span>
+          <span>原始演示库 · {health?.verified_company_count ?? "—"} 家企业 · {health?.verified_source_count ?? "—"} 份官方来源 · 最新公开日 {health?.as_of || "—"}</span>
+        </div>
         {view === 'history' && <HistoryWorkspace key={boot} onSimulate={useHistoricalCompany}/>}
         <main hidden={view !== 'trade'}>
           <section className="hero">

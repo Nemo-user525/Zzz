@@ -35,6 +35,14 @@ WORKBUDDY_QCC_TIMEOUT=150
 
 ## 自动取数与证据边界
 
+### 小 X 专用企业查询接口
+
+`GET /api/consumer/enterprise-agent/status` 独立报告 WorkBuddy 的应用授权状态，并通过 `active_registry_provider` 标明普通调查当前使用的企业数据通道。即使普通调查已连接企查查 MCP，也不会把该状态显示成 WorkBuddy 已连接。`configured` 仅表示配置可用，仍需一次真实查询验证本地助理在线、连接器权限及字段回传。
+
+`POST /api/consumer/enterprise-agent/query` 接收 `{ "company_name": "已确认的完整企业名称", "identity_confirmed": true }`，明确走现有 WorkBuddy 本地助理企业查询协议，不受默认 `QCC_PROVIDER` 影响。成功时返回本次 `sources` 与 `step`；未配置、未授权、离线或失败时返回相应 `status`、`message` 及空资料，不回退企查查直连或其他模型来冒充 WorkBuddy 回答。语音识别出的品牌或门店关键词应先填入查询栏并完成主体确认，再调用此接口。
+
+这条协议通过 WorkBuddy 的已授权本地助理调用仓库原有的企查查连接器。当前本机仍缺少 WorkBuddy 应用凭据与授权；新增路由及隔离测试不代表该真实账号线路已接通。需要让普通调查也使用同一连接器时，在完成授权后设置 `QCC_PROVIDER=workbuddy` 并重启后端；保存应用凭据不会暗中切换普通调查的数据通道。
+
 - 选择 `QCC_PROVIDER=workbuddy` 后，查询失败不会回退旧 Cookie、浏览器、HAR 或直连 QCC API。旧实现仅在显式 `direct` 时使用，历史研究入口另有独立设置。
 - 先确认完整公司名；品牌和门店关键词仍经公开搜索寻找候选。当前不通过 WorkBuddy 模糊匹配工商主体。
 - 工商登记必须精确确认当前公司。接受的工具为 `get_company_registration_info`、`get_financial_data`、`get_change_records`、`get_annual_reports`。工具名称和参数实际可用性仍需账号联调确认。

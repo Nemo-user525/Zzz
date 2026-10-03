@@ -1,0 +1,104 @@
+/* Use the user's installed Ink Free; the Microsoft font is not redistributed. */
+@font-face {
+  font-family: 'Jianwei Ink Free';
+  src: local('Ink Free'), local('InkFree');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+.jw-finance-notes {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.jw-manifesto,
+.jw-office-story,
+.jw-team {
+  position: relative;
+}
+
+/* The introduction owns its notes; the cabinet is a separate composition. */
+.jw-manifesto > .jw-finance-notes {
+  inset: 25px -2% 0;
+}
+
+.jw-finance-notes--team .jw-finance-note:nth-child(1) { left: 67%; top: 12%; }
+.jw-finance-notes--team .jw-finance-note:nth-child(2) { left: 91%; top: 31%; }
+.jw-finance-notes--team .jw-finance-note:nth-child(3) { left: 49%; top: 24%; }
+.jw-finance-notes--team .jw-finance-note:nth-child(4) { left: 79%; top: 87%; }
+.jw-finance-notes--team .jw-finance-note:nth-child(5) { left: 19%; top: 94%; }
+
+.jw-finance-notes--hero {
+  /* Leave the masthead and its navigation entirely above the notes. */
+  top: var(--jw-finance-notes-top, clamp(140px, 15svh, 180px));
+  bottom: 16px;
+}
+
+.jw-finance-note {
+  position: absolute;
+  left: var(--note-x);
+  top: var(--note-y);
+  display: block;
+  width: max-content;
+  margin: 0;
+  padding: 0;
+  color: rgb(79 80 77 / 56%);
+  font-family: 'Jianwei Ink Free', 'Ink Free', 'Segoe Print', 'Comic Sans MS', cursive;
+  font-size: clamp(22px, 1.8vw, 30px);
+  font-weight: 400;
+  font-style: normal;
+  font-synthesis: none;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  white-space: nowrap;
+  transform: translate(-50%, -50%) rotate(var(--note-turn)) scale(var(--note-scale));
+  transform-origin: center;
+}
+
+.jw-finance-note:nth-child(3n + 2) {
+  color: rgb(79 80 77 / 47%);
+}
+
+.jw-finance-notes:not(.jw-finance-notes--hero) .jw-finance-note {
+  font-size: clamp(21px, 1.7vw, 29px);
+  color: rgb(79 80 77 / 42%);
+}
+
+@media (max-width: 1000px) and (min-width: 761px) {
+  .jw-finance-note {
+    font-size: 21px;
+  }
+}
+
+@media (max-width: 760px) {
+  .jw-finance-notes--hero {
+    top: var(--jw-finance-notes-top, 145px);
+    bottom: 12px;
+  }
+
+  .jw-finance-note,
+  .jw-finance-notes:not(.jw-finance-notes--hero) .jw-finance-note {
+    display: none;
+    left: var(--note-mobile-x);
+    top: var(--note-mobile-y);
+    font-size: clamp(14px, 3.7vw, 18px);
+    color: rgb(79 80 77 / 48%);
+  }
+
+  .jw-finance-note.jw-finance-note--mobile {
+    display: block;
+  }
+
+  .jw-finance-notes--team .jw-finance-note:nth-child(1) { left: 85%; top: 5%; }
+  .jw-finance-notes--team .jw-finance-note:nth-child(4) { left: 80%; top: 96%; }
+  .jw-finance-notes--team .jw-finance-note:nth-child(5) { left: 15%; top: 97%; }
+}
+
+@media print {
+  .jw-finance-notes { display: none; }
+}

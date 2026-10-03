@@ -3,7 +3,7 @@ import {loadPublicFinancials,securityCode,type PublicFinancials} from './api/pub
 import {dimensions,evaluate,levelText,summary,type Subject,type Draft,type Dimension,type Role,type Check} from './assessment';
 import './assessment.css';
 
-const colors={reference:'#60e7bd',attention:'#ffbd69',observed:'#71b5ff',unknown:'#627186'};
+const colors={reference:'#00846a',attention:'#966321',observed:'#46706c',unknown:'#7a7c74'};
 const roles:{id:Role;label:string}[]=[{id:'enterprise',label:'企业 / 合作方'},{id:'investor',label:'投资者'},{id:'beginner',label:'小白 / 易懂版'},{id:'senior',label:'老年人 / 大字版'}];
 type InputField={id:string;label:string;unit?:string;max?:number;options?:[string,string][]};
 const yesNo:[string,string][]=[['yes','存在'],['no','资料显示不存在']];
@@ -19,23 +19,23 @@ const conciseMoney=(v:number)=>Math.abs(v)>=1e8?(v/1e8).toFixed(2)+' 亿元':(v/
 function EvidenceGraph({checks,selected,onSelect}:{checks:Check[];selected:Dimension;onSelect:(v:Dimension)=>void}) {
   const points=[[108,70],[352,70],[352,257],[108,257]];
   return <svg viewBox="0 0 460 330" role="img" aria-label="四维核对关系图：节点只代表核对项目，不代表股权关系或风险评分">
-    <defs><radialGradient id="evidence-glow"><stop stopColor="#2b7067" stopOpacity=".25"/><stop offset="1" stopColor="#111824" stopOpacity="0"/></radialGradient></defs>
+    <defs><radialGradient id="evidence-glow"><stop stopColor="#00846a" stopOpacity=".07"/><stop offset="1" stopColor="#e9e9e9" stopOpacity="0"/></radialGradient></defs>
     <circle cx="230" cy="165" r="144" fill="url(#evidence-glow)"/>
-    {[55,105,145].map(r=><circle key={r} cx="230" cy="165" r={r} fill="none" stroke="#263345" strokeDasharray="3 8"/>)}
+    {[55,105,145].map(r=><circle key={r} cx="230" cy="165" r={r} fill="none" stroke="#c4c7c0" strokeDasharray="3 8"/>)}
     {dimensions.map((d,i)=>{
       const items=checks.filter(c=>c.dimension===d.id),count=items.filter(c=>c.level!=='unknown').length;
       const level=items.some(c=>c.level==='attention')?'attention':count===0?'unknown':count<items.length?'observed':'reference';
       const [x,y]=points[i];
       return <g key={d.id} role="button" tabIndex={0} aria-label={'查看'+d.title} onClick={()=>onSelect(d.id)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onSelect(d.id);}}} className="dimension-node">
         <line x1="230" y1="165" x2={x} y2={y} stroke={colors[level]} strokeWidth={selected===d.id?2:1} strokeDasharray={count?undefined:'4 5'}/>
-        <circle cx={x} cy={y} r={selected===d.id?40:35} fill="#101b29" stroke={colors[level]} strokeWidth="2"/>
+        <circle cx={x} cy={y} r={selected===d.id?40:35} fill="#f3f3ef" stroke={colors[level]} strokeWidth="2"/>
         <text x={x} y={y+3} textAnchor="middle" fill={colors[level]} fontSize="21">{count}<tspan fontSize="11">/{items.length}</tspan></text>
-        <text x={x} y={y+54} textAnchor="middle" fill="#dfeaf2" fontSize="12">{['现金与负债','信用与治理','客户与人员','员工与口碑'][i]}</text>
+        <text x={x} y={y+54} textAnchor="middle" fill="#262b27" fontSize="12">{['现金与负债','信用与治理','客户与人员','员工与口碑'][i]}</text>
         {items.map((item,j)=>{const angle=Math.PI*2*j/items.length;return <circle key={item.id} cx={x+48*Math.cos(angle)} cy={y+48*Math.sin(angle)} r="3" fill={colors[item.level]}><title>{item.label}：{item.value} · {levelText[item.level]}</title></circle>;})}
       </g>;
     })}
-    <circle cx="230" cy="165" r="40" fill="#101e2b" stroke="#72d0c2"/>
-    <text x="230" y="160" textAnchor="middle" fill="#e5f8f3" fontSize="15">企业证据</text><text x="230" y="181" textAnchor="middle" fill="#91aaa8" fontSize="10">可追溯 · 可补充</text>
+    <circle cx="230" cy="165" r="40" fill="#e0e9e1" stroke="#00846a"/>
+    <text x="230" y="160" textAnchor="middle" fill="#174c40" fontSize="15">企业证据</text><text x="230" y="181" textAnchor="middle" fill="#57655b" fontSize="10">可追溯 · 可补充</text>
   </svg>;
 }
 
@@ -45,7 +45,7 @@ function CashTrend({data}:{data:PublicFinancials|null}) {
   const points=rows.map((r,i)=>({x:42+i*300/Math.max(1,rows.length-1),y:120-85*r.value/max,...r}));
   return <div className="analysis-panel cash-trend"><div className="panel-caption">PUBLIC FINANCIALS / 公开财报</div><h3>货币资金 · 期末余额</h3>
     {rows.length?<><strong className="large-figure">{conciseMoney(rows[rows.length-1].value)}</strong><small>{rows[rows.length-1].date} · 东方财富 · 合并报表</small>
-      <svg viewBox="0 0 390 155" role="img" aria-label="各报告期货币资金趋势，单位人民币"><line x1="32" y1="120" x2="365" y2="120" stroke="#33455a"/>{[35,75].map(y=><line key={y} x1="32" y1={y} x2="365" y2={y} stroke="#223040" strokeDasharray="4 6"/>)}<polyline points={points.map(p=>`${p.x},${p.y}`).join(' ')} stroke="#60e7bd" strokeWidth="2" fill="none"/>{points.map(p=><g key={p.date}><circle cx={p.x} cy={p.y} r="4" fill="#60e7bd"><title>{p.date}：{p.value.toLocaleString()} 元</title></circle><text x={p.x} y="144" textAnchor="middle" fontSize="10" fill="#91a4b9">{p.date.slice(2)}</text></g>)}</svg>
+      <svg viewBox="0 0 390 155" role="img" aria-label="各报告期货币资金趋势，单位人民币"><line x1="32" y1="120" x2="365" y2="120" stroke="#a6ada4"/>{[35,75].map(y=><line key={y} x1="32" y1={y} x2="365" y2={y} stroke="#ccd0c8" strokeDasharray="4 6"/>)}<polyline points={points.map(p=>`${p.x},${p.y}`).join(' ')} stroke="#00846a" strokeWidth="2" fill="none"/>{points.map(p=><g key={p.date}><circle cx={p.x} cy={p.y} r="4" fill="#00846a"><title>{p.date}：{p.value.toLocaleString()} 元</title></circle><text x={p.x} y="144" textAnchor="middle" fontSize="10" fill="#626960">{p.date.slice(2)}</text></g>)}</svg>
       <details><summary>查看图表数据</summary>{rows.map(r=><p key={r.date}>{r.date}：{r.value.toLocaleString()} 元</p>)}</details>
     </>:<div className="chart-empty">尚无可绘制的人民币货币资金数据<br/><small>取得财报后显示真实报告期趋势</small></div>}
     <p className="chart-note">货币资金可能含受限资金，不能直接视为可自由使用现金。</p>

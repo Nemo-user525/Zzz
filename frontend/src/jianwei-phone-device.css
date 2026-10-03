@@ -1,0 +1,135 @@
+.jw-phone {
+  --jw-phone-blue: #006ca8;
+  position: relative;
+  width: 300px;
+  height: 610px;
+  flex: 0 0 300px;
+  border-radius: 49px;
+  transform-style: preserve-3d;
+  font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: #253c4b;
+  text-align: left;
+}
+.jw-phone *, .jw-phone *::before, .jw-phone *::after { box-sizing: border-box; }
+.jw-phone h3, .jw-phone p, .jw-phone strong, .jw-phone span, .jw-phone i { margin: 0; padding: 0; font-style: normal; }
+.jw-phone h3, .jw-phone p { max-width: none; text-wrap: initial; }
+.jw-phone-chassis {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+.jw-phone-metal-slice {
+  position: absolute;
+  inset: 0;
+  border-radius: 49px;
+  background:
+    linear-gradient(180deg, transparent 10.2%, #77707c 10.2% 10.65%, transparent 10.65% 89.1%, #77707c 89.1% 89.55%, transparent 89.55%),
+    linear-gradient(180deg, #ede8ed 0%, #aaa1b0 4%, #c4bdc9 12%, #ded7df 27%, #bab1bf 46%, #d3ccd6 62%, #968b9e 83%, #ded6e0 96%, #726976 100%);
+  border: .5px solid #d1c8d3;
+  transform: translateZ(var(--shell-depth));
+  backface-visibility: hidden;
+}
+.jw-phone-metal-slice:nth-child(-n+2), .jw-phone-metal-slice:nth-last-child(-n+2) { background: #39343d; border-color: #7d7381; }
+.jw-phone-metal-slice:nth-child(3), .jw-phone-metal-slice:nth-last-child(3) { border-color: #eee8f0; }
+.jw-phone-frame {
+  position: absolute;
+  inset: 0;
+  padding: 6px;
+  border: 1px solid #211b23;
+  border-radius: 49px;
+  background: #0d0c0f;
+  box-shadow: inset 0 0 0 1px #817783, 0 0 0 .6px #ddd4df;
+  transform: translateZ(1px);
+}
+.jw-phone-side { position: absolute; left: -1px; width: 16px; border: 1px solid #3e3545; border-radius: 4px; background: linear-gradient(90deg, #ede7ef, #978b9f 20%, #b6aaba 70%, #5b4f63); box-shadow: inset 0 0 0 .6px #ded4e3; transform-origin: left center; transform: translateZ(-21px) rotateY(-90deg); }
+.jw-phone-side-silent { top: 114px; height: 25px; }
+.jw-phone-side-volume-up { top: 163px; height: 44px; }
+.jw-phone-side-volume-down { top: 221px; height: 44px; }
+.jw-phone-side-power { top: 174px; left: auto; right: -1px; height: 66px; transform-origin: right center; transform: translateZ(-21px) rotateY(90deg); }
+.jw-phone-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  isolation: isolate;
+  border: .5px solid #18141a;
+  border-radius: 42px;
+  background: radial-gradient(ellipse at 22% 44%, #f5e3d3 0%, transparent 70%), radial-gradient(ellipse at 100% 70%, #dce6ec 0%, transparent 65%), linear-gradient(160deg, #faf8f2 8%, #f1e8df 66%, #f6f5f1);
+  box-shadow: 0 0 0 .7px #121014;
+}
+.jw-phone-status { position: absolute; z-index: 5; top: 14px; left: 25px; right: 19px; display: flex; justify-content: space-between; align-items: center; height: 16px; color: #283f4d; font-size: 11px; line-height: 16px; font-weight: 650; }
+.jw-phone-status-right { display: flex; align-items: center; gap: 4px; }
+.jw-phone-status-right > svg { width: 14px; height: 11px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.jw-phone-signal { display: flex; align-items: flex-end; gap: 2px; height: 10px; }
+.jw-phone-signal i { width: 2.5px; background: currentColor; border-radius: .6px; }
+.jw-phone-signal i:nth-child(1) { height: 4px; }.jw-phone-signal i:nth-child(2) { height: 6px; }.jw-phone-signal i:nth-child(3) { height: 8px; }.jw-phone-signal i:nth-child(4) { height: 10px; }
+.jw-phone-battery { position: relative; width: 19px; height: 9px; border: 1px solid #6f7e87; border-radius: 2px; }
+.jw-phone-battery::before { content: ""; position: absolute; inset: 1px; border-radius: 1px; background: #334a56; }
+.jw-phone-battery::after { content: ""; position: absolute; right: -3px; top: 2px; width: 1.5px; height: 3px; border-radius: 0 1px 1px 0; background: #6f7e87; }
+.jw-phone-island { position: absolute; z-index: 6; left: 50%; top: 10px; width: 87px; height: 25px; transform: translateX(-50%); border-radius: 20px; background: #11191b; box-shadow: inset 0 1px 2px #000; }
+.jw-phone-island i { position: absolute; width: 8px; height: 8px; border-radius: 50%; right: 10px; top: 8px; background: radial-gradient(circle at 65% 30%, #304b63 0 9%, #101c2a 25%, #060c13 58%, #1c2830 72%, #0c141a 75%); }
+.jw-phone-screen-content { position: absolute; inset: 57px 0 108px; }
+/* Hide the outgoing page immediately so two sets of text never cross-fade. */
+.jw-phone-page { position: absolute; inset: 0; padding: 0 19px; opacity: 0; visibility: hidden; }
+.jw-phone-page[data-active="true"] { opacity: 1; visibility: visible; animation: jw-phone-page-enter 180ms ease-out; }
+@keyframes jw-phone-page-enter { from { opacity: .35; } to { opacity: 1; } }
+.jw-phone-brand { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.jw-phone-brand-name { display: flex; align-items: center; gap: 6px; font-size: 13px; line-height: 21px; font-weight: 700; letter-spacing: 1px; color: var(--jw-phone-blue); }
+.jw-phone-brand-mark { display: grid; place-items: center; width: 21px; height: 21px; color: #fff; background: var(--jw-phone-blue); border-radius: 7px 7px 7px 2px; font-size: 11px; line-height: 1; letter-spacing: 0; }
+.jw-phone-demo { color: #748797; font-size: 9px; line-height: 16px; letter-spacing: .5px; }
+.jw-phone .jw-phone-title { color: #153b53; font-size: 29px; font-weight: 500; line-height: 1.35; letter-spacing: -1px; }
+.jw-phone .jw-phone-intro { margin-top: 8px; color: #647d8c; font-size: 10.5px; line-height: 1.7; letter-spacing: .1px; }
+.jw-phone-user-bubble { width: fit-content; max-width: 100%; margin: 26px 0 19px auto; padding: 12px 13px; border: 1px solid #fff; border-radius: 17px 17px 3px 17px; background: #ffffffdf; box-shadow: 0 5px 16px #496e8706; font-size: 11.5px; line-height: 1.6; white-space: nowrap; }
+.jw-phone-reply { display: flex; align-items: flex-start; gap: 8px; }
+.jw-phone-reply-icon { flex-shrink: 0; color: var(--jw-phone-blue); padding-top: 1px; }
+.jw-phone-reply-icon .jw-phone-icon { width: 18px; height: 18px; }
+.jw-phone .jw-phone-reply p { font-size: 11.5px; line-height: 1.85; color: #38576b; }
+.jw-phone-entity { display: flex; align-items: center; gap: 9px; margin-top: 20px; border-top: 1px solid #abc6d555; border-bottom: 1px solid #abc6d555; padding: 15px 0; }
+.jw-phone-entity-icon { color: var(--jw-phone-blue); flex-shrink: 0; }
+.jw-phone .jw-phone-entity strong { display: block; font-size: 11px; line-height: 1.6; font-weight: 600; }
+.jw-phone .jw-phone-entity p { margin-top: 4px; font-size: 9px; line-height: 1.5; color: #728895; letter-spacing: -.15px; }
+.jw-phone-entity > .jw-phone-icon { margin-left: auto; width: 15px; height: 15px; color: #5d8faa; }
+.jw-phone .jw-phone-footnote { margin-top: 14px; text-align: center; color: #7a919f; font-size: 8.5px; line-height: 1.65; font-weight: 400; letter-spacing: 0; }
+.jw-phone-icon { width: 23px; height: 23px; flex-shrink: 0; display: block; }
+.jw-phone-page-sources .jw-phone-brand, .jw-phone-page-summary .jw-phone-brand { margin-bottom: 13px; }
+.jw-phone-page-sources .jw-phone-title, .jw-phone-page-summary .jw-phone-title { font-size: 26px; line-height: 1.3; }
+.jw-phone-page-sources .jw-phone-intro, .jw-phone-page-summary .jw-phone-intro { margin-top: 6px; font-size: 10px; }
+.jw-phone-sources { display: grid; gap: 8px; margin-top: 17px; }
+.jw-phone-source { padding: 10px 12px 9px; border: 1px solid #ffffffeb; border-radius: 11px; background: #ffffff91; box-shadow: 0 3px 10px #33658d03; }
+.jw-phone-source-top { display: flex; align-items: center; gap: 6px; }
+.jw-phone-source-icon { color: var(--jw-phone-blue); }
+.jw-phone-source-icon .jw-phone-icon { width: 15px; height: 15px; }
+.jw-phone .jw-phone-source strong { font-size: 11px; line-height: 1.4; font-weight: 600; }
+.jw-phone .jw-phone-source-number { margin-left: auto; font-size: 9px; color: #90a6b3; font-family: Georgia, serif; font-style: italic; }
+.jw-phone .jw-phone-source p { margin-top: 5px; font-size: 9.5px; line-height: 1.55; color: #557082; }
+.jw-phone-source-origin { margin-top: 6px !important; display: flex; align-items: center; gap: 4px; color: #80929c; font-size: 8px; line-height: 12px; }
+.jw-phone-source-origin > i { width: 3px; height: 3px; border-radius: 50%; background: #7fa1b5; }
+.jw-phone-source-origin > span { margin-left: auto; font-size: 7px; border: 1px solid #c1d0d8; border-radius: 3px; padding: 0 3px; line-height: 11px; }
+.jw-phone-page-sources .jw-phone-footnote { margin-top: 10px; }
+.jw-phone-checklist { margin-top: 21px; }
+.jw-phone-check-row { display: flex; align-items: flex-start; gap: 9px; padding-bottom: 16px; margin-bottom: 15px; border-bottom: 1px solid #abc6d54f; }
+.jw-phone-check-symbol { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 8px; color: #337b9c; background: #dcebf0; flex-shrink: 0; font-size: 15px; line-height: 25px; }
+.jw-phone-check-symbol .jw-phone-icon { width: 19px; height: 19px; }
+.jw-phone-check-unknown { color: #9b8056; background: #ebe5d8; }
+.jw-phone-check-label { display: block; font-size: 7px; line-height: 1.5; color: #7a909e; letter-spacing: .6px; }
+.jw-phone .jw-phone-check-row strong { display: block; margin-top: 5px; font-size: 11px; line-height: 1.5; font-weight: 600; }
+.jw-phone .jw-phone-check-row p { margin-top: 5px; color: #647d8c; font-size: 9px; line-height: 1.5; }
+.jw-phone-next-question { position: relative; padding: 13px 14px; border-radius: 11px; background: #006ca80b; border: 1px solid #6ca2bf22; }
+.jw-phone-next-question .jw-phone-check-label { color: #61879d; font-size: 8px; letter-spacing: .2px; }
+.jw-phone .jw-phone-next-question p { margin-top: 7px; color: #1f5d7e; font-size: 12px; font-weight: 500; line-height: 1.8; }
+.jw-phone-next-question > .jw-phone-icon { position: absolute; top: 14px; right: 12px; width: 15px; height: 15px; color: #3a809f; }
+.jw-phone-page-summary .jw-phone-footnote { margin-top: 11px; font-size: 8px; }
+.jw-phone-dock { position: absolute; z-index: 4; bottom: 0; left: 0; right: 0; padding: 11px 16px 18px; height: 107px; border-top: 1px solid #ffffffca; border-radius: 23px 23px 0 0; background: linear-gradient(180deg, #f2f5f3, #f8fafa); box-shadow: 0 -8px 28px #36678803; }
+.jw-phone-input { height: 31px; display: flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 20px; border: 1px solid #d5dfe38f; background: #fff9; color: #98a7ae; }
+.jw-phone-input .jw-phone-icon { width: 13px; height: 13px; }
+.jw-phone-input > .jw-phone-icon:last-child { margin-left: auto; color: #7596aa; width: 15px; height: 15px; }
+.jw-phone-input > span { font-size: 9px; line-height: 1; }
+.jw-phone-nav { display: flex; align-items: center; justify-content: space-around; padding: 9px 12px 0; }
+.jw-phone-nav-item { display: flex; align-items: center; flex-direction: column; gap: 3px; color: #8a9da8; }
+.jw-phone-nav-item > .jw-phone-icon { width: 18px; height: 18px; stroke-width: 1.4; }
+.jw-phone-nav-item > span { font-size: 8px; line-height: 11px; }
+.jw-phone-nav-item[data-active="true"] { color: var(--jw-phone-blue); }
+.jw-phone-home { position: absolute; bottom: 5px; left: 50%; width: 83px; height: 3px; border-radius: 3px; background: #1e384735; transform: translateX(-50%); }
+.jw-phone-glass { position: absolute; z-index: 8; inset: 0; pointer-events: none; border-radius: inherit; box-shadow: inset 1px 0 1px #ffffff80, inset -1px 0 1px #ffffff66; background: linear-gradient(113deg, #ffffff18 0%, transparent 35%, transparent 70%, #fff1 100%); }
+@media (prefers-reduced-motion: reduce) { .jw-phone-page[data-active="true"] { animation: none; } }

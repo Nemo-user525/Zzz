@@ -1,0 +1,15 @@
+.jw-blueprint .jw-companion-enterprise-panel .jw-voice-heading h2{font-size:18px}
+.jw-blueprint .jw-enterprise-connection{margin:16px 0;font-size:12px;line-height:1.8}
+.jw-blueprint .jw-enterprise-connection>section>strong{font-weight:500;color:#365467}
+.jw-blueprint .jw-enterprise-connection>section>p{margin:8px 0;color:#597482}
+.jw-blueprint .jw-enterprise-connection>section>small{display:block;color:#84939c;font-size:10px;line-height:1.7}
+.jw-blueprint .jw-enterprise-connection>section>.ghost,.jw-blueprint .jw-enterprise-secondary{padding:7px 11px;margin-top:8px;background:transparent;border:1px solid #c4d2d9;border-radius:6px;color:#375e74;font:12px/1.5 system-ui,sans-serif;cursor:pointer}
+.jw-blueprint .jw-enterprise-scope{font:11px/1.8 system-ui,sans-serif;color:#788d99;margin:12px 0}
+.jw-blueprint .jw-enterprise-scope>a{display:block;color:#416e86;margin-top:5px}
+.jw-blueprint .jw-enterprise-company{font-size:11px;color:#7b8d96;margin:16px 0}
+.jw-blueprint .jw-enterprise-company>strong{display:block;font-size:14px;font-weight:500;color:#294b60;margin-top:5px;overflow-wrap:anywhere}
+.jw-blueprint .jw-enterprise-result details{border-top:1px solid #dce3e5;padding:10px 0;font-size:12px;line-height:1.8;overflow-wrap:anywhere}
+.jw-blueprint .jw-enterprise-result summary{cursor:pointer;color:#31566e}
+.jw-blueprint .jw-enterprise-result details>small{display:block;color:#8397a2;margin:8px 0;font-size:10px}
+.jw-blueprint .jw-enterprise-result details>p{color:#526d7d;white-space:pre-wrap;font-size:12px}
+.jw-blueprint .jw-enterprise-result details>a{font-size:11px;color:#456f87}

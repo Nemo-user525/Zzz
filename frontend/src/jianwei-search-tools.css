@@ -1,0 +1,27 @@
+.jw-search-tools { margin-top:28px; color:var(--jw-ink,#15347b); }
+.jw-search-tool { border-top:1px solid rgba(21,52,123,.18); margin:0; }
+.jw-search-tool summary { cursor:pointer; list-style:none; display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; padding:20px 0; font-size:15px; }
+.jw-search-tool summary::-webkit-details-marker { display:none; }
+.jw-search-tool summary b { font-weight:500; color:#15347b; }
+.jw-search-tool-body { padding:0 0 24px; font-size:14px; line-height:1.7; }
+.jw-place-form,.jw-evidence-find-form { display:flex; flex-wrap:wrap; gap:12px; align-items:end; }
+.jw-search-tool label { display:grid; flex:1 1 180px; gap:6px; min-width:0; }
+.jw-search-tool input { box-sizing:border-box; width:100%; min-width:0; border:1px solid #aebacc; background:transparent; border-radius:0; padding:12px; font:inherit; color:#15347b; }
+.jw-search-tool button { cursor:pointer; background:#15347b; color:white; border:1px solid #15347b; padding:12px 17px; font:inherit; }
+.jw-search-tool button:disabled { cursor:default; opacity:.5; }
+.jw-place-results { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.jw-place-results article,.jw-evidence-match { border:1px solid rgba(21,52,123,.18); padding:18px; overflow-wrap:anywhere; }
+.jw-place-results article p { margin:8px 0; }
+.jw-place-results article>div { margin-top:14px; display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
+.jw-search-tool a { color:#15347b; }
+.jw-evidence-match { margin-top:14px; }
+.jw-evidence-match blockquote { margin:12px 0; }
+.jw-evidence-match>a { display:block; margin-top:8px; }
+.jw-evidence-question { margin-bottom:28px; padding-bottom:24px; border-bottom:1px solid rgba(21,52,123,.18); }
+.jw-evidence-question h3 { margin:0; font-size:20px; color:#15347b; }
+.jw-evidence-question textarea { box-sizing:border-box; width:100%; min-width:0; resize:vertical; border:1px solid #aebacc; background:transparent; padding:12px; font:inherit; color:#15347b; }
+.jw-evidence-answer { margin-top:20px; border-left:2px solid #15347b; padding-left:18px; white-space:pre-wrap; overflow-wrap:anywhere; }
+.jw-evidence-answer blockquote { margin:14px 0; padding:12px 14px; background:rgba(21,52,123,.035); }
+.jw-evidence-answer cite { display:block; font-size:12px; font-style:normal; }
+.jw-evidence-answer a { font-size:12px; display:inline-block; margin-top:8px; }
+@media(max-width:600px) { .jw-place-results { grid-template-columns:1fr; } .jw-place-form>button,.jw-evidence-find-form>button { width:100%; } }

@@ -1,0 +1,45 @@
+.jw-silhouette-reading {
+  --read: 1;
+  display: block;
+  font: inherit;
+  line-height: inherit;
+  letter-spacing: 0;
+}
+
+.jw-silhouette-line {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 1.45em;
+  color: var(--jw-blue, #006ca8);
+}
+
+.jw-silhouette-line + .jw-silhouette-line {
+  color: var(--jw-ink, #172a3a);
+}
+
+.jw-silhouette-letter {
+  --letter: clamp(0, (var(--read) * var(--count) - var(--i)), 1);
+  display: block;
+  flex: 0 0 .95em;
+  width: .95em;
+  height: 1.045em;
+  overflow: visible;
+}
+
+.jw-silhouette-edge {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5px;
+  stroke-linejoin: round;
+}
+
+.jw-silhouette-fill {
+  fill: currentColor;
+  opacity: var(--letter);
+  transition: opacity .12s linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jw-silhouette-fill { opacity: 1; transition: none; }
+}

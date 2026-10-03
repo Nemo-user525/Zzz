@@ -297,3 +297,58 @@ def test_refresh_preserves_refresh_token_and_binds_app(monkeypatch):
     assert asyncio.run(wc.access_token()) == 'new-test-token' and len(calls) == 1
     wc.configure('different-app', 'secret', 'http://127.0.0.1:8086' + wc.CALLBACK)
     assert not wc.status()['configured']
+
+
+def test_enterprise_agent_status_is_independent_of_selected_registry(monkeypatch):
+    monkeypatch.setenv('QCC_PROVIDER', 'mcp')
+    response = local_api().get('/api/consumer/enterprise-agent/status')
+    assert response.status_code == 200
+    assert response.headers['cache-control'] == 'no-store'
+    data = response.json()
+    assert data['provider'] == 'workbuddy'
+    assert data['active_registry_provider'] == 'qcc_mcp'
+    assert data['selected'] is False and data['configured'] is False
+    assert data['status'] == 'not_configured'
+    assert data['configurable'] is True
+    assert not any(key in data for key in ('client_secret', 'access_token', 'refresh_token'))
+    remote = TestClient(app, base_url='https://demo.example', client=('203.0.113.1', 123))
+    assert remote.get('/api/consumer/enterprise-agent/status').json()['configurable'] is False
+
+
+def test_explicit_enterprise_query_never_falls_back_when_workbuddy_unconfigured(monkeypatch):
+    monkeypatch.setenv('QCC_PROVIDER', 'mcp')
+    async def forbidden(*args, **kwargs):
+        pytest.fail('explicit WorkBuddy request used a different provider')
+    monkeypatch.setattr(consumer_registry, 'lookup', forbidden)
+    from app.services import consumer_model, consumer_qcc_mcp
+    monkeypatch.setattr(consumer_model, 'structured', forbidden)
+    monkeypatch.setattr(consumer_qcc_mcp, 'lookup', forbidden)
+    response = local_api().post('/api/consumer/enterprise-agent/query',
+        json={'company_name': NAME, 'identity_confirmed': True})
+    assert response.status_code == 200
+    assert response.headers['cache-control'] == 'no-store'
+    data = response.json()
+    assert data['provider'] == 'workbuddy' and data['status'] == 'not_configured'
+    assert data['sources'] == [] and data['matched_company_name'] is None
+
+
+def test_explicit_enterprise_query_returns_actual_workbuddy_evidence(monkeypatch):
+    monkeypatch.setenv('QCC_PROVIDER', 'mcp')
+    calls = provider(monkeypatch)
+    response = local_api().post('/api/consumer/enterprise-agent/query',
+        json={'company_name': NAME, 'identity_confirmed': True})
+    assert response.status_code == 200 and len(calls) == 3
+    data = response.json()
+    assert data['status'] == 'completed' and data['matched_company_name'] == NAME
+    assert data['sources'][0]['publisher'] == '企查查 MCP（WorkBuddy 回传）'
+    assert '100万元' in data['sources'][0]['excerpt']
+    assert data['step']['source_ids'] == [source['id'] for source in data['sources']]
+
+
+@pytest.mark.parametrize('body', [
+    {'company_name': NAME},
+    {'company_name': NAME, 'identity_confirmed': False},
+    {'company_name': NAME, 'identity_confirmed': True, 'provider': 'mcp'},
+])
+def test_enterprise_query_requires_explicit_confirmed_identity(body):
+    assert local_api().post('/api/consumer/enterprise-agent/query', json=body).status_code == 422

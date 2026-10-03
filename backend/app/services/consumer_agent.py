@@ -33,6 +33,7 @@ TOPICS = {
     '哔哩哔哩': 'site:bilibili.com',
     '抖音公开页': 'site:douyin.com',
     '大众点评': 'site:dianping.com',
+    '美团公开线索': 'site:meituan.com',
     '本地媒体': '门店 消费者 城市 新闻',
     '员工供应商': '员工 工资 供应商 付款',
     '经营正向材料': '新店 开业 正常营业 服务 公告',

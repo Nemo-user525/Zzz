@@ -10,6 +10,7 @@ import logging
 import os
 import time
 import uuid
+from typing import Literal
 
 router = APIRouter(prefix='/api/consumer', tags=['消费者实时调查'])
 gate = asyncio.Semaphore(3)
@@ -118,7 +119,51 @@ def capabilities(request: Request):
             'model_name': consumer_model.model_name(),
             'qcc_web_session':connection, 'qcc_session_configurable':bool(local_operator(request)) and not (workbuddy or mcp),
             'agent_framework': 'LangGraph', 'agent_enabled': consumer_model.effective_mode() != 'offline',
-            'xiaohongshu': 'public_search_index_only', 'criteria': consumer_criteria.reference('')}
+            'xiaohongshu': 'public_search_index_only',
+            'meituan': 'public_search_index_only', 'meituan_api': 'not_configured',
+            'criteria': consumer_criteria.reference('')}
+
+
+def enterprise_agent_status():
+    """Report the requested agent independently from the default registry adapter."""
+    connection = consumer_workbuddy.status()
+    active = ('workbuddy' if consumer_workbuddy.selected() else
+              'qcc_mcp' if consumer_qcc_mcp.selected() else 'direct')
+    return connection | {
+        'active_registry_provider': active,
+        'selected': active == 'workbuddy',
+        'service': '企查查企业查询',
+        'scope': 'WorkBuddy 本地助理调用已授权的企查查企业连接器；结果只来自本次回传。',
+    }
+
+
+@router.get('/enterprise-agent/status')
+def get_enterprise_agent_status(request: Request, response: Response):
+    response.headers['Cache-Control'] = 'no-store'
+    return enterprise_agent_status() | {'configurable': bool(local_operator(request))}
+
+
+class EnterpriseAgentQuery(BaseModel):
+    model_config = {'extra': 'forbid', 'str_strip_whitespace': True}
+    company_name: str = Field(min_length=2, max_length=100, pattern=r'^[^\x00-\x1f\x7f]+$')
+    identity_confirmed: Literal[True]
+
+
+@router.post('/enterprise-agent/query')
+async def query_enterprise_agent(body: EnterpriseAgentQuery, response: Response):
+    """Explicit WorkBuddy path: never substitute MCP or a local model reply."""
+    response.headers['Cache-Control'] = 'no-store'
+    rows, step, matched = await consumer_workbuddy.lookup(body.company_name, exact=True)
+    return {
+        'provider': 'workbuddy',
+        'service': '企查查企业查询',
+        'company_name': body.company_name,
+        'matched_company_name': matched,
+        'status': step.status,
+        'message': step.detail,
+        'sources': [row.model_dump(mode='json') for row in rows],
+        'step': step.model_dump(mode='json'),
+    }
 
 
 async def bounded(action, body):

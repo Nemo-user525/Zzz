@@ -1,0 +1,37 @@
+.jw-phone-scenery { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: clip; isolation: isolate; --scenery-line: #7b8e9d; }
+/* Reuse the site's continuous paper and dot field; scenery is linework only. */
+.jw-phone-landscape { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity 650ms, visibility 650ms; }
+.jw-phone-landscape[data-active=true] { opacity: 1; visibility: visible; }
+.jw-phone-scenery-art { position: absolute; left: 28%; top: 52%; width: min(76vw, 1140px); height: auto; aspect-ratio: 600 / 760; transform: translate(-50%, -50%); overflow: visible; stroke-linecap: round; stroke-linejoin: round; opacity: .45; }
+.jw-phone-landscape-evidence .jw-phone-scenery-art { left: 72%; }
+.jw-phone-scenery-art :is(path,rect,circle,ellipse) { vector-effect: non-scaling-stroke; }
+.jw-scenery-near { transform: translate(calc((var(--phone-progress,0) - .5) * -110px), calc((var(--phone-progress,0) - .5) * 90px)); }
+.jw-scenery-far { transform: translate(calc((var(--phone-progress,0) - .5) * 65px), calc((var(--phone-progress,0) - .5) * -60px)); }
+.jw-scenery-orbit { stroke: #9bb0c540; stroke-width: 1; stroke-dasharray: 2 7; }
+.jw-scenery-paper { fill: var(--jw-paper); stroke: #929da6; stroke-width: 1.1; }
+.jw-scenery-building { fill: none; stroke: #929da6; stroke-width: 1; }
+.jw-scenery-window { fill: none; stroke: #929da6; stroke-width: 1; }
+.jw-scenery-blue-fill { fill: var(--jw-paper); stroke: #929da6; stroke-width: 1; }
+.jw-scenery-line { stroke: var(--scenery-line); stroke-width: 1.2; opacity: .75; }
+.jw-scenery-faint { stroke: #8199b063; stroke-width: 1; }
+.jw-scenery-ground { stroke: #8b9ba678; stroke-width: 1.1; }
+.jw-scenery-label { fill: #6e859e; font: 12px/1.4 'PingFang SC','Microsoft YaHei',sans-serif; letter-spacing: 1px; }
+.jw-scenery-small-label { fill: #7590a9; font: 8px/1.4 system-ui,sans-serif; letter-spacing: 1.4px; }
+.jw-scenery-dot { fill: #6e91b6; }
+.jw-scenery-node { fill: var(--jw-paper); stroke: #8296a4; stroke-width: 2; }
+.jw-scenery-stamp { fill: none; stroke: #929da6; stroke-width: 1.2; }
+.jw-scenery-connection { stroke: #749abc99; stroke-width: 1.4; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.3s ease; }
+.jw-scenery-drawn { stroke: #6a91b8; stroke-width: 1.5; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 850ms ease 100ms; }
+.jw-phone-landscape[data-active=true] :is(.jw-scenery-connection,.jw-scenery-drawn) { stroke-dashoffset: 0; }
+@media (max-width:760px) {
+  .jw-phone-scenery { inset: 0; }
+  .jw-phone-scenery-art { width: max(135vw, 640px); left: 50%; top: 64%; opacity: .38; }
+  .jw-phone-landscape-evidence .jw-phone-scenery-art { left: 50%; }
+  .jw-scenery-orbit, .jw-scenery-faint, .jw-scenery-small-label, .jw-scenery-label { display: none; }
+  .jw-scenery-near { transform: translate(calc((var(--phone-progress,0) - .5) * -100px), calc((var(--phone-progress,0) - .5) * 55px)); }
+  .jw-scenery-far { transform: translate(calc((var(--phone-progress,0) - .5) * 40px), calc((var(--phone-progress,0) - .5) * -30px)); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .jw-phone-landscape, .jw-scenery-connection, .jw-scenery-drawn { transition: none; }
+  .jw-scenery-near, .jw-scenery-far { transform: none; }
+}

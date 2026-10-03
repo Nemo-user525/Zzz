@@ -1,0 +1,103 @@
+{
+  "format": "SVG path only; external use references, no raster embedding",
+  "build_tool": "vtracer 0.6.15; eight-tone team and fieldwork ink, two-tone hero performance",
+  "assets": [
+    {
+      "file": "/images/vectors/observer-performance.svg",
+      "bytes": 4957353,
+      "gzip_bytes": 1679304,
+      "paths": 8059,
+      "sha256": "82aa30292ef0e19e2f4b038f1491f4aa3bc4d0703f23abe03200dfaaf52a8c19",
+      "frames": 60,
+      "fps": 12,
+      "duration_seconds": 5,
+      "unique_frames": 60
+    },
+    {
+      "file": "/images/vectors/observer-poster.svg",
+      "bytes": 94728,
+      "gzip_bytes": 31758,
+      "paths": 164,
+      "sha256": "7ad37881393a32bf84e39aef53fc74ca020703b6d9293dc3544d11c141d6b035"
+    },
+    {
+      "file": "/images/vectors/observer-actions.svg",
+      "bytes": 217380,
+      "gzip_bytes": 69101,
+      "paths": 741,
+      "sha256": "f2af0f9ef2d0a434e46087f7b37d97d24705ed6f379fc7ef73822d5781ebe056",
+      "frames": 4,
+      "width": 627,
+      "height": 627,
+      "unique_frames": 4
+    },
+    {
+      "file": "/images/vectors/analyst-actions.svg",
+      "bytes": 1178815,
+      "gzip_bytes": 324692,
+      "paths": 3308,
+      "sha256": "0831d0a1bb89c45eebe745642cc1228b51b8c2fb3eb0a8a26a84943b25b48a74",
+      "frames": 4,
+      "width": 627,
+      "height": 627,
+      "unique_frames": 4
+    },
+    {
+      "file": "/images/vectors/researcher-actions.svg",
+      "bytes": 1813907,
+      "gzip_bytes": 516889,
+      "paths": 5134,
+      "sha256": "297ce31464293ed13e92b283cb1727487f735a268fac2c76223aead6a63578db",
+      "frames": 4,
+      "width": 627,
+      "height": 627,
+      "unique_frames": 4
+    },
+    {
+      "file": "/images/vectors/binoculars-actions.svg",
+      "bytes": 1198549,
+      "gzip_bytes": 324089,
+      "paths": 3526,
+      "sha256": "b953d3b7193b6850983d6f7381cffd8cda348dd936c1fd18c8e015d316bb3e38",
+      "frames": 4,
+      "width": 627,
+      "height": 627,
+      "unique_frames": 4
+    },
+    {
+      "file": "/images/vectors/connector-actions.svg",
+      "bytes": 1330960,
+      "gzip_bytes": 366785,
+      "paths": 3776,
+      "sha256": "3b39e68d496cea386b7e0271247b61eed3c6036d8becb14c71af91bf66f134fd",
+      "frames": 4,
+      "width": 627,
+      "height": 627,
+      "unique_frames": 4
+    },
+    {
+      "file": "/images/vectors/guardian-actions.svg",
+      "bytes": 1072117,
+      "gzip_bytes": 291269,
+      "paths": 3240,
+      "sha256": "fdd31d25411d561bce3ff46f55a9c46811fd5ce0c539e78fb1158f3825af4a25",
+      "frames": 4,
+      "width": 627,
+      "height": 627,
+      "unique_frames": 4
+    },
+    {
+      "file": "/images/vectors/people.svg",
+      "bytes": 4975688,
+      "gzip_bytes": 1491141,
+      "paths": 11183,
+      "sha256": "b60504ee791fbb181695e4500489683e6cbcf790f6953469bb3999ed369959d1",
+      "team_artwork": {
+        "file": "scripts/artwork/team-reference.png",
+        "sha256": "b1f01d51ce3b515c4733a1d655991a7e6bbe38951e08adeb51f0c4e0c71f8161"
+      }
+    }
+  ],
+  "total_bytes": 16839497,
+  "total_gzip_bytes": 5095028
+}

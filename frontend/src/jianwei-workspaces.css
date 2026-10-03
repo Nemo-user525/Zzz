@@ -1,0 +1,371 @@
+/* Shared paper-and-ink surfaces for the research and transaction workspaces. */
+:root {
+  --jianwei-paper: #e9e9e9;
+  --jianwei-ink: #171b18;
+  --jianwei-green: #00846a;
+  --jianwei-muted: #60665f;
+  --jianwei-line: #bec3ba;
+  --jianwei-surface: rgba(247, 247, 243, .68);
+  --jianwei-serif: Georgia, "Times New Roman", "Songti SC", SimSun, serif;
+  background: var(--jianwei-paper);
+  color: var(--jianwei-ink);
+  color-scheme: light;
+}
+
+.app-shell {
+  background: var(--jianwei-paper);
+  color: var(--jianwei-ink);
+}
+
+.workbench-shell {
+  background-image: none;
+}
+
+.topbar {
+  background: var(--jianwei-paper);
+  border-color: var(--jianwei-line);
+}
+
+.workbench-shell .topbar,
+.app-shell.workbench-shell:has(.research) .topbar {
+  position: relative;
+  min-height: 88px;
+  height: auto;
+  padding: 18px clamp(22px, 3vw, 56px);
+  gap: 24px;
+  flex-wrap: nowrap;
+  border-bottom: 1px solid #a5aaa1;
+}
+
+.workbench-shell .brand {
+  min-width: 245px;
+  text-decoration: none;
+  color: var(--jianwei-ink);
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+.workbench-shell .brand strong {
+  font: 400 30px/1 var(--jianwei-serif);
+  letter-spacing: -.08em;
+}
+
+.workbench-shell .brand small {
+  font: italic 17px/1.2 var(--jianwei-serif);
+  color: var(--jianwei-ink);
+  letter-spacing: -.03em;
+}
+
+.workbench-shell .view-switch {
+  margin-left: auto;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: nowrap;
+}
+
+.workbench-shell .view-switch > a,
+.workbench-shell .view-switch > button {
+  padding: 8px 0;
+  border: none;
+  background: none;
+  color: var(--jianwei-ink);
+  border-radius: 0;
+  text-decoration: none;
+  white-space: nowrap;
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.workbench-shell .view-switch > button[aria-pressed="true"],
+.workbench-shell .view-switch > a:hover,
+.workbench-shell .view-switch > button:hover {
+  color: var(--jianwei-green);
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+
+.workbench-shell .topbar .reset {
+  margin-left: 14px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.workbench-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px 28px;
+  max-width: 1840px;
+  margin: auto;
+  padding: 20px clamp(22px, 3vw, 56px) 0;
+  color: var(--jianwei-muted);
+  font-size: 11px;
+  line-height: 1.7;
+  letter-spacing: .025em;
+}
+
+.workbench-meta > span:first-child { color: var(--jianwei-green); }
+.brand-icon, .hero-bottom b { color: var(--jianwei-green); }
+.top-meta { color: var(--jianwei-muted); }
+.status-dot { background: var(--jianwei-green); box-shadow: none; }
+.divider, .evidence-divider, .t-line { background: var(--jianwei-line); }
+
+.ghost, .secondary, .cashflow-row button, .add-flow {
+  color: var(--jianwei-ink);
+  background: transparent;
+  border: 1px solid #879086;
+  border-radius: 50px;
+  transition: background-color .18s, color .18s, border-color .18s;
+}
+
+.ghost:hover, .secondary:hover, .text-button:hover,
+.cashflow-row button:hover, .add-flow:hover {
+  color: var(--jianwei-green);
+  border-color: var(--jianwei-green);
+  background: #00846a08;
+}
+
+.primary, .external {
+  background: var(--jianwei-green);
+  color: #fff;
+  border: 1px solid var(--jianwei-green);
+  border-radius: 50px;
+  font-weight: 500;
+}
+
+.primary:hover, .external:hover { background: #006c56; }
+.drawer a.external { color: #fff; }
+.text-button, .source-link, .inline-link { color: var(--jianwei-green); }
+.source-link:hover, .inline-link:hover { color: #005f4d; }
+
+.workbench-shell main { padding-top: 32px; }
+.workbench-shell .hero { padding-bottom: 30px; border-color: var(--jianwei-line); }
+.workbench-shell .hero h1, .research h1, .research h2,
+.panel-head h2, .assessment h2, .drawer h2, .company-search-intro h1 {
+  font-family: var(--jianwei-serif);
+  font-weight: 400;
+  letter-spacing: -.035em;
+}
+
+.workbench-shell .hero h1 {
+  font-size: clamp(34px, 3.8vw, 58px);
+  line-height: 1.35;
+  margin: 16px 0 12px;
+  color: var(--jianwei-green);
+}
+
+.research h1 { font-size: clamp(30px, 3vw, 46px); color: var(--jianwei-green); }
+.research h2 { font-size: 24px; }
+.hero > p, .hero-bottom, .coverage, .identity p,
+.event-card p, .date, .event-entity, .fact-row small,
+.order-strip small, .result-strip small, .result-strip p,
+.chart-title span:last-child, .t-dot, .range-label, .helper,
+.comparison > div:not(.small-label), .comparison small,
+.advanced-grid label, .scenario-editor label, .drawer-lead,
+.drawer-foot, .assumption, .card-section p, .fatal p,
+.workbench-shell footer { color: var(--jianwei-muted); }
+
+.eyebrow, .section-index, .small-label { color: var(--jianwei-green); font-weight: 500; }
+.eyebrow span { color: var(--jianwei-muted); }
+.workspace { gap: 20px; margin-top: 26px; }
+.panel, .research-block, .research-search, .research-quality,
+.company-search-inline, .historical-reference, .formula {
+  background: var(--jianwei-surface);
+  color: var(--jianwei-ink);
+  border-color: var(--jianwei-line);
+  border-radius: 2px;
+  box-shadow: none;
+}
+
+.panel { min-height: 0; padding: 24px; }
+.panel-head h2 { font-size: 24px; }
+.outlined { border-color: #ac9470; color: #80551e; border-radius: 50px; }
+.outlined.teal { border-color: #85aa99; color: #00725c; }
+.identity-mark { color: var(--jianwei-green); background: #dde7dc; border-radius: 50%; }
+.identity-tags span, .small-label span, .finance-label span {
+  background: #e1e5dc;
+  color: #4c6353;
+  border-radius: 50px;
+}
+
+.event-card { background: #eee9de; border-color: #d0c4ac; border-radius: 2px; }
+.chip.amber { background: #e9dbbc; color: #79551f; }
+.source-link, .fact-row, .control-group, .text-button,
+.comparison, .result-strip, .cashflows, .card-section,
+.info-list, .info-list > div { border-color: var(--jianwei-line); }
+.fact-row, .comparison strong, .cashflows b, .info-list strong,
+.info-list code, .unknown-box summary { color: var(--jianwei-ink); }
+.fact-row i, .teal-text, .label-calc, .formula span { color: var(--jianwei-green); }
+.fact-row:hover { background: #dde5dd; }
+.unknown-box { background: #e1e5dc; border-color: #909d8e; }
+.unknown-box p { color: #586352; }
+.order-strip { background: #e6e8e0; border-color: var(--jianwei-line); border-radius: 2px; }
+.order-strip > div + div { border-color: var(--jianwei-line); }
+.t-dot:before { border-color: #8e9b8a; background: var(--jianwei-paper); }
+.teal-dot:before { border-color: var(--jianwei-green); }
+.amber-dot:before { border-color: #986526; }
+.result-strip strong.warning { color: #9d5124; }
+.scenario-note { background: #e2e7df; color: #52604f; border-radius: 2px; }
+.scenario-note span, .source-notice { color: #886026; }
+.segmented { background: #e4e7de; border-color: var(--jianwei-line); border-radius: 50px; }
+.segmented button { color: #56634f; border-radius: 50px; }
+.segmented button.active { color: #fff; background: var(--jianwei-green); }
+.segmented button:hover { color: var(--jianwei-green); }
+.segmented button.active:hover { color: #fff; }
+input[type="range"] { accent-color: var(--jianwei-green); }
+.action-row { background: transparent; }
+.field-category.public { background: #dce9db; color: #356149; }
+.field-category.assumed { background: #e9dfc8; color: #785627; }
+.field-category.calculated { background: #dfe8e1; color: #39655a; }
+
+.advanced-grid input[type="number"], .advanced-grid select, .scenario-editor input,
+.scenario-editor select, .profile-select, .research input,
+.research select, .company-query input, .assessment input,
+.assessment select {
+  color: var(--jianwei-ink);
+  background: rgba(255, 255, 255, .55);
+  border: 1px solid #a9b1a5;
+  border-radius: 3px;
+  color-scheme: light;
+}
+
+.profile-select { padding: 7px 10px; }
+.error-banner { color: #8b352e; background: #efded8; border-radius: 2px; }
+.input-error { color: #a33830; }
+[aria-invalid="true"] { border-color: #a33830 !important; }
+.fatal { color: var(--jianwei-ink); background: var(--jianwei-paper); }
+.chart-empty { color: var(--jianwei-muted); border-color: #adb8a7; border-radius: 2px; }
+
+/* Drawers keep the same source and keyboard interactions as the workspaces. */
+.overlay { background: #18241e5e; backdrop-filter: blur(3px); z-index: 110; }
+.drawer { color: var(--jianwei-ink); background: #efefea; border-color: #9ca696; box-shadow: -20px 0 60px #2633261c; }
+.drawer-close { color: var(--jianwei-ink); background: #efefea; border-radius: 50%; }
+.drawer h2 { font-size: 32px; line-height: 1.4; }
+.drawer a, .history-context a { color: var(--jianwei-green); }
+.info-list span { color: var(--jianwei-muted); }
+.quote { color: #365044; background: #e0e7dc; border-color: var(--jianwei-green); }
+.drawer blockquote { border-color: var(--jianwei-green); }
+
+/* Historical evidence, corporate search, and public financial statements. */
+.research, .company-search { color: var(--jianwei-ink); }
+.research { padding-top: 26px; }
+.research a, .company-search a { color: var(--jianwei-green); }
+.research-heading p, .research small, .company-search p,
+.company-search small, .company-search dt,
+.qcc-records summary > span:last-child { color: var(--jianwei-muted); }
+.research .company-search-inline { background: var(--jianwei-surface); border-color: var(--jianwei-line); }
+.historical-reference > summary { color: var(--jianwei-ink); }
+.historical-fact, .ledger-table td, .ledger-table th,
+.qcc-identity, .qcc-records details, .qcc-history-link,
+.company-query-results > section, .qcc-inline-note,
+.financial-table, .financial-table > div, .source-coverage { border-color: var(--jianwei-line); }
+.research blockquote { color: #3c4d42; background: #e2e7df; border-color: var(--jianwei-green); }
+.research .outcome-area blockquote { border-color: #967036; }
+.history-context { color: #3f5546; background: #e0e9dd; border-color: #adbfa9; border-radius: 2px; }
+.qcc-notice { background: #e2e7df; border-color: var(--jianwei-green); }
+.qcc-records dl { background: #e3e7de; border-radius: 2px; }
+.qcc-records summary:before { color: var(--jianwei-green); }
+.company-query input { border-radius: 50px; padding-inline: 22px; }
+.company-query .primary { min-width: 148px; }
+.company-query .primary:hover { color: #fff; }
+
+/* The four dimensions retain distinct, readable signal colors. */
+.assessment {
+  --border: var(--jianwei-line);
+  --mint: var(--jianwei-green);
+  background: rgba(239, 241, 234, .72);
+  color: var(--jianwei-ink);
+  box-shadow: none;
+  border-radius: 2px;
+}
+
+.assessment .panel-caption { color: var(--jianwei-green); }
+.assessment h2 { font-size: 30px; }
+.assessment h3 { font-weight: 500; }
+.assessment p, .assessment small, .assessment-code,
+.coverage-number strong span, .graph-legend,
+.audience-feedback ol, .evidence-editor > label,
+.evidence-fields label { color: var(--jianwei-muted); }
+.role-switch button, .dimension-strip button {
+  background: rgba(255, 255, 255, .4);
+  border-color: var(--jianwei-line);
+  color: #4f594e;
+}
+
+.role-switch button { border-radius: 50px; }
+.role-switch button[aria-pressed="true"] { background: var(--jianwei-green); color: #fff; border-color: var(--jianwei-green); }
+.dimension-strip button { border-radius: 2px; }
+.dimension-strip strong { color: var(--jianwei-ink); }
+.dimension-strip .selected { background: #dde7dc; border-color: var(--jianwei-green); }
+.analysis-panel { background: var(--jianwei-surface); border-radius: 2px; }
+.assessment .chart-empty { color: var(--jianwei-muted); background: repeating-linear-gradient(0deg, transparent, transparent 37px, #afbbac40 38px); }
+.dimension-node:focus circle { stroke: #192c21; stroke-width: 3; }
+.audience-feedback h3 { color: #80612c; }
+.assessment .feedback-finding { color: #6f542a; border-color: #a87f3c; }
+.check-row { background: rgba(255, 255, 255, .35); border-color: var(--jianwei-line); border-left-color: #7a7c74; }
+.check-row > strong { color: var(--jianwei-ink); }
+.check-status { color: var(--jianwei-muted); }
+.level-attention { border-left-color: #966321; }
+.level-attention .check-status { color: #966321; }
+.level-reference { border-left-color: var(--jianwei-green); }
+.level-reference .check-status { color: var(--jianwei-green); }
+.level-observed { border-left-color: #46706c; }
+.level-observed .check-status { color: #46706c; }
+.assessment-notice { background: #ece7d9; border-color: #cab88e; }
+
+.mobile-nav { background: #e9e9e9f2; border-color: #abb5a6; backdrop-filter: blur(12px); }
+.mobile-nav a { color: var(--jianwei-green); }
+.workbench-shell :is(button, a, input, select, summary):focus-visible,
+.drawer :is(button, a, input, select, summary):focus-visible {
+  outline: 2px solid var(--jianwei-green);
+  outline-offset: 4px;
+}
+
+@media (max-width: 1100px) {
+  .workbench-shell .brand { min-width: 190px; gap: 14px; }
+  .workbench-shell .view-switch { gap: 20px; }
+  .workbench-shell .topbar .reset { margin-left: 0; }
+  .workbench-meta { flex-wrap: wrap; gap: 4px; }
+  .workbench-meta > span:last-child { font-size: 10px; }
+}
+
+@media (max-width: 800px) {
+  .workbench-shell .topbar,
+  .app-shell.workbench-shell:has(.research) .topbar {
+    padding: 20px 20px 15px;
+    gap: 18px 12px;
+    flex-wrap: wrap;
+  }
+  .workbench-shell .topbar .brand { order: 0; flex: 1; min-width: 0; }
+  .workbench-shell .brand strong { font-size: 29px; }
+  .workbench-shell .brand small { font-size: 15px; }
+  .workbench-shell .topbar .reset { order: 1; padding: 8px 12px; min-height: 36px; }
+  .workbench-shell .topbar .view-switch {
+    order: 2;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    gap: 40px;
+    margin-left: 0;
+  }
+  .workbench-shell .view-switch > button,
+  .workbench-shell .view-switch > a { font-size: 13px; padding: 4px 0; }
+  .workbench-meta { padding: 18px 20px 0; }
+  .workbench-shell main { padding-top: 24px; }
+  .workbench-shell .hero h1 { font-size: 34px; }
+  .workbench-shell .hero { padding-bottom: 24px; }
+  .workspace { margin-top: 20px; }
+  .panel { padding: 20px; }
+  .research h1 { font-size: 32px; }
+}
+
+@media (max-width: 420px) {
+  .workbench-shell .brand { gap: 10px; }
+  .workbench-shell .brand small { font-size: 13px; }
+  .workbench-shell .topbar .reset { font-size: 11px; padding-inline: 10px; }
+  .workbench-shell .topbar .view-switch { gap: 34px; }
+  .workbench-shell .hero h1 { font-size: 30px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ghost, .secondary, .cashflow-row button, .add-flow { transition: none; }
+}

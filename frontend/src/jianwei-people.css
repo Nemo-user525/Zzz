@@ -1,0 +1,157 @@
+.jw-person {
+  display: block;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  line-height: 0;
+  pointer-events: none;
+  mix-blend-mode: normal;
+  /* A fixed body is essential: the animation belongs to its articulated joints. */
+  animation: none;
+}
+
+.jw-person svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Soft ink edges match the paper and preserve the original pencil hatching. */
+.jw-person.jw-person--team, .jw-person.jw-person--fieldwork { filter: none; }
+
+.jw-person-joint {
+  transform-origin: 0 0;
+  animation: jw-person-head-action 6.5s ease-in-out infinite;
+  animation-play-state: paused;
+}
+.jw-person-joint--hand { animation: jw-person-hand-action 5.4s ease-in-out infinite; }
+.jw-person-joint--papers { animation: jw-person-paper-action 7s ease-in-out infinite; }
+.jw-person[data-action-playing="false"] .jw-person-joint { animation-play-state: paused; }
+.jw-person[data-action-playing="true"] .jw-person-joint { animation-play-state: running; }
+.jw-person--analyst .jw-person-joint { animation-delay: -1.6s; }
+.jw-person--researcher .jw-person-joint { animation-delay: -3.1s; animation-duration: 4.6s; }
+.jw-person--connector .jw-person-joint { animation-delay: -4.2s; }
+.jw-person--checker .jw-person-joint { animation-delay: -2.4s; animation-duration: 7.2s; }
+.jw-person--translator .jw-person-joint { animation-delay: -5.1s; animation-duration: 8.1s; }
+.jw-person--guardian .jw-person-joint { animation-delay: -3.7s; }
+
+@keyframes jw-person-head-action {
+  0%, 17%, 88%, 100% { transform: rotate(0); }
+  35%, 48% { transform: rotate(2.5deg); }
+  64%, 72% { transform: rotate(-1.2deg); }
+}
+@keyframes jw-person-hand-action {
+  0%, 22%, 90%, 100% { transform: rotate(0); }
+  40%, 54% { transform: rotate(-3.5deg); }
+  63% { transform: rotate(-1.4deg); }
+  72%, 79% { transform: rotate(-2.6deg); }
+}
+@keyframes jw-person-paper-action {
+  0%, 18%, 90%, 100% { transform: translateY(0) rotate(0); }
+  42%, 55% { transform: translateY(-3px) rotate(1.2deg); }
+  72% { transform: translateY(-1px) rotate(-.7deg); }
+}
+
+.jw-team {
+  width: min(1240px, 100%);
+  margin: 0 auto;
+  padding: 42px 3.2% 90px;
+  color: var(--jw-ink, #171a18);
+}
+
+.jw-team-heading {
+  border-top: 1px solid var(--jw-line, #171a1829);
+  padding-top: 35px;
+}
+
+.jw-team-kicker {
+  font: 15px "KaiTi", "STKaiti", cursive;
+  letter-spacing: .06em;
+  color: var(--jw-blue, #006ca8);
+}
+
+.jw-team-heading h2 {
+  margin: 18px 0 12px;
+  font: 400 clamp(25px, 2.9vw, 42px)/1.5 var(--jw-serif, Georgia, serif);
+  letter-spacing: -.035em;
+}
+
+.jw-team-heading > p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--jw-muted, #727672);
+}
+
+.jw-team-mobile-break { display: none; }
+
+.jw-team-members {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: clamp(16px, 1.65vw, 24px);
+  list-style: none;
+  margin: 48px 0 0;
+  padding: 5px 0 23px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  scrollbar-color: #9aafbf transparent;
+}
+
+.jw-team-members > li { min-width: 0; scroll-snap-align: start; }
+
+.jw-team-portrait {
+  height: clamp(140px, 12.4vw, 176px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  margin-bottom: 18px;
+}
+
+.jw-team-portrait .jw-person {
+  width: 100%;
+  height: 100%;
+}
+
+.jw-team-members h3 {
+  font: 400 clamp(16px, 1.35vw, 19px)/1.5 var(--jw-serif, Georgia, serif);
+  margin: 0 0 9px;
+}
+
+.jw-team-members p {
+  margin: 0;
+  max-width: 13em;
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--jw-muted, #727672);
+}
+
+@media (max-width: 1000px) {
+  .jw-team-members {
+    grid-template-columns: repeat(7, 136px);
+    gap: 28px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    scrollbar-color: #9aafbf transparent;
+    padding: 5px 0 23px;
+  }
+  .jw-team-members > li { scroll-snap-align: start; }
+  .jw-team-portrait { height: 148px; }
+}
+
+@media (max-width: 760px) {
+  .jw-team { padding: 24px 24px 60px; }
+  .jw-team-heading { padding-top: 27px; }
+  .jw-team-mobile-break { display: block; }
+  .jw-team-heading h2 { font-size: 29px; }
+  .jw-team-members { margin-top: 36px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jw-person, .jw-person-joint { animation: none; }
+  .jw-team-members { scroll-snap-type: none; }
+}

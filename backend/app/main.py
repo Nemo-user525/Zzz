@@ -10,6 +10,8 @@ from app.api.qcc import router as qcc_router
 from app.api.public_financials import router as public_financials_router
 from app.api.consumer import router as consumer_router
 from app.api.company_research import router as company_research_router
+from app.api.place_search import router as place_search_router
+from app.api.voice import router as voice_router
 
 app = FastAPI(title="X-Ray 企业变化解释器", version="1.1.0")
 migrate()
@@ -19,6 +21,8 @@ app.include_router(qcc_router)
 app.include_router(public_financials_router)
 app.include_router(consumer_router)
 app.include_router(company_research_router)
+app.include_router(place_search_router)
+app.include_router(voice_router)
 
 
 @app.exception_handler(RequestValidationError)

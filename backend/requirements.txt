@@ -8,3 +8,6 @@ pymupdf>=1.25,<2
 langgraph==1.2.12
 python-dotenv>=1,<2
 mcp==1.30.0
+vosk==0.3.45
+sherpa-onnx==1.13.8
+numpy>=2,<3
