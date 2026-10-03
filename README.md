@@ -29,17 +29,16 @@
 
 高德官方的[行政区域查询](https://lbs.amap.com/api/webservice/guide/api/district/)和[地点关键词搜索](https://lbs.amap.com/api/webservice/guide/api/search/)支持当前方案：区县可用 `adcode` 限定搜索范围，街道没有独立 `adcode`，需对返回的地点名称与地址做补充筛选。选中地点使用[高德 URI 地图](https://lbs.amap.com/api/uri-api/gettingstarted)打开标记位置。服务端保管 Web 服务 Key，不把 Key 放入浏览器代码。
 
-在项目根目录的 `.env` 中填入已获授权的配置，再重启服务：
+仓库已按 Key 所有者明确授权，在 `.env.example` 公开高德 **Web 服务**演示 Key；新克隆首次启动会将它复制到 `.env`，可直接查询高德地点。已有 `.env` 不会被覆盖，需自行把 `.env.example` 中的 `AMAP_WEB_SERVICE_KEY` 一行加入现有文件并重启。所有克隆共用该 Key 的调用额度。企查查 886/736 开放平台仍需另行配置：
 
 ```dotenv
-AMAP_WEB_SERVICE_KEY=你的高德Web服务Key
 QCC_APP_KEY=你的企查查AppKey
 QCC_SECRET_KEY=你的企查查SecretKey
 ```
 
-获取高德 Key：登录[高德开放平台创建应用与 Key](https://lbs.amap.com/api/webservice/create-project-and-key) → 在“应用管理”创建应用（例如“见微 X-Ray”）→ “添加 Key”时将服务平台选为 **Web 服务** → 把生成的 Key 填入 `.env` 的 `AMAP_WEB_SERVICE_KEY`。本项目由后端请求高德 Web 服务，不使用“Web 端（JS API）”类型的 Key。Key 只保存在服务端，配置后重启 `start.ps1 -Demo`。
+若改用自己的高德 Key：登录[高德开放平台创建应用与 Key](https://lbs.amap.com/api/webservice/create-project-and-key) → 在“应用管理”创建应用（例如“见微 X-Ray”）→ “添加 Key”时将服务平台选为 **Web 服务** → 把生成的 Key 填入本机 `.env` 的 `AMAP_WEB_SERVICE_KEY`。本项目由后端请求高德 Web 服务，不使用“Web 端（JS API）”类型的 Key。浏览器不会收到服务端 Key；配置后重启 `start.ps1 -Demo`。
 
-高德 Key 须为 **Web 服务 API** 类型。**项目已有企查查智能体 MCP Key**，对话和消费者调查已使用它；[企查查智能体接入指南](https://agent.qcc.com/guide)说明同一把 Key 可接入企业数据与风控 MCP 服务。当前首页的[886 企业模糊搜索](https://openapi.qcc.com/dataApi/886)与[736 企业风险扫描](https://openapi.qcc.com/dataApi/736)则是另一套开放平台接口，需单独的 AppKey、SecretKey 和相应权限；智能体的 `get_company_risk_scan` 主要返回风险因子命中数量，不能冒充 736 的明细响应。`GET /api/integrations` 中的 `qcc.configured` 仅指 886/736 开放平台凭据，**不表示项目没有企查查智能体 Key**，也不能证明接口权限已通过在线验证。截至 2026-10-03，本机 `.env` 尚无高德 Key 与 886/736 开放平台凭据，所以**已核对官方接口与代码契约，并通过模拟接口测试，但尚未完成高德和 886/736 的真实账号联网联调**。没有高德 Key 时，首页会提示地点查询不可用；消费者调查入口仍可按名称查找公开线索，不会把名称搜索冒充门店定位。
+高德 Key 须为 **Web 服务 API** 类型。**项目已有企查查智能体 MCP Key**，对话和消费者调查已使用它；[企查查智能体接入指南](https://agent.qcc.com/guide)说明同一把 Key 可接入企业数据与风控 MCP 服务。当前首页的[886 企业模糊搜索](https://openapi.qcc.com/dataApi/886)与[736 企业风险扫描](https://openapi.qcc.com/dataApi/736)则是另一套开放平台接口，需单独的 AppKey、SecretKey 和相应权限；智能体的 `get_company_risk_scan` 主要返回风险因子命中数量，不能冒充 736 的明细响应。`GET /api/integrations` 中的 `qcc.configured` 仅指 886/736 开放平台凭据，**不表示项目没有企查查智能体 Key**，也不能证明接口权限已通过在线验证。2026-10-03 已用公开演示 Key 真实调用高德行政区和地点关键词接口，均返回成功；本机仍无 886/736 开放平台凭据，**这两项尚未完成真实账号联网联调**。若高德 Key 日后失效或额度用尽，首页会提示地点查询不可用；消费者调查入口仍可按名称查找公开线索，不会把名称搜索冒充门店定位。
 
 操作顺序：在首页输入门店关键词 → 按需选择省、市、区县、街道 → 选择名称与地址相符的高德地点 → 核对企查查企业候选或输入执照上的准确主体 → 拉取 736 报告 → 阅读原始返回字段及经营关系提示。相关接口与数据边界见[门店查证与对话说明](docs/DISCOVERY_CHAT.md)。
 
