@@ -20,3 +20,42 @@ export type RiskEvent = {id:string;company_id:string;affected_entity:string;type
 export type Source = {id:string;type:string;institution:string;title:string;url:string;notice_number:string|null;published_at:string;fetched_at:string;page:number;sha256:string;accessible:boolean;excerpt:string};
 export type UseCase = {id:string;target_user:string;decision_goal:string;headline:string;subtitle:string;primary_action:string;output_template:{title:string;sections:{id:string;title:string;fields:string[]}[]}};
 export type UseCases = {default_use_case_id:string;use_cases:UseCase[]};
+
+export type InvestigationInput = {
+  query: string;
+  city: string;
+  intent: 'initial_purchase' | 'add_value' | 'renewal' | 'look_around';
+  amount_yuan: number | null;
+  service_duration_months: number | null;
+};
+export type WebLead = {
+  id: string; title: string; url: string; snippet: string; published_at: string | null;
+  search_query: string; provider: string; verification_status: 'search_lead';
+};
+export type InvestigationResult = {
+  query: string; city: string; queried_at: string;
+  status: 'leads_found' | 'no_results' | 'source_unavailable';
+  identity_status: 'unconfirmed';
+  leads: WebLead[];
+  candidates: {name: string; source_ids: string[]; status: 'unconfirmed'}[];
+  coverage: {name: string; status: 'queried' | 'unavailable' | 'not_connected'; detail: string}[];
+  trace: {step: string; detail: string; at: string}[];
+  failures: {query: string; message: string}[];
+  training_model: {status: 'unavailable'; version: null; detail: string};
+  agent: {status: 'not_connected'; detail: string};
+};
+
+export type Region = {name:string;adcode:string;level:string};
+export type Place = {
+  id:string;name:string;address:string;province:string;city:string;district:string;
+  adcode:string;location:string;type:string;provider:string;
+};
+export type LegalEntity = {
+  key_no:string;name:string;credit_code:string;address:string;status:string;start_date:string;provider:string;
+};
+export type CompanyReport = {
+  provider:string;queried_at:string;order_number:string;company_name:string;credit_code:string;
+  data:Record<string,unknown>;coverage_note:string;selected_place:{id:string;name:string;address:string};
+  identity_status:'user_selected_unverified';identity_note:string;
+};
+export type IntegrationStatus = {amap:{configured:boolean;provider:string};qcc:{configured:boolean;provider:string}};

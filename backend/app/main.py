@@ -3,11 +3,17 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.api.routes import router
+from app.api.investigations import router as investigations_router
+from app.api.discovery import router as discovery_router
+from app.api.chat import router as chat_router
 from app.db.models import Base, engine
 
 app = FastAPI(title="X-Ray offline demo", version="1.0.0")
 Base.metadata.create_all(engine)
 app.include_router(router)
+app.include_router(investigations_router)
+app.include_router(discovery_router)
+app.include_router(chat_router)
 
 
 @app.exception_handler(RequestValidationError)

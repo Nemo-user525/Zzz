@@ -1,104 +1,141 @@
-import {useEffect,useMemo,useState} from 'react';
-import ReactECharts from 'echarts-for-react';
+import {useEffect,useRef,useState} from 'react';
+import type {FormEvent,PointerEvent as ReactPointerEvent} from 'react';
 import {api} from './api/client';
-import type {Company,Comparison,Health,RiskEvent,SimulationInput,SimulationResult,Source,UseCase} from './api/types';
+import type {InvestigationInput,InvestigationResult,WebLead} from './api/types';
+import TradeDemo from './TradeDemo';
+import './investigation.css';
 
-const money=(n:number|null|undefined)=>n==null?'未披露':new Intl.NumberFormat('zh-CN',{maximumFractionDigits:2}).format(n/10000)+' 万元';
-const numeric=(n:number)=>Number.isFinite(n)?n:0;
-const first=(x:string)=>{const parts=x.split('/');return parts[parts.length-1]||x};
+const intents: {id:InvestigationInput['intent'];label:string;description:string}[] = [
+  {id:'initial_purchase',label:'首次办卡 / 买课',description:'准备开始长期服务'},
+  {id:'add_value',label:'追加充值',description:'已经消费，考虑再投入'},
+  {id:'renewal',label:'续费',description:'继续信任同一家店'},
+  {id:'look_around',label:'先了解一下',description:'暂时不填消费金额'},
+];
+const timeLabel=(value:string|null|undefined)=>value?new Date(value).toLocaleString('zh-CN',{hour12:false}):'未标注';
 
-function App(){
-  const [health,setHealth]=useState<Health|null>(null);
-  const [profile,setProfile]=useState<UseCase|null>(null);
-  const [profiles,setProfiles]=useState<UseCase[]>([]);
-  const [company,setCompany]=useState<Company|null>(null);
-  const [events,setEvents]=useState<RiskEvent[]>([]);
-  const [inputs,setInputs]=useState<SimulationInput|null>(null);
-  const [result,setResult]=useState<SimulationResult|null>(null);
-  const [comparison,setComparison]=useState<Comparison|null>(null);
-  const [source,setSource]=useState<Source|null>(null);
-  const [drawer,setDrawer]=useState<'source'|'math'|'card'|null>(null);
-  const [advanced,setAdvanced]=useState(false);
-  const [running,setRunning]=useState(false);
+function InvestigationPage(){
+  const [query,setQuery]=useState('');
+  const [city,setCity]=useState('');
+  const [intent,setIntent]=useState<InvestigationInput['intent']>('initial_purchase');
+  const [amount,setAmount]=useState('');
+  const [months,setMonths]=useState('');
+  const [report,setReport]=useState<InvestigationResult|null>(null);
+  const [phase,setPhase]=useState<'idle'|'searching'|'done'|'error'>('idle');
   const [error,setError]=useState('');
+  const [seconds,setSeconds]=useState(0);
+  const [trade,setTrade]=useState(false);
+  const [lens,setLens]=useState({x:60,y:57});
+  const controller=useRef<AbortController|null>(null);
+  const resultRef=useRef<HTMLElement|null>(null);
 
-  useEffect(()=>{let alive=true;Promise.all([api.health(),api.useCases(),api.demo()]).then(async([h,p,i])=>{
-    const [c,e]=await Promise.all([api.company(i.company_id),api.events(i.company_id)]);
-    if(!alive)return;setHealth(h);setProfiles(p.use_cases);setProfile(p.use_cases.find(u=>u.id===p.default_use_case_id)||p.use_cases[0]);setInputs(i);setCompany(c);setEvents(e);
-  }).catch(e=>setError(e.message));return()=>{alive=false}},[]);
+  useEffect(()=>{
+    if(phase!=='searching')return;
+    const started=Date.now();
+    const timer=window.setInterval(()=>setSeconds(Math.floor((Date.now()-started)/1000)),250);
+    return()=>window.clearInterval(timer);
+  },[phase]);
+  useEffect(()=>()=>controller.current?.abort(),[]);
 
-  useEffect(()=>{if(!inputs||!running)return;let alive=true;const t=setTimeout(()=>{
-    Promise.all([api.simulate(inputs),api.compare(inputs)]).then(([r,c])=>{if(alive){setResult(r);setComparison(c);setError('')}}).catch(e=>alive&&setError(e.message));
-  },120);return()=>{alive=false;clearTimeout(t)}},[inputs,running]);
-
-  function setInput<K extends keyof SimulationInput>(key:K,value:SimulationInput[K]){setInputs(v=>v?{...v,[key]:value}:v)}
-  async function showSource(id:string){try{setSource(await api.source(id));setDrawer('source')}catch(e){setError((e as Error).message)}}
-  async function reset(){try{const i=await api.demo();setInputs(i);setRunning(false);setResult(null);setComparison(null);setDrawer(null);setAdvanced(false);setError('')}catch(e){setError((e as Error).message)}}
-  const current=useMemo(()=>result||null,[result]);
-  function cardField(key:string){
-    if(!company||!result)return null;
-    const fields:Record<string,()=>React.ReactNode>={
-      legal_name:()=> <p>{company.legal_name}（{company.ticker}）</p>,
-      ticker:()=> <p>证券代码：{company.ticker}</p>,
-      coverage:()=> <p>覆盖：{company.coverage}</p>,
-      risk_events:()=> <>{events.filter(e=>e.verification_status==='verified').map(e=><p key={e.id}>{e.event_date} · {e.explanation} <button className="inline-link" onClick={()=>showSource(e.source_ids[0])}>来源 ↗</button></p>)}</>,
-      financials:()=> <>{company.financials.filter(f=>f.verification_status==='verified').map(f=><p key={f.field}>{f.field} {money(f.value_yuan)}（{f.period}） <button className="inline-link" onClick={()=>showSource(f.source_id)}>来源 ↗</button></p>)}</>,
-      source_links:()=> <p>每条事实均可点击来源与页码。</p>,
-      unknowns:()=> <>{company.unknowns.map(x=><p key={x}>• {x}</p>)}</>,
-      scenario_inputs:()=> <p>订单 {money(inputs?.order_amount_yuan)}；预付款 {Math.round((inputs?.prepayment_rate||0)*100)}%；延付 {inputs?.delay_days} 天。数据为虚构交易情景。</p>,
-      assumptions:()=> <>{result.assumptions.map(x=><p key={x}>• {x}</p>)}</>,
-      formula_breakdown:()=> <>{result.formula_breakdown.map(x=><p key={x}>• {x}</p>)}</>,
-      shortfall_yuan:()=> <p>最低现金 {money(result.minimum_balance_yuan)}；底线缺口 {money(result.shortfall_yuan)}。</p>,
-      comparison:()=> <p>{comparison?.explanation||'可考虑协商预付款或分批发货。'}</p>
-    };
-    return fields[key]?.()||<p>字段 {key} 尚未配置展示规则</p>;
+  function moveLens(event:ReactPointerEvent<HTMLDivElement>){
+    if(event.pointerType==='touch')return;
+    const bounds=event.currentTarget.getBoundingClientRect();
+    setLens({x:Math.max(25,Math.min(78,(event.clientX-bounds.left)/bounds.width*100)),y:Math.max(25,Math.min(76,(event.clientY-bounds.top)/bounds.height*100))});
   }
-  const chart=useMemo(()=>{
-    const curve=current?.cash_curve||[{day:0,balance_yuan:3000000},{day:90,balance_yuan:3000000}];
-    const floor=inputs?.safety_floor_yuan||200000;
-    return {backgroundColor:'transparent',animationDuration:300,grid:{left:72,right:26,top:30,bottom:46},tooltip:{trigger:'axis',backgroundColor:'#132130',borderColor:'#3c5764',textStyle:{color:'#eef7f7'},formatter:(params:any)=>{const p=params[0];return `第 ${p.axisValue} 天<br/>现金余额 ${money(p.data[1])}`}},xAxis:{type:'value',min:0,max:90,interval:15,axisLabel:{color:'#9eb6c1',formatter:(x:number)=>`第${x}天`},axisLine:{lineStyle:{color:'#304857'}},splitLine:{show:false}},yAxis:{type:'value',axisLabel:{color:'#9eb6c1',formatter:(x:number)=>(x/10000).toFixed(0)+'万'},splitLine:{lineStyle:{color:'#233a49',type:'dashed'}}},series:[{type:'line',name:'现金余额',data:curve.map(p=>[p.day,p.balance_yuan]),smooth:false,showSymbol:false,lineStyle:{color:'#59e2d0',width:4},areaStyle:{color:'rgba(57,206,185,.13)'},markLine:{symbol:'none',silent:true,lineStyle:{color:'#f0b975',type:'dashed',width:2},label:{color:'#f0b975',formatter:'安全底线'},data:[{yAxis:floor}]}},{type:'scatter',data:current?[[current.minimum_day,current.minimum_balance_yuan]]:[],symbolSize:14,itemStyle:{color:'#f48e77'},z:5}]};
-  },[current,inputs?.safety_floor_yuan]);
 
-  if(error&&!inputs)return <div className="fatal"><b>演示数据暂未载入</b><p>{error}</p><p>请先启动后端并运行 seed，再刷新页面。</p></div>;
-  return <div className="app-shell">
-    <header className="topbar"><div className="brand"><span className="brand-icon">✦</span><div><strong>X-RAY</strong><small>这一单，扛得住吗？</small></div></div><div className="top-meta"><span className="status-dot"/> 离线可用 · {health?.verified_company_count??'—'} 家企业 · {health?.verified_source_count??'—'} 份官方来源 <span className="divider"/> 资料截至 {health?.as_of||'—'}</div><button className="ghost reset" onClick={reset}>↺ 重置演示</button></header>
-    <main>
-      <section className="hero"><div className="eyebrow">交易前 · 现金底线核对台 <span>DEMO 01 / 01</span>{profiles.length>1&&<select className="profile-select" aria-label="用户场景" value={profile?.id||''} onChange={e=>setProfile(profiles.find(p=>p.id===e.target.value)||null)}>{profiles.map(p=><option key={p.id} value={p.id}>{p.target_user}</option>)}</select>}</div><h1>{profile?.headline||'客户说：先发货，90 天后付款'}</h1><p>{profile?.subtitle||'在签下一笔订单前，先看清客户，再走一遍未来 90 天。'}</p><div className="hero-bottom"><span><b>目标用户</b> {profile?.target_user||'—'}</span><span><b>决策目标</b> {profile?.decision_goal||'—'}</span></div></section>
-      {error&&<div className="error-banner">{error}</div>}
-      <div className="workspace">
-        <section className="panel evidence-panel"><div className="panel-head"><div><span className="section-index">01 / 公开事实</span><h2>先看客户证据</h2></div><span className="outlined">已核验</span></div>
-          <div className="identity"><div className="identity-mark">{company?.short_name?.slice(0,1)||'企'}</div><div><h3>{company?.short_name||'载入中'}</h3><p>{company?.legal_name||''}</p><div className="identity-tags"><span>{company?.listed?'A 股上市':'非上市'} · {company?.ticker||'代码未披露'}</span><span>{company?.industry||''}</span></div></div></div>
-          <div className="evidence-divider"/>
-          <div className="small-label">风险线索 <span>公开事实</span></div>
-          {events.filter(e=>e.verification_status==='verified').length===0&&<div className="unknown-box"><b>暂无已核实风险事件</b><p>当前覆盖资料有限，不能据此认定企业无风险。</p></div>}
-          {events.filter(e=>e.verification_status==='verified').map(e=><div className="event-card" key={e.id}><div className="event-top"><span className="date">{e.event_date}</span><span className="chip amber">{e.stage}</span></div><h4>{e.type}</h4><p>{e.explanation}</p><div className="event-entity">涉及主体：{e.affected_entity}</div><button className="source-link" onClick={()=>showSource(e.source_ids[0])}>查看原始公告与引用页 <span>↗</span></button></div>)}
-          <div className="small-label finance-label">财务事实 <span>未经审计 · 合并口径</span></div>
-          {company?.financials.filter(f=>f.verification_status==='verified').map(f=><button className="fact-row" key={f.field} onClick={()=>showSource(f.source_id)}><span><b>{f.field}</b><small>{first(f.period)} · 来源可查</small></span><strong>{money(f.value_yuan)}</strong><i>↗</i></button>)}
-          <div className="unknown-box"><b>未知仍是未知</b><p>{company?.unknowns[0]||'历史付款记录暂无法核实'}；不能据此推算违约概率。</p></div>
-        </section>
-        <section className="panel simulation-panel"><div className="panel-head"><div><span className="section-index">02 / 情景假设 × 计算结果</span><h2>这一单，现金会怎么走？</h2></div><span className="outlined teal">90 天视窗</span></div>
-          <div className="order-strip"><div><small>演示订单</small><strong>{money(inputs?.order_amount_yuan)}</strong></div><div><small>账期</small><strong>发货后 {inputs?.payment_term_days??90} 天</strong></div><div><small>本方期初现金</small><strong>{money(inputs?.opening_cash_yuan)}</strong></div></div>
-          <div className="chart-title"><span>本方现金余额走势</span><span>单位：万元 · 订单与本方数据均为虚构</span></div><div className="chart-wrap"><ReactECharts option={chart} style={{height:'100%',width:'100%'}} notMerge/></div>
-          <div className="timeline"><span className="t-dot teal-dot">签约<br/>第 0 天</span><span className="t-line"/><span className="t-dot">成本支出<br/>第 {inputs?.cost_day??10} 天</span><span className="t-line"/><span className="t-dot amber-dot">其他净流出<br/>第 {inputs?.other_net_cashflows[0]?.day??75} 天</span><span className="t-line"/><span className="t-dot">回款{current?.outside_view_payment?'在视窗外':''}<br/>第 {current?.final_payment_day??(inputs?inputs.payment_term_days+inputs.delay_days+10:'—')} 天</span></div>
-          <div className="result-strip"><div><small>90 天内现金最低点 <span className="label-calc">计算结果</span></small><strong className={current&&current.shortfall_yuan>0?'warning':''}>{current?money(current.minimum_balance_yuan):'点击推演'}</strong><p>{current?`第 ${current.minimum_day} 天`:'数值由后端逐日计算'}</p></div><div><small>安全底线</small><strong>{money(inputs?.safety_floor_yuan)}</strong><p>{current?.first_breach_day!=null?`第 ${current.first_breach_day} 天跌破`:current?'未跌破':'由用户设定'}</p></div><div><small>底线缺口</small><strong className={current&&current.shortfall_yuan>0?'warning':''}>{current?money(current.shortfall_yuan):'—'}</strong><p>{current?.outside_view_payment?`余款第 ${current.final_payment_day} 天才到账`:' '}</p></div></div>
-        </section>
-        <section className="panel control-panel"><div className="panel-head"><div><span className="section-index">03 / 改交易条件</span><h2>试一种更稳的签法</h2></div></div><div className="scenario-note">所有滑块都是<span>情景假设</span>。风险公告不会自动推断客户延付。</div>
-          <button className="primary" onClick={()=>setRunning(true)}>{running?'已启动 · 参数更改实时重算':profile?.primary_action||'推演这笔订单'} <span>→</span></button>
-          <div className="control-group"><div className="control-line"><label htmlFor="delay">客户延付</label><strong>+{inputs?.delay_days??0} 天</strong></div><div className="segmented">{[0,30,60].map(v=><button key={v} className={inputs?.delay_days===v?'active':''} onClick={()=>setInput('delay_days',v)}>{v===0?'按期':`延付 ${v} 天`}</button>)}</div></div>
-          <div className="control-group slider-group"><div className="control-line"><label htmlFor="advance">预付款比例</label><strong className="teal-text">{Math.round((inputs?.prepayment_rate||0)*100)}%</strong></div><input id="advance" type="range" min="0" max="60" step="5" value={Math.round((inputs?.prepayment_rate||0)*100)} onChange={e=>setInput('prepayment_rate',numeric(Number(e.target.value))/100)}/><div className="range-label"><span>0%</span><span>30%</span><span>60%</span></div><p className="helper">先到账 {money((inputs?.order_amount_yuan||0)*(inputs?.prepayment_rate||0))}；余款与订单总价保持一致。</p></div>
-          <div className="control-group"><div className="control-line"><label htmlFor="term">发货后账期</label><strong>{inputs?.payment_term_days} 天</strong></div><input id="term" type="range" min="0" max="180" step="5" value={inputs?.payment_term_days??90} onChange={e=>setInput('payment_term_days',Number(e.target.value))}/></div>
-          <button className="text-button" onClick={()=>setAdvanced(v=>!v)}>{advanced?'收起详细参数':'编辑成本、发货、其他现金流'} <span>{advanced?'−':'+'}</span></button>
-          {advanced&&inputs&&<div className="advanced-grid"><label>订单额（万元）<input type="number" min="1" value={inputs.order_amount_yuan/10000} onChange={e=>setInput('order_amount_yuan',Number(e.target.value)*10000)}/></label><label>直接成本（万元）<input type="number" min="0" value={(inputs.direct_cost_yuan??inputs.order_amount_yuan*(1-(inputs.gross_margin_rate??0)))/10000} onChange={e=>setInput('direct_cost_yuan',Number(e.target.value)*10000)}/></label><label>期初现金（万元）<input type="number" min="0" value={inputs.opening_cash_yuan/10000} onChange={e=>setInput('opening_cash_yuan',Number(e.target.value)*10000)}/></label><label>安全底线（万元）<input type="number" min="0" value={inputs.safety_floor_yuan/10000} onChange={e=>setInput('safety_floor_yuan',Number(e.target.value)*10000)}/></label><label>成本支付日<input type="number" min="0" value={inputs.cost_day} onChange={e=>setInput('cost_day',Number(e.target.value))}/></label><label>第 1 批发货日<input type="number" min="0" value={inputs.shipments?.[0]?.day??10} onChange={e=>setInput('shipments',(inputs.shipments||[{day:10,fraction:1}]).map((s,i)=>i===0?{...s,day:Number(e.target.value)}:s))}/></label><label>第 2 批发货比例<input type="range" min="0" max="50" step="10" value={inputs.shipments?.length===2?inputs.shipments[1].fraction*100:0} onChange={e=>{const n=Number(e.target.value)/100;const firstDay=inputs.shipments?.[0]?.day??10;setInput('shipments',n?[{day:firstDay,fraction:1-n},{day:45,fraction:n}]:[{day:firstDay,fraction:1}])}}/></label>{inputs.shipments?.length===2&&<label>第 2 批发货日<input type="number" min="0" value={inputs.shipments[1].day} onChange={e=>setInput('shipments',inputs.shipments!.map((s,i)=>i===1?{...s,day:Number(e.target.value)}:s))}/></label>}<div className="cashflows"><b>其他业务现金流（虚构，支出填负数）</b>{inputs.other_net_cashflows.map((flow,index)=><div className="cashflow-row" key={index}><label>第几天<input type="number" min="0" value={flow.day} onChange={e=>setInput('other_net_cashflows',inputs.other_net_cashflows.map((f,i)=>i===index?{...f,day:Number(e.target.value)}:f))}/></label><label>金额（万元）<input type="number" value={flow.amount_yuan/10000} onChange={e=>setInput('other_net_cashflows',inputs.other_net_cashflows.map((f,i)=>i===index?{...f,amount_yuan:Number(e.target.value)*10000}:f))}/></label><button onClick={()=>setInput('other_net_cashflows',inputs.other_net_cashflows.filter((_,i)=>i!==index))}>移除</button></div>)}<button className="add-flow" onClick={()=>setInput('other_net_cashflows',[...inputs.other_net_cashflows,{day:60,amount_yuan:0,label:'用户新增现金流（虚构）'}])}>+ 添加支出或回款</button></div></div>}
-          <div className="action-row"><button className="secondary" disabled={!result} onClick={()=>setDrawer('math')}>这怎么算的 <span>↗</span></button><button className="secondary" disabled={!result} onClick={()=>setDrawer('card')}>交易核对卡 <span>↗</span></button></div>
-          {comparison&&<div className="comparison"><div className="small-label">同一组假设 · 方案对比</div>{comparison.variants.map(v=><div key={v.name}><span>{v.name}</span><strong>{money(v.result.minimum_balance_yuan)}</strong></div>)}<small>放弃订单将失去预期毛利 {money(comparison.opportunity_cost_yuan)}。</small></div>}
-        </section>
-      </div><footer><span>事实有出处，假设可改，结果可重算。</span><span>本工具用于交易前核对，不提供违约概率、法律意见或授信结论。</span></footer>
+  async function submit(event:FormEvent){
+    event.preventDefault();
+    const keyword=query.trim();
+    if(keyword.length<2){setError('请输入至少 2 个字的门店、品牌或企业关键词。');setPhase('error');return}
+    controller.current?.abort();
+    const next=new AbortController();controller.current=next;
+    setReport(null);setError('');setSeconds(0);setPhase('searching');
+    const input:InvestigationInput={query:keyword,city:city.trim(),intent,amount_yuan:amount?Number(amount):null,service_duration_months:months?Number(months):null};
+    try{
+      const data=await api.investigate(input,next.signal);
+      if(next.signal.aborted)return;
+      setReport(data);setPhase('done');
+      window.setTimeout(()=>resultRef.current?.scrollIntoView({behavior:'smooth',block:'start'}),50);
+    }catch(exc){
+      if(next.signal.aborted)return;
+      setError(exc instanceof Error?exc.message:'查询未完成，请重试。');setPhase('error');
+    }
+  }
+
+  function searchAgain(name:string){setQuery(name);setReport(null);setPhase('idle');window.scrollTo({top:0,behavior:'smooth'})}
+
+  if(trade)return <><button className="xr-back" onClick={()=>setTrade(false)}>← 返回企业变化查询</button><TradeDemo/></>;
+
+  return <div className="xr-site">
+    <header className="xr-nav">
+      <a className="xr-brand" href="#top" aria-label="见微首页"><strong>见微</strong><small>See The Change</small></a>
+      <nav aria-label="主导航"><a href="#top" aria-current="page">Intro</a><a href="#investigate">The search</a><a href="#how">Our method</a></nav>
+      <a className="xr-nav-action" href="#investigate">开始查证 <sup>↗</sup></a>
+    </header>
+
+    <main id="top">
+      <section className="xr-hero" aria-labelledby="hero-title">
+        <div className="xr-hero-intro">从细微处，看见变化</div>
+        <div className="xr-editorial-stage">
+          <h1 id="hero-title" className="xr-hero-title"><span>SEE THE</span><span>CHANGE</span></h1>
+          <span className="xr-scribble xr-scribble-one">01 / 招牌</span>
+          <span className="xr-scribble xr-scribble-two">谁在经营？</span>
+          <span className="xr-scribble xr-scribble-three">02 / 线索</span>
+          <span className="xr-scribble xr-scribble-four">发生了什么？</span>
+          <span className="xr-scribble xr-scribble-five">03 / 核对</span>
+          <img className="xr-girl" src="/images/girl-investigator.png" alt="拿着放大镜观察线索的小女孩"/>
+          <div className="xr-archive" onPointerMove={moveLens} style={{'--lens-x':`${lens.x}%`,'--lens-y':`${lens.y}%`} as React.CSSProperties} aria-label="鼠标移动放大镜，可透视档案盒中的线索">
+            <img className="xr-archive-image" src="/images/archive-box-user.png" alt="牛皮纸档案盒"/>
+            <div className="xr-magnifier" aria-hidden="true"><div className="xr-magnifier-scan"><span/><span/><span/><span/></div><img className="xr-magnifier-image" src="/images/magnifier-upright-realistic.png" alt=""/></div>
+          </div>
+        </div>
+        <div className="xr-hero-byline"><em>见微</em> · 一次从名字开始的查证</div>
+        <a className="xr-mouse-cue" href="#investigate" aria-label="向下滚动，开始查证"><svg viewBox="0 0 32 50" fill="none" aria-hidden="true"><rect x="5" y="2" width="22" height="36" rx="11" stroke="currentColor" strokeWidth="1.3"/><path d="M16 8v8M12 45l4 4 4-4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg></a>
+      </section>
+
+      <section className="xr-manifesto" aria-label="见微的出发点"><div className="xr-manifesto-meta"><span>见微 · THE POINT OF VIEW</span><span>01 / 03</span></div><p>你看到的是一家店。<br/>值得看清的，是<span>招牌背后的经营主体。</span></p><p className="xr-manifesto-second">办卡、买课、续费之前，<br/>先把公开线索<span>放回时间里。</span></p><img src="/images/girl-investigator.png" alt="" aria-hidden="true"/><div className="xr-manifesto-foot">向下，开始追查 <span>↓</span></div></section>
+
+      <section className="xr-investigate" id="investigate">
+        <div className="xr-investigate-heading"><span className="xr-section-label">X-RAY / 01</span><h2>从一个名字，<br/>开始追查。</h2><p>输入真实门店、品牌或企业名称。我们从公开线索追查经营主体与近期变化，把能确认的事实、尚未证实的关联和下一步问题分开呈现。</p><div className="xr-hero-notes"><span><b>01</b> 查找经营主体</span><span><b>02</b> 检索公开线索</span><span><b>03</b> 核对证据边界</span></div></div>
+          <form className="xr-search-card" onSubmit={submit}>
+            <div className="xr-card-head"><span>START AN INVESTIGATION</span><span className="xr-live-pill"><i/> 本次实时查询</span></div>
+            <h2>你想了解哪家店？</h2>
+            <p>随机输入真实关键词。系统不会用预置案例替代查询失败。</p>
+            <label className="xr-field"><span>门店 / 品牌 / 公司名称 <b>*</b></span><div className="xr-input-wrap"><span aria-hidden="true">⌕</span><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="例如：某健身房、品牌或企业全称" required minLength={2} maxLength={100}/></div></label>
+            <label className="xr-field"><span>城市或分店位置 <small>可选 · 帮助区分同名门店</small></span><input value={city} onChange={e=>setCity(e.target.value)} placeholder="例如：杭州 · 滨江" maxLength={40}/></label>
+            <fieldset className="xr-intents"><legend>这次准备做什么？</legend><div>{intents.map(item=><button type="button" key={item.id} className={intent===item.id?'active':''} onClick={()=>setIntent(item.id)} title={item.description}>{item.label}</button>)}</div></fieldset>
+            <div className="xr-optional-grid"><label className="xr-field"><span>预计预付金额 <small>元 · 可选</small></span><input type="number" min="0" step="0.01" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="尚未确定可留空"/></label><label className="xr-field"><span>服务时长 <small>月 · 可选</small></span><input type="number" min="1" max="240" value={months} onChange={e=>setMonths(e.target.value)} placeholder="例如：12"/></label></div>
+            <button className="xr-submit" type="submit" disabled={phase==='searching'}>{phase==='searching'?`正在查询 · ${seconds}s`:'开始查证这家店'}<span aria-hidden="true">↗</span></button>
+            <div className="xr-search-foot"><span>无需合同、付款截图或个人财务信息</span><span>搜索线索 ≠ 已核实事实</span></div>
+          </form>
+      </section>
+
+      {(phase==='searching'||phase==='error'||report)&&<section className="xr-results" ref={resultRef} aria-live="polite">
+        {phase==='searching'&&<div className="xr-working"><span className="xr-pulse"/><div><span className="xr-section-label">LIVE QUERY / {seconds}s</span><h2>正在向公开搜索源发起本次查询</h2><p>返回内容会保留实际来源和查询时间；若某来源不可访问，会显示缺口。</p></div></div>}
+        {phase==='error'&&<div className="xr-error"><span>查询未完成</span><h2>{error}</h2><p>请检查输入或网络连接后重试。页面没有自动切换到预置结果。</p><button type="button" onClick={()=>setPhase('idle')}>返回修改关键词 ↗</button></div>}
+        {report&&phase==='done'&&<InvestigationReport report={report} onSearchAgain={searchAgain}/>}
+      </section>}
+
+      <section className="xr-method" id="how"><div className="xr-section-heading"><span className="xr-section-label">HOW X-RAY WORKS / 01—03</span><h2>让每一步判断，<br/><em>都有迹可循。</em></h2><p>门店招牌、公司登记、新闻和消费反馈属于不同类型的线索。先核对是不是同一个经营主体，再解释变化。</p></div><div className="xr-method-grid"><article><span>01 / IDENTITY</span><div className="xr-method-symbol">◎</div><h3>从店名找到主体</h3><p>同名、异地和加盟关系分开处理。身份尚未确认时，报告会停在候选线索。</p></article><article><span>02 / EVIDENCE</span><div className="xr-method-symbol">⌁</div><h3>把变化放回时间里</h3><p>每条资料标明来源与时间；搜索摘要只作线索，不能直接变成已核实事件。</p></article><article><span>03 / JUDGEMENT</span><div className="xr-method-symbol">✳</div><h3>同时寻找另一种解释</h3><p>完整分析将结合历史模型与调查智能体；未接入的能力会明确显示，不冒充结果。</p></article></div></section>
+      <section className="xr-principles" id="boundaries"><div><span className="xr-section-label">DESIGNED FOR REAL DECISIONS</span><h2>重要的不是一句“安全”或“危险”。</h2><p>你需要知道实际经营者是谁、近期发生了什么、有哪些相反证据，以及办卡或续费前最值得问的问题。</p></div><ul><li><b>公开事实</b><span>可追溯到原始来源和披露时间</span></li><li><b>调查解释</b><span>说明依据与不确定性，不代替事实</span></li><li><b>资料缺口</b><span>没有查到，不等于没有风险</span></li></ul></section>
     </main>
-    {drawer&&<div className="overlay" onClick={()=>setDrawer(null)}><aside className="drawer" onClick={e=>e.stopPropagation()}><button className="drawer-close" onClick={()=>setDrawer(null)}>×</button>
-      {drawer==='source'&&source&&<><span className="section-index">公开事实 / 来源详情</span><h2>{source.title}</h2><p className="drawer-lead">{source.institution} · {source.published_at}</p><div className="info-list"><div><span>公告编号</span><strong>{source.notice_number||'未标注'}</strong></div><div><span>引用页</span><strong>第 {source.page} 页</strong></div><div><span>采集日期</span><strong>{source.fetched_at}</strong></div><div><span>文件 SHA-256</span><code>{source.sha256}</code></div></div><div className="quote">“{source.excerpt}”</div><a className="external" href={source.url} target="_blank" rel="noopener noreferrer">打开官方原始 PDF ↗</a><p className="drawer-foot">页面离线运行时，本地缓存位于 data/source_docs；在线链接需要网络。</p></>}
-      {drawer==='math'&&result&&<><span className="section-index">情景假设 / 计算结果</span><h2>现金最低点怎么得出？</h2><p className="drawer-lead">引擎逐日求和：期初现金 + 当日前所有流入 − 当日前所有流出。</p>{result.formula_breakdown.map((v,i)=><div className="formula" key={i}><span>0{i+1}</span>{v}</div>)}<div className="quote">{result.outside_view_payment?`第 ${result.final_payment_day} 天才到账，超出 90 天图表视窗；不等于坏账。`:'回款日位于 90 天视窗内。'}</div><h3>边界</h3>{result.assumptions.map((a,i)=><p key={i} className="assumption">• {a}</p>)}</>}
-      {drawer==='card'&&company&&result&&profile&&<><span className="section-index">可追溯输出</span><h2>{profile.output_template.title}</h2><p className="drawer-lead">{profile.target_user} · {profile.decision_goal}</p>{profile.output_template.sections.map(s=><section className="card-section" key={s.id}><h3>{s.title}</h3>{s.fields.map(f=><div key={f}>{cardField(f)}</div>)}</section>)}</>}
-    </aside></div>}
+    <footer className="xr-footer"><div className="xr-brand"><strong>见微</strong><small>See The Change</small></div><p>为长期消费前的查证提供依据。当前网页检索结果仅是线索，不能代替经营主体核验或司法认定。</p><button type="button" onClick={()=>setTrade(true)}>原交易演示 ↗</button><span>© 2026 X-Ray</span></footer>
   </div>
 }
-export default App;
+
+function InvestigationReport({report,onSearchAgain}:{report:InvestigationResult;onSearchAgain:(name:string)=>void}){
+  const [activeLead,setActiveLead]=useState<WebLead|null>(null);
+  useEffect(()=>setActiveLead(null),[report]);
+  return <div className="xr-report">
+    <div className="xr-report-top"><div><span className="xr-section-label">INVESTIGATION / 本次查询</span><h2>“{report.query}”的公开线索</h2><p>{report.city&&`${report.city} · `}查询于 {timeLabel(report.queried_at)} · {report.leads.length} 条去重网页线索</p></div><div className="xr-report-status"><span className="xr-status-dot"/>{report.status==='source_unavailable'?'搜索源不可访问':report.status==='no_results'?'本次未找到线索':'主体仍待确认'}</div></div>
+    <div className="xr-report-grid">
+      <div className="xr-report-main">
+        <section className="xr-panel xr-identity"><div className="xr-panel-caption"><span>01 / 身份核对</span><span>待确认</span></div><h3>查到的名称，不一定就是这家店的经营主体。</h3><p>请结合城市、门店地址和营业执照确认；网页标题中的公司名仅作为下一步检索候选。</p>{report.candidates.length>0?<div className="xr-candidates">{report.candidates.map(c=><button type="button" key={c.name} onClick={()=>onSearchAgain(c.name)}><span>{c.name}</span><small>作为新关键词继续查 ↗</small></button>)}</div>:<div className="xr-empty-line">本次搜索尚未取得可供核对的公司全称。</div>}</section>
+        <section className="xr-panel xr-leads"><div className="xr-panel-caption"><span>02 / 本次取得的来源</span><span>{report.leads.length} 条线索</span></div><h3>先看原文，再判断是否相关。</h3>{report.leads.length>0?<div className="xr-lead-list">{report.leads.map((lead,i)=><article key={lead.id}><div className="xr-lead-index">{String(i+1).padStart(2,'0')}</div><div><div className="xr-lead-meta"><span>搜索线索 · 未独立核验</span><span>{lead.published_at?timeLabel(lead.published_at):'发布日期未标注'}</span></div><h4>{lead.title}</h4><p>{lead.snippet||'该搜索结果未提供摘要，请打开原文核对。'}</p><div className="xr-lead-actions"><span>{lead.provider}</span><button type="button" onClick={()=>setActiveLead(lead)}>查看线索详情 ↗</button></div></div></article>)}</div>:<div className="xr-empty-line">{report.status==='source_unavailable'?'公开搜索源本次不可访问；没有取得可展示的结果。':'本次查询未返回可用网页线索。可补充城市或企业全称重试。'}</div>}</section>
+      </div>
+      <aside className="xr-report-side"><section className="xr-panel xr-judgement"><div className="xr-panel-caption"><span>03 / 双重判断机制</span><span>能力状态</span></div><h3>分析建立在真实取得的资料上。</h3><div className="xr-capability"><div className="xr-capability-icon">M</div><div><b>历史训练模型</b><p>{report.training_model.detail}</p><small>状态：尚不可用 · 不输出训练判断</small></div></div><div className="xr-capability"><div className="xr-capability-icon">A</div><div><b>联网调查智能体</b><p>{report.agent.detail}</p><small>状态：尚未接入 · 不声称已寻找反证</small></div></div><div className="xr-warning-note">当前结果仅是实时搜索线索，尚不能得出“值得信任”或“存在风险”的结论。</div></section><section className="xr-panel"><div className="xr-panel-caption"><span>04 / 实际调查轨迹</span><span>可审计</span></div><ol className="xr-trace">{report.trace.map((item,i)=><li key={`${item.step}-${i}`}><b>{item.step}</b><p>{item.detail}</p></li>)}</ol></section><section className="xr-panel"><div className="xr-panel-caption"><span>05 / 来源覆盖</span><span>本次状态</span></div><div className="xr-coverage">{report.coverage.map(item=><div key={item.name}><span>{item.name}<small>{item.detail}</small></span><b className={item.status==='queried'?'yes':''}>{item.status==='queried'?'已查询':item.status==='not_connected'?'未接入':'不可访问'}</b></div>)}</div>{report.failures.length>0&&<p className="xr-failures">{report.failures.length} 次请求失败，已保留其他成功来源。</p>}</section><section className="xr-panel xr-questions"><div className="xr-panel-caption"><span>下一步可核实</span><span>最多三项</span></div><ol><li>门店公示的营业执照上，完整经营主体名称是什么？</li><li>搜索结果涉及的城市、地址和分店是否与眼前这家一致？</li><li>相关消息有无官方原文、后续说明或已处理状态？</li></ol></section></aside>
+    </div>
+    {activeLead&&<div className="xr-modal-backdrop" onClick={()=>setActiveLead(null)}><aside className="xr-modal" role="dialog" aria-modal="true" aria-label="搜索线索详情" onClick={e=>e.stopPropagation()}><button type="button" className="xr-modal-close" onClick={()=>setActiveLead(null)} aria-label="关闭线索详情">×</button><span className="xr-section-label">SOURCE / 搜索线索</span><h2>{activeLead.title}</h2><p>来源：{activeLead.provider} · {activeLead.published_at?`网页标注 ${timeLabel(activeLead.published_at)}`:'发布日期未标注'}</p><div className="xr-modal-quote">{activeLead.snippet||'搜索源未提供摘要。'}</div><p className="xr-modal-caveat">这是搜索结果摘要，尚未核验原文、涉及主体和事件状态。请在原网站继续核对。</p><a href={activeLead.url} target="_blank" rel="noopener noreferrer">打开原始网页 ↗</a></aside></div>}
+  </div>
+}
+
+export default InvestigationPage;

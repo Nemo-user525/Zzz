@@ -1,10 +1,24 @@
-# X-Ray｜这一单，扛得住吗？
+# 见微 X-Ray｜先找到门店，再核对企业
 
-给下游客户发货并提供账期的中小制造企业，在签约前核对客户公开风险，随后测试这笔订单对本方现金底线的影响。当前交付是 **1 家真实企业 + 1 笔显式虚构订单** 的离线演示，不输出付款预测或违约概率。
+当前首页是面向预付消费的查证流程：用高德地点搜索找到实际门店，可按省、市、区、街道筛选；选中门店后，用企查查企业模糊搜索（ApiCode 886）找候选企业，再调用企业风险扫描（ApiCode 736）展示本次返回的工商与风险字段。**门店地点与所选企业的经营关系需要结合营业执照、合同和收款主体核对。** 原有“企业赊销前核对与现金推演”代码仍在仓库，见下文旧演示说明。
+
+首页现已接入查证对话。选中企业报告后可直接追问，也可在对话区输入企业全称独立提问。FastAPI 的 `/api/chat` 把流式回答从本机 Node 对话服务转发到页面；启动脚本同时启动两套服务。`chat/server/.env` 包含交付包提供的企查查 MCP 与模型配置，按本次公开使用授权纳入仓库。公开密钥可被任何人消耗额度，部署前请确认服务配额与费用设置。
+
+## 地图与企业接口配置
+
+在项目根目录复制 `.env.example` 为 `.env`，填入 `AMAP_WEB_SERVICE_KEY`、`QCC_APP_KEY`、`QCC_SECRET_KEY`；启动脚本会把 `.env` 读入当前进程，密钥只在服务端使用。`.env` 已被 Git 忽略。高德需要 **Web 服务 API Key**；企查查需要企业实名、应用场景审核并开通 **886 与 736** 两个接口。未配置或接口不可用时页面会明确显示状态，不生成预置结果。
+
+企查查 736 是一次取回多类工商与风险数据的接口，页面展示本次响应的全部字段。接口对部分列表有“前 100 条”等返回上限，因此“完整”指**本次接口返回的数据**，不代表现实中所有记录。正式对外提供报告前，还需确认购买套餐和协议允许的展示范围。
+
+官方文档：[高德地点搜索](https://lbs.amap.com/api/webservice/guide/api/search/)、[高德行政区查询](https://lbs.amap.com/api/webservice/guide/api/district/)、[企查查企业模糊搜索](https://openapi.qcc.com/dataApi/886)、[企查查企业风险扫描](https://openapi.qcc.com/dataApi/736)。
+
+## 原企业赊销演示
+
+给下游客户发货并提供账期的中小制造企业，在签约前核对客户公开风险，随后测试这笔订单对本方现金底线的影响。该演示是 **1 家真实企业 + 1 笔显式虚构订单** 的离线案例，不输出付款预测或违约概率。
 
 ## 运行
 
-需要 Python 3.12、Node.js 20+、pnpm 11+。首次安装需要网络；安装完成并缓存了两份官方 PDF 后，演示运行不依赖网络。默认 `LLM_PROVIDER=offline`，无需 API 密钥。
+需要 Python 3.12、Node.js 20+、pnpm 11+。首次安装需要网络。当前首页的高德地点与企查查报告需要网络、对应密钥和接口权限；原企业赊销案例缓存了两份官方 PDF，可离线运行。默认 `LLM_PROVIDER=offline`，不使用 LLM API 密钥。
 
 Windows PowerShell，从项目根目录运行：
 
@@ -45,7 +59,7 @@ Invoke-RestMethod http://127.0.0.1:8000/api/simulations -Method Post -ContentTyp
 
 ### 配置
 
-复制 `.env.example` 为 `.env` 可记录配置，启动前将变量载入环境。后端直接读取环境变量：`XRAY_DB_PATH`、`LLM_PROVIDER`（`offline|openai|openai_compatible`）、`LLM_MODEL`、`LLM_BASE_URL`、`LLM_API_KEY`。在线解释只有明确配置且服务正常时调用；失败退回离线模板。模型不计算金额、不更改已核验状态。`GET /api/risk-events/{event_id}/explanation` 可单独验证适配器；主页始终读取已核验事实与确定性现金引擎。
+启动脚本会读取根目录的 `.env`。后端还读取：`XRAY_DB_PATH`、`LLM_PROVIDER`（`offline|openai|openai_compatible`）、`LLM_MODEL`、`LLM_BASE_URL`、`LLM_API_KEY`。在线解释只有明确配置且服务正常时调用；失败退回离线模板。模型不计算金额、不更改已核验状态。`GET /api/risk-events/{event_id}/explanation` 可单独验证适配器；原赊销演示读取已核验事实与确定性现金引擎。
 
 用户角色、决策目标及输出模板在 `data/use_cases.json`，经 `GET /api/use-cases` 读取。新增同类靶向用户只需追加配置或切换默认 ID；不改企业、事实、来源、事件表，也不改通用证据校验服务。已有两个可切换的角色配置作为示例。若新目标需要不同计算方法，可独立增加算法服务。
 

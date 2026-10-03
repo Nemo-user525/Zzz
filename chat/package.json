@@ -1,0 +1,13 @@
+{
+  "name": "xray-chat",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "见微X-RAY 查证对话服务，零第三方依赖",
+  "scripts": {
+    "start": "node server/index.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
