@@ -1,0 +1,211 @@
+/* Shared type roles. CJK fonts are self-hosted; Microsoft faces use the OS.
+   Brand wordmarks, handwritten passages and artwork keep their own faces.
+   The hero kicker and Intro metadata deliberately retain the larger Ma Shan
+   Zheng styles in jianwei-motion.css; do not apply the text scale to them. */
+@font-face {
+  font-family: 'Jianwei Text';
+  src: url('/fonts/noto-sans-sc-text.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Jianwei Reading';
+  src: url('/fonts/noto-serif-sc-text.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+}
+
+:root {
+  --jw-sans: 'Segoe UI Variable Text', 'Segoe UI', 'Jianwei Text',
+    'Microsoft YaHei UI', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  --jw-serif: 'Jianwei Reading', 'Noto Serif SC', 'Songti SC', SimSun, serif;
+  --jw-editorial: 'Jianwei Editorial', Georgia, 'Times New Roman', serif;
+  --jianwei-serif: var(--jw-serif);
+  font-family: var(--jw-sans);
+  font-optical-sizing: auto;
+  font-kerning: normal;
+}
+
+/* Forms, navigation and reading copy share a quiet, legible text face. */
+.consumer-shell,
+.workbench-shell {
+  font-family: var(--jw-sans);
+  line-height: 1.75;
+}
+
+.consumer-shell :is(input, select, textarea, button),
+.workbench-shell :is(input, select, textarea, button) {
+  font-family: var(--jw-sans);
+}
+
+.jw-blueprint .jw-header-action {
+  font-family: var(--jw-sans);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: .025em;
+}
+
+.jw-blueprint .jw-header nav a {
+  line-height: 1.35;
+}
+
+.jw-blueprint .jw-hero-byline {
+  font-family: var(--jw-sans);
+  font-weight: 400;
+  letter-spacing: .035em;
+}
+
+.jw-blueprint .jw-hero-byline em { font-style: normal; }
+
+.jw-intro .jw-section-meta .jw-section-date {
+  font: 400 15px/1.5 var(--jw-hand);
+  white-space: nowrap;
+}
+
+.jw-blueprint .jw-manifesto .jw-reading {
+  line-height: 1.8;
+}
+
+.jw-blueprint :is(.jw-office-copy h2, .jw-team-heading h2,
+  .jw-search-entry h2, .jw-phone-chapter h2, .jw-about-copy h2) {
+  font-family: var(--jw-serif);
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: -.015em;
+  text-wrap: balance;
+}
+
+.jw-blueprint .jw-office-copy > p {
+  font-size: 15px;
+  line-height: 1.95;
+  letter-spacing: .015em;
+  max-width: 24em;
+}
+
+.jw-blueprint .jw-team-heading > p {
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.jw-blueprint .jw-team-members h3 {
+  font-family: var(--jw-serif);
+  font-size: clamp(17px, 1.4vw, 20px);
+  font-weight: 600;
+  letter-spacing: .015em;
+}
+
+.jw-blueprint .jw-team-members p {
+  font-size: 13px;
+  line-height: 1.85;
+}
+
+.jw-blueprint :is(.jw-text-link, .jw-claim > a, .jw-footer nav,
+  .jw-footer-bottom, .jw-overline, .jw-phone-description, .jw-phone-detail,
+  .jw-phone-cta, .jw-phone-eyebrow, .jw-cabinet-footnote) {
+  font-family: var(--jw-sans);
+}
+
+.jw-blueprint .jw-claim > p {
+  font-size: 15px;
+  line-height: 1.8;
+  letter-spacing: .1em;
+}
+
+.jw-blueprint .jw-footer nav { font-size: 14px; line-height: 1.8; }
+.jw-blueprint .jw-footer-bottom { font-size: 12px; line-height: 1.8; }
+
+/* Method, story, example cards and the investigation flow use the same scale. */
+.jw-blueprint .jw-document-page {
+  font-size: 16px;
+  line-height: 1.95;
+  letter-spacing: .01em;
+}
+
+.jw-blueprint :is(.jw-document-page h1, .jw-flow-heading h1,
+  .jw-agent-intro > h1, .jw-agent-intro > h2) {
+  font-family: var(--jw-serif);
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: -.02em;
+  text-wrap: balance;
+}
+
+.jw-blueprint :is(.jw-document-page h2, .jw-agent-message h3,
+  .jw-result-head h2, .jw-report-section h3, .jw-faq summary) {
+  font-family: var(--jw-serif);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+.jw-blueprint :is(.jw-document-lead, .jw-method-detail p, .jw-boundary > p) {
+  max-width: 42em;
+  line-height: 1.95;
+}
+
+.jw-blueprint .jw-document-lead { font-size: 18px; }
+
+.jw-blueprint :is(.jw-agent-intro-copy, .jw-agent-eyebrow,
+  .jw-agent-card-top b, .jw-agent-state, .jw-agent-voice-tip,
+  .jw-agent-footnote, .jw-query-form > label, .jw-optional-fields summary,
+  .jw-flow-topline, .jw-report-section, .jw-example-list) {
+  font-family: var(--jw-sans);
+}
+
+.jw-blueprint .jw-xiaox-agent .jw-query-form > label {
+  font-family: var(--jw-sans);
+  font-size: 14px;
+  line-height: 1.7;
+  font-weight: 500;
+}
+
+.jw-blueprint .jw-xiaox-agent .jw-query-form :is(input, select) {
+  font-family: var(--jw-sans);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.jw-blueprint :is(.jw-agent-submit, .jw-inline-form-actions,
+  .jw-flow-actions, .jw-document-actions) > .consumer-primary {
+  font-family: var(--jw-sans);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: .025em;
+}
+
+.jw-blueprint .jw-faq-label { font-family: var(--jw-editorial); }
+.jw-blueprint .jw-faq-label span { font-family: var(--jw-sans); }
+.jw-blueprint .jw-faq details p { font-size: 15px; line-height: 1.9; }
+.jw-blueprint .jw-phone-story .jw-phone-description {
+  font-family: var(--jw-sans);
+  font-size: 16px;
+  line-height: 1.95;
+}
+
+.workbench-shell :is(.metric-value, .risk-stats strong, td),
+.jw-blueprint :is(.jw-facts dd, .jw-source-date) {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+@media (max-width: 760px) {
+  .jw-blueprint .jw-header-action { font-size: 13px; }
+  .jw-blueprint .jw-hero-byline { letter-spacing: .015em; }
+  .jw-intro .jw-section-meta .jw-section-date {
+    grid-column: 2;
+    grid-row: 1;
+    text-align: right;
+    font-size: 13px;
+  }
+  .jw-blueprint .jw-office-copy > p { font-size: 14px; }
+  .jw-blueprint .jw-team-heading > p { font-size: 14px; }
+  .jw-blueprint .jw-claim > p { font-size: 13px; letter-spacing: .06em; }
+  .jw-blueprint .jw-document-page { font-size: 15px; line-height: 1.9; }
+  .jw-blueprint .jw-document-lead { font-size: 16px; }
+  .jw-blueprint .jw-faq details p { font-size: 14px; }
+  .jw-blueprint .jw-footer-bottom { font-size: 11px; }
+}
