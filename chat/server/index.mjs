@@ -98,10 +98,10 @@ const server = http.createServer(async (req, res) => {
   if (p === '/api/health') {
     return sendJSON(res, {
       ok: true,
-      llm: process.env.LLM_KEY ? 'configured' : 'offline-fallback',
+      llm: (process.env.CHAT_LLM_KEY || process.env.LLM_KEY) ? 'configured' : 'offline-fallback',
       qcc: isQccConfigured() ? 'configured' : 'not-configured',
       tyc: process.env.TYC_KEY ? 'configured' : 'not-configured',
-      model: process.env.LLM_MODEL || 'deepseek-chat'
+      model: process.env.CHAT_LLM_MODEL || process.env.LLM_MODEL || 'deepseek-v4-flash'
     });
   }
 
@@ -153,8 +153,8 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, '127.0.0.1', () => {
-  const mode = process.env.LLM_KEY ? '模型已接入' : '离线兜底模式（未配 LLM_KEY）';
+  const mode = (process.env.CHAT_LLM_KEY || process.env.LLM_KEY) ? '模型已接入' : '离线兜底模式（未配 LLM_KEY）';
   console.log(`见微查证服务已启动  http://localhost:${PORT}`);
-  console.log(`模型：${process.env.LLM_MODEL || 'deepseek-chat'} · ${mode}`);
-  console.log(`企查查：${process.env.QCC_KEY ? '已配置' : '未配置'} · 天眼查：${process.env.TYC_KEY ? '已配置' : '未配置'}`);
+  console.log(`模型：${process.env.CHAT_LLM_MODEL || process.env.LLM_MODEL || 'deepseek-v4-flash'} · ${mode}`);
+  console.log(`企查查：${isQccConfigured() ? '已配置' : '未配置'} · 天眼查：${process.env.TYC_KEY ? '已配置' : '未配置'}`);
 });

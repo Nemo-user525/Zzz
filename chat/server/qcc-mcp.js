@@ -28,9 +28,9 @@ function loadEnv() {
 }
 loadEnv();
 
-const QCC_MCP_URL = process.env.QCC_MCP_URL || 'https://agent.qcc.com/mcp/company/stream';
-const QCC_MCP_KEY = (process.env.QCC_MCP_API_KEY || '').replace(/^Bearer\s+/i, '').trim();
-const TIMEOUT = Number(process.env.QCC_TIMEOUT_MS || 30000);
+const QCC_MCP_URL = process.env.CHAT_QCC_MCP_URL || process.env.QCC_MCP_URL || 'https://agent.qcc.com/mcp/company/stream';
+const QCC_MCP_KEY = (process.env.CHAT_QCC_MCP_API_KEY || process.env.QCC_MCP_API_KEY || '').replace(/^Bearer\s+/i, '').trim();
+const TIMEOUT = Number(process.env.CHAT_QCC_TIMEOUT_MS || process.env.QCC_TIMEOUT_MS || 30000);
 
 /**
  * 查证要用的工具，按信息价值排序。

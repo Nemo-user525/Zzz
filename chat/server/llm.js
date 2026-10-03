@@ -12,12 +12,12 @@
 import { SYSTEM_PROMPT } from './prompt.js';
 import { getCompanyFacts } from './company-data.js';
 
-const LLM_BASE = process.env.LLM_BASE_URL || 'https://tokendance.space/gateway/v1';
-const LLM_KEY = process.env.LLM_KEY || '';
-const LLM_MODEL = process.env.LLM_MODEL || 'deepseek-v4-flash';
-const LLM_FALLBACK = process.env.LLM_FALLBACK_MODEL || 'deepseek-v4-pro';
-const LLM_MAX_TOKENS = Number(process.env.LLM_MAX_TOKENS || 2000);
-const LLM_TIMEOUT = Number(process.env.LLM_TIMEOUT_MS || 90000);
+const LLM_BASE = process.env.CHAT_LLM_BASE_URL || process.env.LLM_BASE_URL || 'https://tokendance.space/gateway/v1';
+const LLM_KEY = process.env.CHAT_LLM_KEY || process.env.LLM_KEY || '';
+const LLM_MODEL = process.env.CHAT_LLM_MODEL || process.env.LLM_MODEL || 'deepseek-v4-flash';
+const LLM_FALLBACK = process.env.CHAT_LLM_FALLBACK_MODEL || process.env.LLM_FALLBACK_MODEL || 'deepseek-v4-pro';
+const LLM_MAX_TOKENS = Number(process.env.CHAT_LLM_MAX_TOKENS || process.env.LLM_MAX_TOKENS || 2000);
+const LLM_TIMEOUT = Number(process.env.CHAT_LLM_TIMEOUT_MS || process.env.LLM_TIMEOUT_MS || 90000);
 
 /**
  * 从用户问题里抽出公司名。
