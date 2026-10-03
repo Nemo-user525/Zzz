@@ -5,7 +5,7 @@ import type {CompanyReport,IntegrationStatus,LegalEntity,Place,Region} from './a
 
 type Phase='search'|'places'|'entities'|'report';
 const regionLabels=['省 / 直辖市','市 / 区','区 / 县','街道'];
-const basicLabels:Record<string,string>={Name:'企业名称',Status:'登记状态',CreditCode:'统一社会信用代码',Address:'注册地址',StartDate:'成立日期',RegistCapi:'注册资本',OperName:'法定代表人',Scope:'经营范围',UpdatedDate:'资料更新日期'};
+const basicLabels:Record<string,string>={Name:'企业名称',Status:'登记状态',CreditCode:'统一社会信用代码',Address:'注册地址',StartDate:'成立日期',RegistCapi:'注册资本',OperName:'法定代表人',Scope:'经营范围',UpdatedDate:'资料更新日期','企业名称':'企业名称','登记状态':'登记状态','统一社会信用代码':'统一社会信用代码','注册地址':'注册地址','成立日期':'成立日期','注册资本':'注册资本','法定代表人':'法定代表人','经营范围':'经营范围'};
 const riskLabels:Record<string,string>={Penalty:'行政处罚',Exceptions:'经营异常',ShiXinItems:'失信记录',ExecutedPerson:'被执行人',ChangeRecords:'变更记录',Branches:'分支机构',Partners:'股东',Employees:'主要人员'};
 const message=(e:unknown)=>e instanceof Error?e.message:'服务暂时不可用，请稍后重试。';
 
@@ -32,6 +32,7 @@ function DiscoveryFlow({onCompanySelected}:{onCompanySelected?:(name:string)=>vo
   const [loading,setLoading]=useState('');
   const [error,setError]=useState('');
   const [streetNote,setStreetNote]=useState('');
+  const [entitySearchNote,setEntitySearchNote]=useState('');
 
   useEffect(()=>{
     let live=true;
@@ -75,10 +76,10 @@ function DiscoveryFlow({onCompanySelected}:{onCompanySelected?:(name:string)=>vo
   }
 
   async function searchEntities(term:string){
-    setEntityQuery(term);setError('');setLoading('entities');setEntities([]);
+    setEntityQuery(term);setError('');setLoading('entities');setEntities([]);setEntitySearchNote('');
     try{
       const result=await api.legalEntities(term.trim());
-      setEntities(result.companies);setPhase('entities');
+      setEntities(result.companies);setEntitySearchNote(result.search_note||'');setPhase('entities');
     }catch(e){setError(message(e));setPhase('entities')}finally{setLoading('')}
   }
 
@@ -107,6 +108,9 @@ function DiscoveryFlow({onCompanySelected}:{onCompanySelected?:(name:string)=>vo
   const lists=rawFields.filter(([,value])=>Array.isArray(value));
   const scalars=rawFields.filter(([,value])=>!Array.isArray(value)&&value!==null&&typeof value!=='object');
   const objects=rawFields.filter(([,value])=>value!==null&&!Array.isArray(value)&&typeof value==='object');
+  const riskFactors=report&&Array.isArray(report.risk_scan?.['风险因子扫描'])?report.risk_scan['风险因子扫描'] as Record<string,unknown>[]:[];
+  const isMcpReport=Boolean(report?.sections);
+  const basicKeys=isMcpReport?['企业名称','登记状态','统一社会信用代码','注册地址','成立日期','注册资本','法定代表人','经营范围']:['Name','Status','CreditCode','Address','StartDate','RegistCapi','OperName','Scope'];
   const questions=[
     `合同上的经营者、营业执照主体和实际收款方是否都是“${report?.company_name||selectedEntity?.name||'同一家公司'}”？`,
     amount?`预计预付 ${amount} 元${months?`、服务 ${months} 个月`:''}，未使用部分如何计算和退还？`:'未使用的服务如何计算和退还？',
@@ -139,20 +143,28 @@ function DiscoveryFlow({onCompanySelected}:{onCompanySelected?:(name:string)=>vo
     </section>}
 
     {(phase==='entities'||phase==='report')&&selectedPlace&&<section className="xr-flow-results">
-      <div className="xr-flow-heading"><span>03 / 企业候选</span><h3>这家门店由谁经营？</h3><p>企查查可按名称或地址搜索企业。地图门店与企业的关系仍需通过营业执照、合同抬头或收款方核对。</p></div>
+      <div className="xr-flow-heading"><span>03 / 企业候选</span><h3>这家门店由谁经营？</h3><p>企查查智能体按名称查找企业候选。地图门店与企业的关系仍需通过营业执照、合同抬头或收款方核对。</p></div>
       <form className="xr-flow-entity-search" onSubmit={e=>{e.preventDefault();if(entityQuery.trim().length>=2)void searchEntities(entityQuery)}}><input aria-label="搜索企查查企业" value={entityQuery} onChange={e=>setEntityQuery(e.target.value)} minLength={2} placeholder="输入营业执照上的企业全称或统一社会信用代码"/><button disabled={loading==='entities'||!status?.qcc.configured}>{loading==='entities'?'查询中…':'搜索企业'}</button></form>
-      {!status?.qcc.configured&&<p className="xr-flow-hint">企查查需开通 886 与 736 接口，并在服务端配置 QCC_APP_KEY、QCC_SECRET_KEY。</p>}
+      {!status?.qcc.configured&&<p className="xr-flow-hint">企查查智能体未配置 API Key，企业候选与报告暂不可用。</p>}
+      {entitySearchNote&&<p className="xr-flow-hint">{entitySearchNote}</p>}
       <div className="xr-flow-cards">{entities.map(entity=><article key={entity.key_no||entity.name} className={selectedEntity?.name===entity.name?'chosen':''}><strong>{entity.name}</strong><p>登记状态：{entity.status||'未返回'} · 统一社会信用代码：{entity.credit_code||'未返回'}</p><p>{entity.address||'注册地址未返回'}</p><div><span>企查查候选 · 需核对经营关系</span><button type="button" disabled={loading==='report'} onClick={()=>void loadReport(entity)}>获取企业报告 →</button></div></article>)}</div>
       {entities.length===0&&loading!=='entities'&&<div className="xr-flow-empty">当前关键词没有匹配的企业候选。可输入营业执照上的企业全称或统一社会信用代码，再查询。</div>}
-      {selectedPlace&&status?.qcc.configured&&<form className="xr-flow-manual" onSubmit={e=>void loadManualReport(e)}><span>已知准确企业名称或统一社会信用代码？</span><button disabled={loading==='report'||entityQuery.trim().length<2}>{loading==='report'?'正在拉取报告…':'直接查询风险扫描'}</button></form>}
+      {loading==='report'&&<p className="xr-flow-hint">正在从企查查拉取工商资料、风险扫描及有记录项目的明细，请稍候…</p>}
+      {selectedPlace&&status?.qcc.configured&&<form className="xr-flow-manual" onSubmit={e=>void loadManualReport(e)}><span>已知准确企业名称或统一社会信用代码？</span><button disabled={loading==='report'||entityQuery.trim().length<2}>{loading==='report'?'正在拉取报告…':'直接查询企业明细报告'}</button></form>}
     </section>}
 
     {report&&phase==='report'&&<section className="xr-flow-results xr-flow-report">
-      <div className="xr-flow-heading"><span>04 / 企业报告</span><h3>{report.company_name}</h3><p>{report.provider} · 查询于 {new Date(report.queried_at).toLocaleString('zh-CN')} · 请求号 {report.order_number||'未返回'}</p></div>
+      <div className="xr-flow-heading"><span>04 / 企业报告</span><h3>{report.company_name}</h3><p>{report.provider} · 查询于 {new Date(report.queried_at).toLocaleString('zh-CN')}{report.order_number?` · 请求号 ${report.order_number}`:''}</p></div>
       <div className="xr-flow-caution"><strong>门店与企业关系：待独立核对</strong><p>{report.identity_note}</p><p>{report.coverage_note}</p></div>
-      <h4>企业基本资料</h4><div className="xr-flow-facts">{Object.entries(basicLabels).map(([key,label])=><div key={key}><span>{label}</span><strong>{String(report.data[key]??'未返回')}</strong></div>)}</div>
-      <h4>重点记录</h4><div className="xr-flow-risk">{Object.entries(riskLabels).map(([key,label])=>{const value=report.data[key];return <div key={key}><b>{label}</b><span>{Array.isArray(value)?`${value.length} 条接口返回记录`:value==null?'接口未返回该字段':'查看完整字段'}</span></div>})}</div>
-      <h4>本次接口返回的全部字段</h4><p className="xr-flow-hint">以下保留企查查原字段和值，供逐项核对；部分列表存在供应商的返回上限。</p>
+      <h4>企业基本资料</h4><div className="xr-flow-facts">{basicKeys.map(key=><div key={key}><span>{basicLabels[key]}</span><strong>{String(report.data[key]??'未返回')}</strong></div>)}</div>
+      {isMcpReport?<>
+        <h4>风险因子扫描 · {riskFactors.length} 项</h4>
+        {report.risk_scan?<><p className="xr-flow-hint">以下是企查查扫描的命中数量；有记录的项目在下方逐项拉取明细。</p><div className="xr-flow-risk">{riskFactors.map((factor,index)=><div key={index}><b>{String(factor['风险因子']||'未命名风险因子')}</b><span>{String(factor['条目数']??'未返回')} 条扫描记录</span></div>)}</div><details className="xr-flow-raw"><summary>查看风险扫描原始字段</summary><pre>{JSON.stringify(report.risk_scan,null,2)}</pre></details></>:<p className="xr-flow-hint">风险扫描未成功返回，不能据此判断没有风险。</p>}
+        <h4>企查查明细 · {report.sections?.length||0} 项</h4>
+        {Boolean(report.failed_sections?.length)&&<p className="xr-flow-hint">以下项目未完整取得：{report.failed_sections?.join('、')}。请稍后重试或到企查查核对。</p>}
+        <div className="xr-flow-fields">{report.sections?.map((section,index)=><details key={`${section.tool}-${index}`}><summary>{section.title} · {section.status==='returned'?'已返回':'未取得'}{section.scan_count!=null?` · 扫描 ${section.scan_count} 条`:''}</summary>{section.data?<pre>{JSON.stringify(section.data,null,2)}</pre>:<p>{section.message||'接口未返回明细'}</p>}</details>)}</div>
+      </>:<><h4>重点记录</h4><div className="xr-flow-risk">{Object.entries(riskLabels).map(([key,label])=>{const value=report.data[key];return <div key={key}><b>{label}</b><span>{Array.isArray(value)?`${value.length} 条接口返回记录`:value==null?'接口未返回该字段':'查看完整字段'}</span></div>})}</div></>}
+      <h4>工商登记原始字段{!isMcpReport?'与接口其他字段':''}</h4><p className="xr-flow-hint">以下保留本次接口返回的原字段和值，供逐项核对。</p>
       <div className="xr-flow-fields"><details><summary>基本字段 · {scalars.length} 项</summary><dl>{scalars.map(([key,value])=><div key={key}><dt>{basicLabels[key]||key}</dt><dd>{String(value)}</dd></div>)}</dl></details>{[...lists,...objects].map(([key,value])=><details key={key}><summary>{riskLabels[key]||key}{Array.isArray(value)?` · ${value.length} 条`:''}</summary><pre>{JSON.stringify(value,null,2)}</pre></details>)}</div>
       <h4>付款前建议核对</h4><ol className="xr-flow-questions">{questions.map(q=><li key={q}>{q}</li>)}</ol>
     </section>}

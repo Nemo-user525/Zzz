@@ -1,12 +1,14 @@
 # 企查查企业搜索接入
 
-默认门店查证页另有两条独立调用：开放平台 886 搜企业候选、736 取风险扫描，代码在 `backend/app/services/qcc_openapi.py`；查证对话使用 `chat/server/qcc-mcp.js` 连接官方 MCP。下面的 `QCC_PROVIDER` 配置仅控制消费者调查线路。三条线路的权限和额度互不等同，具体页面流程见 [门店查证与对话](DISCOVERY_CHAT.md)。
+默认门店查证页使用现有企查查智能体 MCP Key：`backend/app/services/qcc_discovery_mcp.py` 连接官方企业数据和风控服务，查企业候选、工商登记、企业资料、风险扫描及命中项明细。查证对话使用 `chat/server/qcc-mcp.js`，消费者调查使用 `backend/app/services/consumer_qcc_mcp.py`。只有首页 MCP Key 缺失且另行配置了开放平台凭据时，首页才使用 `qcc_openapi.py` 的 886/736 兼容线路。下面的 `QCC_PROVIDER` 配置仅控制消费者调查线路，具体页面流程见 [门店查证与对话](DISCOVERY_CHAT.md)。
 
 ## 当前默认线路
 
 消费者主页默认 `QCC_PROVIDER=mcp`，直接连接 `https://agent.qcc.com/mcp/company/stream`，由企查查返回工具字段并进入最终模型判断。个人账号可使用企业工商服务，无需创建 WorkBuddy 第三方应用；权限及额度以企查查账号为准。官方说明见 [企查查智能体平台](https://agent.qcc.com/guide)。
 
 本仓库按账号所有者明确同意公开的要求，在 `configs/qcc-mcp.json` 提供共享演示配置。服务端非空的 `QCC_MCP_URL`、`QCC_MCP_API_KEY` 优先；Bearer 前缀会规范化。删除共享配置并移除环境密钥可停用该凭据。接口和前端只显示状态，不返回密钥；公开仓库的配置文件本身是公开交付，仍可能被其他人使用，配额不是每个检出独立分配。
+
+首页服务从同一配置读取 Key，固定连接官方 `https://agent.qcc.com/mcp/company/stream` 与 `https://agent.qcc.com/mcp/risk/stream`。企业搜索调用 `get_company_by_query`；用户确认准确主体后查询 `get_company_registration_info`、企业资料工具、`get_company_risk_scan`，并根据扫描结果中大于零的因子调用相应 `get_*` 明细工具。每项原始 JSON 完整交给页面，未做本地截断。页面明确显示查询失败、主体不匹配与未返回的项目，并标记门店经营关系待核对。风险扫描的命中数不能直接当作明细条数；页面也不等同于企查查平台全部商业档案。2026-10-03 已实际连通乐刻品牌候选、工商登记、35 项风险因子扫描及命中项明细。
 
 默认工具为工商登记、财务、工商变更、企业年报；通过实际 `tools/list` 识别参数后只读查询。发现阶段仅请求工商登记，品牌关联同时依赖公开搜索并要求用户确认公司。精确主体确认后，响应的主公司名必须一致，关联企业中的同名字段不能冒充主公司。
 
@@ -81,4 +83,4 @@ WorkBuddy 仅作为具备应用资格账号的可选方式，显式设置 `QCC_P
 
 本地自动测试使用模拟供应商响应，覆盖签名、缺少密钥、查询校验、响应规范化、错误脱敏、过期响应忽略与确认后展开。真实接口联调需管理员配置有效凭证及接口权限后进行。
 
-公网演示通过 `app.public_demo:app` 提供 `frontend/dist` 静态资源。前端修改后需重新构建再刷新页面；后端修改需重启后端进程。Cloudflare 临时隧道进程保持运行时沿用原链接。当前演示未配置企查查凭证；若开放收费查询，应为该入口配置认证与调用额度控制。
+公网演示通过 `app.public_demo:app` 提供 `frontend/dist` 静态资源。前端修改后需重新构建再刷新页面；后端修改需重启后端进程。Cloudflare 临时隧道进程保持运行时沿用原链接。当前演示已配置共享企查查智能体凭据；公开入口会消耗同一账号的 MCP 额度，长期开放时应配置认证与调用额度控制。

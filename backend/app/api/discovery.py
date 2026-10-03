@@ -3,7 +3,7 @@
 from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import BaseModel, Field
 
-from app.services import amap, qcc_openapi as qcc
+from app.services import amap, qcc_discovery_mcp as qcc_mcp, qcc_openapi as qcc_openapi
 
 
 router = APIRouter(prefix="/api")
@@ -28,7 +28,8 @@ def _unavailable(message: str):
 def integrations():
     return {
         "amap": {"configured": amap.configured(), "provider": "高德地图 Web 服务"},
-        "qcc": {"configured": qcc.configured(), "provider": "企查查开放平台（886 + 736）"},
+        "qcc": {"configured": qcc_mcp.configured() or qcc_openapi.configured(),
+                "provider": "企查查智能体 MCP" if qcc_mcp.configured() else "企查查开放平台（886 + 736）"},
     }
 
 
@@ -68,23 +69,29 @@ def place_map(location: str = Query(pattern=r"^\d{1,3}(?:\.\d+)?,\d{1,2}(?:\.\d+
 
 
 @router.get("/legal-entities")
-def legal_entities(keyword: str = Query(min_length=2, max_length=100)):
+async def legal_entities(keyword: str = Query(min_length=2, max_length=100)):
     try:
-        items = qcc.search(keyword.strip())
-    except qcc.QccUnavailable as exc:
+        if qcc_mcp.configured():
+            found = await qcc_mcp.search(keyword.strip())
+            provider = "企查查智能体 MCP 企业识别"
+        else:
+            found = {"companies": qcc_openapi.search(keyword.strip()), "search_note": ""}
+            provider = "企查查企业模糊搜索（ApiCode 886）"
+    except (qcc_mcp.QccUnavailable, qcc_openapi.QccUnavailable) as exc:
         _unavailable(str(exc))
     return {
-        "provider": "企查查企业模糊搜索（ApiCode 886）",
-        "companies": items,
+        "provider": provider,
+        **found,
         "identity_note": "候选企业尚未证明与所选门店存在经营关系；请结合营业执照、合同抬头或收款主体核对。",
     }
 
 
 @router.post("/company-report")
-def company_report(inp: CompanyReportInput):
+async def company_report(inp: CompanyReportInput):
     try:
-        report = qcc.risk_scan(inp.company_keyword.strip())
-    except qcc.QccUnavailable as exc:
+        report = (await qcc_mcp.report(inp.company_keyword.strip()) if qcc_mcp.configured()
+                  else qcc_openapi.risk_scan(inp.company_keyword.strip()))
+    except (qcc_mcp.QccUnavailable, qcc_openapi.QccUnavailable) as exc:
         _unavailable(str(exc))
     return {
         **report,

@@ -4,7 +4,7 @@ import httpx
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.services import qcc
+from app.services import qcc, qcc_discovery_mcp as qcc_mcp
 
 
 client = TestClient(app)
@@ -109,3 +109,61 @@ def test_qcc_signed_search_and_full_scan_result(monkeypatch):
     expected = hashlib.md5(b"test-app-key1700000000test-secret").hexdigest().upper()
     assert all(call[1]["headers"]["Token"] == expected for call in calls)
     assert calls[-1][1]["params"]["searchKey"] == "913300000000000000"
+
+
+def test_mcp_store_name_broadens_to_candidates_without_verifying_identity(monkeypatch):
+    monkeypatch.setattr(qcc_mcp, "configured", lambda: True)
+    calls = []
+
+    async def fake_call(server, query, names):
+        calls.append((server, query, names))
+        data = {"匹配结果": "未匹配"} if "(" in query else {
+            "匹配结果": "唯一精确匹配",
+            "企业信息": {"企业名称": "测试品牌有限公司", "统一社会信用代码": "913300000000000000", "状态": "存续"},
+        }
+        return {"get_company_by_query": {"status": "returned", "data": data}}
+
+    monkeypatch.setattr(qcc_mcp, "_call_many", fake_call)
+    response = client.get("/api/legal-entities", params={"keyword": "测试品牌(某分店)"})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["companies"][0]["name"] == "测试品牌有限公司"
+    assert body["companies"][0]["credit_code"] == "913300000000000000"
+    assert "尚未核实" in body["search_note"]
+    assert "尚未证明" in body["identity_note"]
+    assert [query for _, query, _ in calls] == ["测试品牌(某分店)", "测试品牌"]
+
+
+def test_mcp_report_retains_all_returned_details_and_marks_failures(monkeypatch):
+    monkeypatch.setattr(qcc_mcp, "configured", lambda: True)
+    calls = []
+    name, credit = "测试品牌有限公司", "913300000000000000"
+    long_records = [{"序号": index, "原始字段": "保留"} for index in range(120)]
+
+    async def fake_call(server, query, names):
+        calls.append((server, query, names))
+        if names == ["get_company_risk_scan"]:
+            return {"get_company_risk_scan": {"status": "returned", "data": {
+                "企业名称": name, "风险因子扫描": [
+                    {"风险因子": "裁判文书", "条目数": 120, "明细工具": "get_judicial_documents"},
+                    {"风险因子": "行政处罚", "条目数": 0, "明细工具": "get_administrative_penalty"},
+                ],
+            }}}
+        if names == ["get_judicial_documents"]:
+            return {"get_judicial_documents": {"status": "returned", "data": {"企业名称": name, "裁判文书": long_records}}}
+        return {tool: ({"status": "returned", "data": {"企业名称": name, "统一社会信用代码": credit, "经营范围": "健身"}}
+                       if tool == "get_company_registration_info" else
+                       {"status": "failed", "message": "暂时不可用"}) for tool in names}
+
+    monkeypatch.setattr(qcc_mcp, "_call_many", fake_call)
+    response = client.post("/api/company-report", json={"company_keyword": credit,
+        "place": {"id": "poi-1", "name": "测试品牌(某分店)", "address": "某路"}})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["company_name"] == name and body["identity_status"] == "user_selected_unverified"
+    assert body["data"]["经营范围"] == "健身"
+    assert body["risk_scan"]["风险因子扫描"][0]["条目数"] == 120
+    judicial = next(section for section in body["sections"] if section["tool"] == "get_judicial_documents")
+    assert len(judicial["data"]["裁判文书"]) == 120
+    assert "企业概况" in body["failed_sections"]
+    assert all("get_administrative_penalty" not in names for _, _, names in calls)
