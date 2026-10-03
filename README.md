@@ -27,7 +27,7 @@
 
 **本机网址：[http://127.0.0.1:8086/](http://127.0.0.1:8086/)**。默认页完成地点与企业查证及对话；消费者调查见 `/?view=consumer`。`127.0.0.1` 指运行服务的那台电脑，跨网络访问见下文。
 
-新设备需安装 Python 3.12+、Node.js、pnpm 和 PowerShell 7，并联网。克隆当前功能分支后，在工程目录运行：
+新设备需安装 Python 3.12+、Node.js、pnpm 和 PowerShell 7，并联网。克隆默认 `main` 分支后，在工程目录运行：
 
 ```powershell
 git clone https://github.com/Nemo-user525/Zzz.git
