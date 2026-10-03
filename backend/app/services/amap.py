@@ -52,28 +52,42 @@ def regions(parent: str = "100000") -> list[dict[str, str]]:
 
 
 def places(keyword: str, region_code: str = "", street: str = "") -> list[dict[str, Any]]:
-    params: dict[str, str | int] = {"keywords": keyword, "offset": 20, "page": 1, "extensions": "base"}
+    params: dict[str, str | int] = {"keywords": keyword, "offset": 20, "extensions": "base"}
     if region_code:
         params.update({"city": region_code, "citylimit": "true"})
-    data = _get("/place/text", params)
     output: list[dict[str, Any]] = []
-    for item in data.get("pois") or []:
-        if not isinstance(item, dict):
-            continue
-        address = item.get("address") if isinstance(item.get("address"), str) else ""
-        location = item.get("location") if isinstance(item.get("location"), str) else ""
-        if street and street not in address and street not in str(item.get("name") or ""):
-            continue
-        output.append({
-            "id": str(item.get("id") or ""),
-            "name": str(item.get("name") or ""),
-            "address": address,
-            "province": str(item.get("pname") or ""),
-            "city": item.get("cityname") if isinstance(item.get("cityname"), str) else "",
-            "district": str(item.get("adname") or ""),
-            "adcode": str(item.get("adcode") or ""),
-            "location": location,
-            "type": str(item.get("type") or ""),
-            "provider": "高德地图",
-        })
-    return output
+    seen: set[str] = set()
+    # A street has no unique adcode in Amap. Inspect a few bounded result pages
+    # so a matching shop beyond the first page is still discoverable.
+    for page in range(1, 4 if street else 2):
+        data = _get("/place/text", {**params, "page": page})
+        pois = data.get("pois")
+        if not isinstance(pois, list):
+            break
+        for item in pois:
+            if not isinstance(item, dict):
+                continue
+            address = item.get("address") if isinstance(item.get("address"), str) else ""
+            location = item.get("location") if isinstance(item.get("location"), str) else ""
+            if street and street not in address and street not in str(item.get("name") or ""):
+                continue
+            place_id = str(item.get("id") or "")
+            if place_id and place_id in seen:
+                continue
+            if place_id:
+                seen.add(place_id)
+            output.append({
+                "id": place_id,
+                "name": str(item.get("name") or ""),
+                "address": address,
+                "province": str(item.get("pname") or ""),
+                "city": item.get("cityname") if isinstance(item.get("cityname"), str) else "",
+                "district": str(item.get("adname") or ""),
+                "adcode": str(item.get("adcode") or ""),
+                "location": location,
+                "type": str(item.get("type") or ""),
+                "provider": "高德地图",
+            })
+        if len(pois) < 20 or len(output) >= 20:
+            break
+    return output[:20]

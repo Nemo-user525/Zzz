@@ -43,6 +43,26 @@ def test_amap_region_and_place_selection(monkeypatch):
     assert calls[-1][1]["key"] == "test-amap-key"
 
 
+def test_street_filter_checks_later_amap_page(monkeypatch):
+    monkeypatch.setenv("AMAP_WEB_SERVICE_KEY", "test-amap-key")
+    pages = []
+
+    def fake_get(url, **kwargs):
+        page = kwargs["params"]["page"]
+        pages.append(page)
+        pois = (
+            [{"id": f"other-{index}", "name": "测试健身房", "address": "别的街道"} for index in range(20)]
+            if page == 1
+            else [{"id": "target", "name": "测试健身房", "address": "目标街道 10 号"}]
+        )
+        return httpx.Response(200, json={"status": "1", "pois": pois}, request=httpx.Request("GET", url))
+
+    monkeypatch.setattr("app.services.amap.httpx.get", fake_get)
+    result = client.get("/api/places", params={"keyword": "测试健身房", "street": "目标街道"}).json()
+    assert [place["id"] for place in result["places"]] == ["target"]
+    assert pages == [1, 2]
+
+
 def test_qcc_signed_search_and_full_scan_result(monkeypatch):
     monkeypatch.setenv("QCC_APP_KEY", "test-app-key")
     monkeypatch.setenv("QCC_SECRET_KEY", "test-secret")
