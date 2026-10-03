@@ -135,7 +135,7 @@ function DiscoveryFlow({onCompanySelected}:{onCompanySelected?:(name:string)=>vo
       {streetNote&&<p className="xr-flow-hint">{streetNote}</p>}
       <div className="xr-flow-cards">{places.map(place=><article key={place.id} className={selectedPlace?.id===place.id?'chosen':''}><strong>{place.name}</strong><p>{[place.province,place.city,place.district,place.address].filter(Boolean).join(' · ')}</p><div><span>高德地图 · POI {place.id}</span><button type="button" onClick={()=>choosePlace(place)}>{selectedPlace?.id===place.id?'已选中':'选这家门店'} →</button></div></article>)}</div>
       {places.length===0&&<div className="xr-flow-empty">没有找到符合条件的门店。可清空街道、扩大地区或换一个关键词。</div>}
-      {selectedPlace&&mapLink&&<div className="xr-flow-map"><iframe title={`高德地图：${selectedPlace.name}`} src={mapLink} loading="lazy"/><a href={mapLink} target="_blank" rel="noopener noreferrer">在高德地图查看地点 ↗</a></div>}
+      {selectedPlace&&mapLink&&<div className="xr-flow-map"><img src={'/api/place-map?location='+encodeURIComponent(selectedPlace.location)} alt={`高德地图标记：${selectedPlace.name}`} loading="lazy"/><a href={mapLink} target="_blank" rel="noopener noreferrer">在高德地图查看地点 ↗</a></div>}
     </section>}
 
     {(phase==='entities'||phase==='report')&&selectedPlace&&<section className="xr-flow-results">

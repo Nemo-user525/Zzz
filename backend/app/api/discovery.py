@@ -1,6 +1,6 @@
 """Location selection followed by licensed company search and report retrieval."""
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import BaseModel, Field
 
 from app.services import amap, qcc_openapi as qcc
@@ -56,6 +56,15 @@ def places(
         "street_filter_note": "街道没有独立区划码，街道筛选依据高德返回的名称和地址；无匹配时可清空街道重试。" if street else "",
         "identity_note": "地图地点是门店线索，不自动证明其经营主体。",
     }
+
+
+@router.get("/place-map", response_class=Response, responses={200: {"content": {"image/png": {}}}})
+def place_map(location: str = Query(pattern=r"^\d{1,3}(?:\.\d+)?,\d{1,2}(?:\.\d+)?$", max_length=50)):
+    try:
+        image = amap.static_map(location)
+    except amap.AmapUnavailable as exc:
+        _unavailable(str(exc))
+    return Response(image, media_type="image/png", headers={"Cache-Control": "public, max-age=300"})
 
 
 @router.get("/legal-entities")

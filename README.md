@@ -27,7 +27,7 @@
 
 ### 启用门店地图与企业报告
 
-高德官方的[行政区域查询](https://lbs.amap.com/api/webservice/guide/api/district/)和[地点关键词搜索](https://lbs.amap.com/api/webservice/guide/api/search/)支持当前方案：区县可用 `adcode` 限定搜索范围，街道没有独立 `adcode`，需对返回的地点名称与地址做补充筛选。选中地点使用[高德 URI 地图](https://lbs.amap.com/api/uri-api/gettingstarted)打开标记位置。服务端保管 Web 服务 Key，不把 Key 放入浏览器代码。
+高德官方的[行政区域查询](https://lbs.amap.com/api/webservice/guide/api/district/)和[地点关键词搜索](https://lbs.amap.com/api/webservice/guide/api/search/)支持当前方案：区县可用 `adcode` 限定搜索范围，街道没有独立 `adcode`，需对返回的地点名称与地址做补充筛选。选中地点后，网页通过服务端获取高德静态地图预览，并提供[高德 URI 地图](https://lbs.amap.com/api/uri-api/gettingstarted)链接打开可交互位置；浏览器请求不会携带服务端 Key。
 
 仓库已按 Key 所有者明确授权，在 `.env.example` 公开高德 **Web 服务**演示 Key；新克隆首次启动会将它复制到 `.env`，可直接查询高德地点。已有 `.env` 不会被覆盖，需自行把 `.env.example` 中的 `AMAP_WEB_SERVICE_KEY` 一行加入现有文件并重启。所有克隆共用该 Key 的调用额度。企查查 886/736 开放平台仍需另行配置：
 
@@ -156,5 +156,5 @@ $env:PYTHONPATH='backend'
 | [WorkBuddy 可选接入](docs/WORKBUDDY_QCC.md) | 适用于具备第三方应用资格的账号 |
 | [本轮验收](docs/CONSUMER_ACCEPTANCE.md) | 实测结果、未完成的账号联调 |
 | [数据说明](docs/DATASET_CARD.md) | 历史研究样本与质量局限 |
-| [当前 OpenAPI](docs/openapi-consumer.json) | 从合并后的运行时代码导出的 50 条路径契约 |
+| [当前 OpenAPI](docs/openapi-consumer.json) | 从合并后的运行时代码导出的 51 条路径契约 |
 | [旧版说明存档](docs/LEGACY_README.md) | 早期交易演示与历史研究说明，非当前主页状态 |

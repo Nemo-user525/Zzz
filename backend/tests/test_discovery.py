@@ -63,6 +63,28 @@ def test_street_filter_checks_later_amap_page(monkeypatch):
     assert pages == [1, 2]
 
 
+def test_amap_static_map_preview_keeps_key_server_side(monkeypatch):
+    monkeypatch.setenv("AMAP_WEB_SERVICE_KEY", "test-amap-key")
+    calls = []
+
+    def fake_get(url, **kwargs):
+        calls.append((url, kwargs["params"]))
+        return httpx.Response(
+            200,
+            content=b"\x89PNG\r\n\x1a\npreview",
+            headers={"content-type": "image/png"},
+            request=httpx.Request("GET", url),
+        )
+
+    monkeypatch.setattr("app.services.amap.httpx.get", fake_get)
+    response = client.get("/api/place-map", params={"location": "120.147572,30.284751"})
+    assert response.status_code == 200 and response.headers["content-type"] == "image/png"
+    assert response.content.startswith(b"\x89PNG")
+    assert calls[0][0].endswith("/staticmap")
+    assert calls[0][1]["key"] == "test-amap-key"
+    assert client.get("/api/place-map", params={"location": "bad-location"}).status_code == 422
+
+
 def test_qcc_signed_search_and_full_scan_result(monkeypatch):
     monkeypatch.setenv("QCC_APP_KEY", "test-app-key")
     monkeypatch.setenv("QCC_SECRET_KEY", "test-secret")

@@ -51,6 +51,30 @@ def regions(parent: str = "100000") -> list[dict[str, str]]:
     ]
 
 
+def static_map(location: str) -> bytes:
+    key = os.getenv("AMAP_WEB_SERVICE_KEY", "").strip()
+    if not key:
+        raise AmapUnavailable("尚未配置高德 Web 服务 Key")
+    try:
+        response = httpx.get(
+            BASE + "/staticmap",
+            params={
+                "location": location,
+                "zoom": 16,
+                "size": "750*300",
+                "markers": f"mid,,A:{location}",
+                "key": key,
+            },
+            timeout=12,
+        )
+        response.raise_for_status()
+    except httpx.HTTPError as exc:
+        raise AmapUnavailable("高德地图预览暂时不可用") from exc
+    if not response.headers.get("content-type", "").startswith("image/png"):
+        raise AmapUnavailable("高德地图未返回可用的预览图片")
+    return response.content
+
+
 def places(keyword: str, region_code: str = "", street: str = "") -> list[dict[str, Any]]:
     params: dict[str, str | int] = {"keywords": keyword, "offset": 20, "extensions": "base"}
     if region_code:
