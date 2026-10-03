@@ -30,7 +30,7 @@ export function ConsumerReportPages({report,page,onPage,onNewSearch,sourceButton
     </section> : <>
       <header className="consumer-page-heading"><div><span className="eyebrow">{report.identity.name}</span><h2>{pageTitle[page]}</h2></div>{page==='overview'?<button type="button" className="ghost" onClick={onNewSearch}>重新查询</button>:null}</header>
       {page==='overview'&&<>
-        <div className={'consumer-risk risk-'+level} aria-label="风险等级"><div><h2>{riskHeadline(risk)}</h2><p className="consumer-plain-lead">{riskPlainExplanation(risk)}</p><strong className="confidence-badge">这次判断：{confidence}</strong><small>{!risk||risk.decision_basis==='information_gap'?'这次资料不够，按谨慎原则显示中等风险；这不等于已查到公司有问题。':'风险只针对所选公司，具体门店是不是它开的还要核对。'}</small></div>
+        <div className={'consumer-risk risk-'+level} aria-label="风险等级"><div><h2>{riskHeadline(risk)}</h2><p className="consumer-plain-lead">{riskPlainExplanation(risk)}</p><strong className="confidence-badge">这次判断：{confidence}</strong><small>{!risk||risk.decision_basis==='information_gap'?'本次采用预付消费的谨慎档，建议选择短期、小额产品。':'评级对象为所选公司；签约和收款名称请与报告对象一致。'}</small></div>
           <div className="risk-stats"><strong>{report.sources.length}<small>条查到的资料</small></strong><strong>{report.source_stats?.websites??new Set(report.sources.map(s=>s.publisher)).size}<small>个来源网站</small></strong></div></div>
         <div className="consumer-page-grid">
           {card('identity','先看选中的是哪家公司')}

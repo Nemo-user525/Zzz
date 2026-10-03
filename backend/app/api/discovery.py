@@ -82,7 +82,7 @@ async def legal_entities(keyword: str = Query(min_length=2, max_length=100)):
     return {
         "provider": provider,
         **found,
-        "identity_note": "候选企业尚未证明与所选门店存在经营关系；请结合营业执照、合同抬头或收款主体核对。",
+        "identity_note": "选择企业时，请以营业执照、合同抬头和收款方名称为准。",
     }
 
 
@@ -97,5 +97,5 @@ async def company_report(inp: CompanyReportInput):
         **report,
         "selected_place": inp.place.model_dump(),
         "identity_status": "user_selected_unverified",
-        "identity_note": "你选择了这家门店和这家企业；地图 POI 与企查查企业记录之间的经营关系尚未经独立核验。",
+        "identity_note": "报告对应你选定的企业。付款前，请确认合同和收款方使用同一企业名称。",
     }

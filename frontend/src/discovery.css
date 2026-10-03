@@ -31,6 +31,15 @@
 .xr-flow-manual{display:flex;align-items:center;gap:16px;margin-top:19px;font-size:13px;color:#53645a}
 .xr-flow-caution{border-left:4px solid #a96c38;background:#fff4e8;padding:15px 21px;margin:20px 0 30px}
 .xr-flow-caution p{line-height:1.65;font-size:13px;color:#64492f;margin:8px 0 0}
+.xr-flow-verdict{--verdict:#b57b2f;border:1px solid #c2c7bd;border-top:5px solid var(--verdict);background:#f0f1ec;padding:27px 30px 24px;margin:24px 0 18px}
+.xr-flow-verdict-low{--verdict:#006e5e}.xr-flow-verdict-high{--verdict:#a34f43}
+.xr-flow-verdict>span{display:block;color:#59675d;font-size:12px;letter-spacing:.12em}
+.xr-flow-verdict>strong{display:block;color:var(--verdict);font:400 clamp(38px,4vw,60px)/1.12 SimSun,'Songti SC',serif;margin:10px 0 14px}
+.xr-flow-verdict-action{font-size:17px;font-weight:600;line-height:1.65;margin:0 0 16px}
+.xr-flow-verdict ul{border-top:1px solid #c8d0c6;margin:0;padding:15px 0 4px 20px;font-size:13px;line-height:1.75}
+.xr-flow-verdict li{margin:5px 0}.xr-flow-verdict li a{color:#006e5e;margin-left:6px;white-space:nowrap}.xr-flow-verdict small{display:block;color:#607067;line-height:1.6;margin-top:15px}
+.xr-flow-report-scope{border-bottom:1px solid #bec8bf;padding:10px 2px 18px;font-size:12px;color:#5e6b62;line-height:1.7}
+.xr-flow-report-scope summary{cursor:pointer}.xr-flow-report-scope p{margin:10px 0 0}
 .xr-flow-report h4{font:400 27px SimSun,'Songti SC',serif;margin:34px 0 17px}
 .xr-flow-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid #adbdb1;border-left:1px solid #adbdb1}
 .xr-flow-facts>div{display:flex;flex-direction:column;gap:7px;border-right:1px solid #adbdb1;border-bottom:1px solid #adbdb1;padding:13px;min-width:0}

@@ -9,6 +9,7 @@ from typing import Any
 import httpx
 
 from app.services.consumer_qcc_mcp import credentials
+from app.services.qcc_discovery_risk import assess
 
 
 COMPANY_URL = "https://agent.qcc.com/mcp/company/stream"
@@ -142,9 +143,9 @@ async def search(keyword: str) -> dict[str, Any]:
             return {
                 "companies": companies,
                 "searched_term": term,
-                "search_note": ("门店全名未匹配到主体，已扩大为“" + term + "”查找候选；候选与门店的经营关系尚未核实。") if term != keyword else "",
+                "search_note": ("已将搜索词扩展为“" + term + "”，以下是可选择的企业。") if term != keyword else "",
             }
-    return {"companies": [], "searched_term": keyword, "search_note": "企查查未匹配到主体，请尝试品牌关键词或营业执照上的企业全称。"}
+    return {"companies": [], "searched_term": keyword, "search_note": "可以试试品牌关键词，或输入合同、营业执照上的企业全称。"}
 
 
 def _same_company(data: dict[str, Any], name: str, credit: str) -> bool:
@@ -206,7 +207,7 @@ async def report(query: str) -> dict[str, Any]:
     failures = [s["title"] for s in sections if s["status"] != "returned"]
     if not risk_scan:
         failures.insert(0, "风险扫描")
-    return {
+    result = {
         "provider": "企查查智能体 MCP（企业数据 + 风控）",
         "queried_at": datetime.now(timezone.utc).isoformat(),
         "order_number": "",
@@ -218,3 +219,5 @@ async def report(query: str) -> dict[str, Any]:
         "failed_sections": failures,
         "coverage_note": "保留本次企查查智能体返回的工商登记、企业资料、风险扫描和已调用明细工具全部原始字段。扫描条目数与明细返回条数可能不同；未提供或查询失败的部分不能当作零风险。此页不等同于企查查平台的全部商业档案。",
     }
+    result["assessment"] = assess(result)
+    return result

@@ -7,16 +7,16 @@ export const confidenceLabel = (risk?: Risk) =>
 export const riskHeadline = (risk?: Risk) => {
   const level = risk?.decision_level || (risk?.level !== 'undetermined' ? risk?.level : 'medium');
   return {
-    low: '低风险，可以信任！！',
-    medium: '中等风险，慎重！！！',
-    high: '高风险，千万别买！！',
+    low: '较低风险，可考虑短期购买',
+    medium: '中等风险，控制预付金额',
+    high: '较高风险，建议暂缓预付',
   }[level || 'medium'];
 };
 
 export const riskPlainExplanation = (risk?: Risk) => {
   const level = risk?.decision_level || risk?.level;
   if (risk?.decision_basis === 'information_gap' || !risk?.model_assessed)
-    return '这次能核对的资料还不够，暂时说不清这家公司到底稳不稳。先少付钱，把门店是谁开的、退款怎么退问清楚。';
+    return '当前公开资料覆盖有限，本次按预付消费谨慎档评为中等风险。建议先按月或按次购买，确认合同和退款规则。';
   if (level === 'low')
     return '目前查到的公司资料能互相对上，也没有发现需要马上警惕的严重问题。办卡前仍要看清合同和退款办法。';
   if (level === 'high')

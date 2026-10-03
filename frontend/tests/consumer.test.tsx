@@ -29,13 +29,13 @@ async function selectCandidate(){
 it('opens result sections as pages and returns to the summary',async()=>{
   await selectCandidate();
   fireEvent.click(screen.getByRole('button',{name:'查看企业变化'}));
-  await screen.findByRole('heading',{name:'中等风险，慎重！！！'});
+  await screen.findByRole('heading',{name:'中等风险，控制预付金额'});
   expect(screen.queryByRole('heading',{name:'全部证据'})).toBeNull();
   fireEvent.click(screen.getByRole('button',{name:/全部证据/}));
   expect(screen.getByRole('heading',{name:'全部证据'})).toBeTruthy();
   expect(screen.getByText(source.excerpt)).toBeTruthy();
   fireEvent.click(screen.getByRole('button',{name:'← 返回查询结果'}));
-  expect(screen.getByRole('heading',{name:'中等风险，慎重！！！'})).toBeTruthy();
+  expect(screen.getByRole('heading',{name:'中等风险，控制预付金额'})).toBeTruthy();
   expect(screen.queryByRole('heading',{name:'全部证据'})).toBeNull();
 });
 
@@ -47,7 +47,7 @@ it('keeps reviews and cashflow in separate pages',async()=>{
     cashflow:{mode:'sensitivity_only',unit:'指数，非企业实际金额',horizon_months:6,baseline:{period:'未知',description:'基线是试算假设'},facts:[],driver_source_ids:['s'],limitations:['不代表企业真实未来金额'],scenarios:[{name:'收款承压情景',inflow_change_pct:-20,outflow_change_pct:10,assumption:'试算假设',cumulative_net_min:-100,cumulative_net_max:50,months:[{month:1,inflow:100,outflow_min:80,outflow_max:120,net_min:-20,net_max:20}]}]}};
   vi.mocked(consumerApi.analyse).mockResolvedValue(enriched);
   await selectCandidate();fireEvent.click(screen.getByRole('button',{name:'查看企业变化'}));
-  await screen.findByRole('heading',{name:'中等风险，慎重！！！'});
+  await screen.findByRole('heading',{name:'中等风险，控制预付金额'});
   fireEvent.click(screen.getByRole('button',{name:/消费者怎么说/}));
   expect(screen.getByText('已审阅 1 / 1 条材料')).toBeTruthy();
   expect(screen.queryByText('收款承压情景',{selector:'th'})).toBeNull();
@@ -63,7 +63,7 @@ it('needs identity confirmation before analysis and retains the analysis request
   await selectCandidate();
   expect(consumerApi.analyse).not.toHaveBeenCalled();
   fireEvent.click(screen.getByRole('button',{name:'查看企业变化'}));
-  await screen.findByRole('heading',{name:'中等风险，慎重！！！'});
+  await screen.findByRole('heading',{name:'中等风险，控制预付金额'});
   expect(consumerApi.analyse).toHaveBeenCalledWith('inv','a',expect.objectContaining({amount_yuan:null,service_duration_months:null,intent:'initial_purchase'}),expect.any(AbortSignal),expect.any(Function));
   fireEvent.click(screen.getByRole('button',{name:/这家公司是谁/}));
   expect(screen.getByText('甲方调查结果')).toBeTruthy();
@@ -75,7 +75,7 @@ it('opens evidence details as a page with a return button',async()=>{
   await selectCandidate();
   for(const intent of ['top_up','renewal','explore','initial_purchase']) fireEvent.change(screen.getByLabelText('消费意图'),{target:{value:intent}});
   fireEvent.click(screen.getByRole('button',{name:'查看企业变化'}));
-  await screen.findByRole('heading',{name:'中等风险，慎重！！！'});
+  await screen.findByRole('heading',{name:'中等风险，控制预付金额'});
   fireEvent.click(screen.getByRole('button',{name:/全部证据/}));
   fireEvent.click(screen.getByRole('button',{name:'查看详情（1）'}));
   expect(screen.getByRole('heading',{name:'证据详情'})).toBeTruthy();
@@ -87,12 +87,12 @@ it('opens evidence details as a page with a return button',async()=>{
 
 it('returns to the query form for a new analysis',async()=>{
   await selectCandidate();fireEvent.click(screen.getByRole('button',{name:'查看企业变化'}));
-  await screen.findByRole('heading',{name:'中等风险，慎重！！！'});
+  await screen.findByRole('heading',{name:'中等风险，控制预付金额'});
   fireEvent.click(screen.getByRole('button',{name:'重新查询'}));
   fireEvent.change(screen.getByLabelText('消费意图'),{target:{value:'renewal'}});
-  expect(screen.queryByRole('heading',{name:'中等风险，慎重！！！'})).toBeNull();
+  expect(screen.queryByRole('heading',{name:'中等风险，控制预付金额'})).toBeNull();
   fireEvent.click(screen.getByRole('button',{name:'查看企业变化'}));
-  await screen.findByRole('heading',{name:'中等风险，慎重！！！'});
+  await screen.findByRole('heading',{name:'中等风险，控制预付金额'});
   expect(consumerApi.analyse).toHaveBeenLastCalledWith('inv','a',expect.objectContaining({intent:'renewal'}),expect.any(AbortSignal),expect.any(Function));
 });
 

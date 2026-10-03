@@ -129,8 +129,8 @@ def test_mcp_store_name_broadens_to_candidates_without_verifying_identity(monkey
     body = response.json()
     assert body["companies"][0]["name"] == "测试品牌有限公司"
     assert body["companies"][0]["credit_code"] == "913300000000000000"
-    assert "尚未核实" in body["search_note"]
-    assert "尚未证明" in body["identity_note"]
+    assert "已将搜索词扩展" in body["search_note"]
+    assert "合同抬头" in body["identity_note"]
     assert [query for _, query, _ in calls] == ["测试品牌(某分店)", "测试品牌"]
 
 
@@ -163,6 +163,7 @@ def test_mcp_report_retains_all_returned_details_and_marks_failures(monkeypatch)
     assert body["company_name"] == name and body["identity_status"] == "user_selected_unverified"
     assert body["data"]["经营范围"] == "健身"
     assert body["risk_scan"]["风险因子扫描"][0]["条目数"] == 120
+    assert body["assessment"]["label"] == "中等风险"
     judicial = next(section for section in body["sections"] if section["tool"] == "get_judicial_documents")
     assert len(judicial["data"]["裁判文书"]) == 120
     assert "企业概况" in body["failed_sections"]
