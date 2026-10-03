@@ -1,0 +1,11 @@
+Built-in image_gen; transparent_background=true.
+Reference: 52706e75e5201553b0ea44ea87ea1a2d.jpg, leftmost closed locker door.
+
+Use case: stylized-concept.
+Asset: one transparent PNG overlay for the front of a blue locker door on a website.
+Input image is a precise visual reference. COPY ONLY the pair of WHITE OPEN SHELVES AND THEIR OBJECTS on the LEFTMOST CLOSED DOOR. Match the reference closely, not a redesign.
+Composition: vertical 2:3 image, transparent background. Two equal width white shelves, vertically separated. Upper shelf occupies y=10% to 42%, lower shelf y=66% to 88%. Both shelves centered and x=10% to 86%. Clear empty gap between shelves for a separate text label. Entire object set about 80% canvas width.
+Upper: a white shallow OPEN L-shaped wall shelf with flat horizontal ledge, low front edge and upright short side supports. Two or three white/cream cards of differing heights stand upright, the tall card on the right. A slightly larger pale ice-blue illustrated paper card sits behind them, with a subtle investigation-style collage of tiny paper notes and simple line marks, no faces or legible words.
+Lower: identical white open ledge holding 3 slim pastel cream, pale yellow and lavender upright books, plus one smooth peach-pink sphere on the right, just like the reference. Side supports visible. Do NOT use deep storage baskets, rounded deep bins, pencil cups, envelopes, or bulky book blocks.
+Style: reference's clean bright soft 3D toy/clay rendering, white solid plastic shelves with tiny round bevels, visible extruded thickness, high-key colors. Both shelf boards project toward viewer; show top surface and right side. Camera almost straight-on, slightly above.
+Lighting: upper-left key light with clearly directional muted blue-gray cast shadows to lower right, like the reference's shelf shadows. Cast shadows semitransparent on otherwise fully transparent canvas. No ambient glowing halo, no floor or wall, no door, no frame, no ventilation grilles, no handle. Preserve genuine alpha. No words, logos or watermark. Do not add any extra objects.

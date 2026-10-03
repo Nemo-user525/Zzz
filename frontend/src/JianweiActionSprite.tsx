@@ -7,7 +7,15 @@ const vectorVersions = new Map(vectorManifest.assets.map(asset => [asset.file, a
 
 export type JianweiActionKind = 'observer' | 'researcher' | 'analyst' | 'binoculars' | 'connector' | 'guardian';
 
-type FieldworkKind = Exclude<JianweiActionKind, 'observer'>;
+export type FieldworkKind = Exclude<JianweiActionKind, 'observer'>;
+// Tight ink bounds with room for the small joint rotations. Keep source coordinates.
+export const fieldworkStages: Record<FieldworkKind, [number, number, number, number]> = {
+  analyst: [209, 16, 283, 613],
+  researcher: [43, 32, 578, 584],
+  binoculars: [187, 16, 273, 615],
+  connector: [151, 25, 418, 595],
+  guardian: [225, 31, 360, 602],
+};
 type SpriteProps = { kind: JianweiActionKind; className?: string; paused?: boolean };
 type Joint = { name: 'head' | 'hand'; path: string; pivot: [number, number] };
 
@@ -47,9 +55,11 @@ function FieldworkActionSprite({ kind, className = '', paused = false }: SpriteP
   const file = `/images/vectors/${kind}-actions.svg`;
   const source = `${file}?v=${vectorVersions.get(file)}#frame-0`;
   const parts = fieldworkJoints[kind];
+  const stage = fieldworkStages[kind];
   return <span ref={stageRef} className={`jw-action-sprite jw-action-sprite--${kind} ${className}`.trim()}
+    style={{ aspectRatio: `${stage[2]} / ${stage[3]}` }}
     data-action-playing={playing ? 'true' : 'false'} data-vector-frame="0" aria-hidden="true">
-    <svg viewBox="0 0 627 627" width="627" height="627" focusable="false" aria-hidden="true">
+    <svg viewBox={stage.join(' ')} width={stage[2]} height={stage[3]} focusable="false" aria-hidden="true">
       <defs>
         <mask id={`${id}-body`} maskUnits="userSpaceOnUse" x="0" y="0" width="627" height="627">
           <rect width="627" height="627" fill="white"/>

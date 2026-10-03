@@ -14,6 +14,7 @@
 .jw-blueprint .jw-agent-message h3{font:400 clamp(22px,2.3vw,29px)/1.5 var(--jw-serif);margin:24px 0 10px;color:#253e50}
 .jw-blueprint .jw-agent-message p{font-size:13px;line-height:1.9;color:#667985;margin:0;max-width:440px;overflow-wrap:anywhere}
 .jw-blueprint .jw-xiaox-agent .jw-query-form{display:grid;grid-template-columns:1fr;align-items:start;gap:22px;border:0;background:none;margin:0;padding:27px 0 0}
+.jw-blueprint.jw-task-active .jw-xiaox-agent .jw-query-form{grid-template-columns:minmax(0,1fr)}
 .jw-blueprint .jw-xiaox-agent .jw-query-form>label{font:13px/1.6 system-ui,sans-serif;color:#425b6b;gap:9px}
 .jw-blueprint .jw-xiaox-agent .jw-query-form input,.jw-blueprint .jw-xiaox-agent .jw-query-form select{border:1px solid #b2c1ca88;border-radius:7px;background:#fff;padding:13px 14px;min-height:49px;color:#263d4c;font-size:15px;line-height:1.5}
 .jw-blueprint .jw-xiaox-agent .jw-query-form input::placeholder{color:#8b989e}
@@ -24,7 +25,7 @@
 .jw-blueprint .jw-xiaox-agent .jw-optional-fields summary span{font-size:10px;margin-left:8px;color:#8b969d}
 .jw-blueprint .jw-xiaox-agent .jw-optional-fields>div{grid-template-columns:1fr 1fr;gap:17px;margin-top:22px}
 .jw-blueprint .jw-xiaox-agent .jw-optional-fields label:first-child{grid-column:1/-1}
-.jw-blueprint .jw-agent-submit{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-top:2px}
+.jw-blueprint .jw-agent-submit{display:flex;align-items:center;justify-content:flex-end;gap:16px;flex-wrap:wrap;padding-top:2px}
 .jw-blueprint .jw-agent-submit>small{font-size:11px;color:#819099}
 .jw-blueprint .jw-agent-submit>.consumer-primary{display:inline-flex;align-items:center;justify-content:center;gap:25px;background:var(--jw-blue);color:#fff;border:1px solid var(--jw-blue);border-radius:7px;box-shadow:none;min-height:48px;font:500 14px/1.5 system-ui,sans-serif;padding:13px 20px;cursor:pointer}
 .jw-blueprint .jw-agent-submit>.consumer-primary:hover{background:#00537f}
@@ -39,9 +40,14 @@
 .jw-blueprint .jw-xiaox-agent .consumer-message .ghost{margin:8px 0 0 10px;background:transparent;border:1px solid #006ca833;color:var(--jw-blue);border-radius:4px;cursor:pointer;padding:6px 10px;font:12px system-ui,sans-serif}
 .jw-blueprint .jw-xiaox-agent.is-searching .jw-agent-state>i{background:var(--jw-blue);animation:jw-xiaox-signal 1.5s ease-in-out infinite}
 .jw-blueprint .jw-workflow-page .jw-xiaox-agent{padding-top:0;border-top:0;gap:clamp(30px,5vw,75px)}
+.jw-blueprint .jw-agent-decoration{width:min(100%,clamp(220px,25vw,300px));margin:clamp(24px,3vw,42px) auto 0;pointer-events:none;user-select:none}
+.jw-blueprint .jw-agent-decoration>.jw-xiaox-motion{width:100%}
 @keyframes jw-xiaox-signal{50%{opacity:.35}}
 @media(max-width:850px){
- .jw-blueprint .jw-xiaox-agent{gap:32px;grid-template-columns:minmax(0,.72fr) minmax(0,1.28fr)}
+ .jw-blueprint .jw-xiaox-agent,.jw-blueprint .jw-workflow-page .jw-xiaox-agent{gap:24px;grid-template-columns:minmax(0,1fr)}
+ .jw-blueprint .jw-agent-intro{display:grid;grid-template-columns:minmax(0,1fr) clamp(150px,25vw,200px);column-gap:20px;align-items:start}
+ .jw-blueprint .jw-agent-intro>.jw-agent-eyebrow,.jw-blueprint .jw-agent-intro>h1,.jw-blueprint .jw-agent-intro>h2,.jw-blueprint .jw-agent-intro>.jw-agent-intro-copy{grid-column:1}
+ .jw-blueprint .jw-agent-decoration{grid-column:2;grid-row:1 / 4;width:100%;margin:0;align-self:center}
  .jw-blueprint .jw-agent-intro>h1,.jw-blueprint .jw-agent-intro>h2{font-size:39px}
  .jw-blueprint .jw-agent-card{padding:24px}
  .jw-blueprint .jw-agent-submit{gap:12px}
@@ -50,13 +56,14 @@
 }
 @media(max-width:620px){
  .jw-blueprint .jw-agent-home-entry{padding:36px 6% 55px;scroll-margin-top:88px}
- .jw-blueprint .jw-xiaox-agent{grid-template-columns:1fr;gap:23px;padding-top:28px}
- .jw-blueprint .jw-agent-intro{position:relative;min-height:0;padding-right:0}
+ .jw-blueprint .jw-xiaox-agent,.jw-blueprint .jw-workflow-page .jw-xiaox-agent{grid-template-columns:minmax(0,1fr);gap:22px;padding-top:28px}
+ .jw-blueprint .jw-workflow-page .jw-xiaox-agent{padding-top:0}
+ .jw-blueprint .jw-agent-intro{position:relative;min-height:0;padding-right:0;grid-template-columns:minmax(0,1fr) clamp(96px,29vw,160px);column-gap:8px}
  .jw-blueprint .jw-agent-eyebrow{font-size:9px;letter-spacing:.1em;margin-bottom:18px;white-space:nowrap}
  .jw-blueprint .jw-agent-eyebrow>span{margin:0 5px}
- .jw-blueprint .jw-agent-intro>h1,.jw-blueprint .jw-agent-intro>h2{font-size:31px;line-height:1.4}
+ .jw-blueprint .jw-agent-intro>h1,.jw-blueprint .jw-agent-intro>h2{font-size:clamp(25px,6.8vw,31px);line-height:1.4}
  .jw-blueprint .jw-agent-intro-copy{font-size:12px;line-height:1.8;margin-top:12px}
- .jw-blueprint .jw-agent-card{padding:23px 20px;border-radius:12px}
+ .jw-blueprint .jw-agent-card{padding:23px clamp(16px,4vw,20px);border-radius:12px}
  .jw-blueprint .jw-agent-card-top{padding-bottom:18px}
  .jw-blueprint .jw-agent-state{font-size:10px}
  .jw-blueprint .jw-agent-message h3{font-size:23px;margin-top:21px}
@@ -69,6 +76,4 @@
  .jw-blueprint .jw-agent-plan li>span{font-size:14px}
  .jw-blueprint .jw-agent-footnote{font-size:11px;margin-top:20px}
 }
-.jw-blueprint .jw-agent-voice-tip{margin:35px 0 0;font:12px/1.9 system-ui,sans-serif;color:#72828c}
-@media(max-width:620px){.jw-blueprint .jw-agent-voice-tip{margin:14px 0 0}.jw-blueprint .jw-agent-intro>h1>span,.jw-blueprint .jw-agent-intro>h2>span{display:inline}}
 @media(prefers-reduced-motion:reduce){.jw-blueprint .jw-xiaox-agent.is-searching .jw-agent-state>i{animation:none}}

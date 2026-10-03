@@ -25,32 +25,121 @@
   animation: jw-person-head-action 6.5s ease-in-out infinite;
   animation-play-state: paused;
 }
-.jw-person-joint--hand { animation: jw-person-hand-action 5.4s ease-in-out infinite; }
-.jw-person-joint--papers { animation: jw-person-paper-action 7s ease-in-out infinite; }
+.jw-person-joint--hand { animation-name: jw-person-hand-action; animation-duration: 5.4s; }
+.jw-person-joint--papers, .jw-person-joint--paper-lower { animation-name: jw-person-paper-action; animation-duration: 7s; }
 .jw-person[data-action-playing="false"] .jw-person-joint { animation-play-state: paused; }
 .jw-person[data-action-playing="true"] .jw-person-joint { animation-play-state: running; }
-.jw-person--analyst .jw-person-joint { animation-delay: -1.6s; }
-.jw-person--researcher .jw-person-joint { animation-delay: -3.1s; animation-duration: 4.6s; }
-.jw-person--connector .jw-person-joint { animation-delay: -4.2s; }
-.jw-person--checker .jw-person-joint { animation-delay: -2.4s; animation-duration: 7.2s; }
-.jw-person--translator .jw-person-joint { animation-delay: -5.1s; animation-duration: 8.1s; }
-.jw-person--guardian .jw-person-joint { animation-delay: -3.7s; }
+
+/* Each portrait makes one small, task-specific gesture, then rests.
+   Head and hand share a clock where the action should feel coordinated. */
+.jw-person--team.jw-person--detective .jw-person-joint { animation-duration: 7.6s; animation-delay: -1.1s; }
+.jw-person--team.jw-person--detective .jw-person-joint--head { animation-name: jw-team-detective-look; }
+.jw-person--team.jw-person--detective .jw-person-joint--hand { animation-name: jw-team-magnifier-lift; }
+.jw-person--team.jw-person--analyst .jw-person-joint { animation-duration: 8.2s; animation-delay: -2.9s; }
+.jw-person--team.jw-person--analyst .jw-person-joint--head { animation-name: jw-team-analyst-read; }
+.jw-person--team.jw-person--analyst .jw-person-joint--hand { animation-name: jw-team-analyst-hold; }
+.jw-person--team.jw-person--analyst .jw-person-joint--papers { animation-duration: 7.2s; animation-delay: -1.4s; }
+.jw-person--team.jw-person--analyst .jw-person-joint--paper-lower { animation-duration: 8.4s; animation-delay: -4.1s; animation-direction: reverse; }
+.jw-person--team.jw-person--researcher .jw-person-joint { animation-duration: 6.4s; animation-delay: -3.8s; }
+.jw-person--team.jw-person--researcher .jw-person-joint--head { animation-name: jw-team-researcher-read; }
+.jw-person--team.jw-person--researcher .jw-person-joint--hand { animation-name: jw-team-keyboard-tap; }
+.jw-person--team.jw-person--connector .jw-person-joint { animation-duration: 8.8s; animation-delay: -5.2s; }
+.jw-person--team.jw-person--connector .jw-person-joint--head { animation-name: jw-team-connector-look; }
+.jw-person--team.jw-person--connector .jw-person-joint--hand { animation-name: jw-team-connector-point; }
+.jw-person--team.jw-person--checker .jw-person-joint { animation-duration: 9.2s; animation-delay: -2.1s; }
+.jw-person--team.jw-person--checker .jw-person-joint--head { animation-name: jw-team-checker-read; }
+.jw-person--team.jw-person--checker .jw-person-joint--hand { animation-name: jw-team-checker-confirm; }
+.jw-person--team.jw-person--translator .jw-person-joint { animation-name: jw-team-translator-look; animation-duration: 10.4s; animation-delay: -6.4s; }
+.jw-person--team.jw-person--guardian .jw-person-joint { animation-duration: 9.6s; animation-delay: -4.3s; }
+.jw-person--team.jw-person--guardian .jw-person-joint--head { animation-name: jw-team-guardian-look; }
+.jw-person--team.jw-person--guardian .jw-person-joint--hand { animation-name: jw-team-guardian-scan; }
+
+.jw-person--fieldwork.jw-person--checker .jw-person-joint { animation-delay: -2.4s; animation-duration: 7.2s; }
+.jw-person--fieldwork.jw-person--translator .jw-person-joint { animation-delay: -5.1s; animation-duration: 8.1s; }
 
 @keyframes jw-person-head-action {
   0%, 17%, 88%, 100% { transform: rotate(0); }
-  35%, 48% { transform: rotate(2.5deg); }
-  64%, 72% { transform: rotate(-1.2deg); }
+  35%, 48% { transform: rotate(1.6deg); }
+  64%, 72% { transform: rotate(-.8deg); }
 }
 @keyframes jw-person-hand-action {
   0%, 22%, 90%, 100% { transform: rotate(0); }
-  40%, 54% { transform: rotate(-3.5deg); }
-  63% { transform: rotate(-1.4deg); }
-  72%, 79% { transform: rotate(-2.6deg); }
+  40%, 54% { transform: rotate(-2deg); }
+  63% { transform: rotate(-.8deg); }
+  72%, 79% { transform: rotate(-1.5deg); }
 }
 @keyframes jw-person-paper-action {
   0%, 18%, 90%, 100% { transform: translateY(0) rotate(0); }
-  42%, 55% { transform: translateY(-3px) rotate(1.2deg); }
-  72% { transform: translateY(-1px) rotate(-.7deg); }
+  42%, 55% { transform: translateY(-3px) rotate(1.8deg); }
+  72% { transform: translateY(-1px) rotate(-1deg); }
+}
+@keyframes jw-team-detective-look {
+  0%, 16%, 71%, 100% { transform: rotate(0); }
+  30%, 45% { transform: rotate(2.8deg); }
+  56% { transform: rotate(.5deg); }
+}
+@keyframes jw-team-magnifier-lift {
+  0%, 13%, 73%, 100% { transform: rotate(0); }
+  28%, 43% { transform: rotate(-3.2deg); }
+  52% { transform: rotate(-1.4deg); }
+  59% { transform: rotate(-2deg); }
+}
+@keyframes jw-team-analyst-read {
+  0%, 17%, 77%, 100% { transform: rotate(0); }
+  34%, 47% { transform: rotate(2.7deg); }
+  61% { transform: rotate(-.5deg); }
+}
+@keyframes jw-team-analyst-hold {
+  0%, 25%, 69%, 100% { transform: rotate(0); }
+  39%, 49% { transform: rotate(-1.1deg); }
+  57% { transform: rotate(-.5deg); }
+}
+@keyframes jw-team-researcher-read {
+  0%, 15%, 78%, 100% { transform: rotate(0); }
+  32%, 55% { transform: rotate(2.6deg); }
+  67% { transform: rotate(-.4deg); }
+}
+@keyframes jw-team-keyboard-tap {
+  0%, 25%, 37%, 48%, 60%, 100% { transform: rotate(0); }
+  31%, 43% { transform: rotate(3.2deg); }
+  54% { transform: rotate(2deg); }
+}
+@keyframes jw-team-connector-look {
+  0%, 18%, 79%, 100% { transform: rotate(0); }
+  32%, 47% { transform: rotate(-2.6deg); }
+  62% { transform: rotate(.6deg); }
+}
+@keyframes jw-team-connector-point {
+  0%, 23%, 77%, 100% { transform: rotate(0); }
+  38%, 45% { transform: rotate(-2.8deg); }
+  52% { transform: rotate(-.7deg); }
+  60% { transform: rotate(-1.3deg); }
+}
+@keyframes jw-team-checker-read {
+  0%, 15%, 79%, 100% { transform: rotate(0); }
+  33%, 43% { transform: rotate(2.8deg); }
+  55% { transform: rotate(.4deg); }
+  63% { transform: rotate(1deg); }
+}
+@keyframes jw-team-checker-confirm {
+  0%, 28%, 76%, 100% { transform: rotate(0); }
+  45%, 54% { transform: rotate(-1.8deg); }
+  64% { transform: rotate(-.5deg); }
+}
+@keyframes jw-team-translator-look {
+  0%, 13%, 81%, 100% { transform: rotate(0); }
+  31%, 45% { transform: rotate(-3deg); }
+  60%, 65% { transform: rotate(.6deg); }
+}
+@keyframes jw-team-guardian-look {
+  0%, 14%, 86%, 100% { transform: rotate(0); }
+  29%, 42% { transform: rotate(-2.6deg); }
+  60%, 67% { transform: rotate(.8deg); }
+}
+@keyframes jw-team-guardian-scan {
+  0%, 18%, 83%, 100% { transform: rotate(0); }
+  34%, 42% { transform: rotate(-1.8deg); }
+  61%, 68% { transform: rotate(.7deg); }
 }
 
 .jw-team {
@@ -101,6 +190,8 @@
 }
 
 .jw-team-members > li { min-width: 0; scroll-snap-align: start; }
+.jw-team-members > .jw-team-member-copy { display: none; }
+.jw-team-members:focus-visible { outline: 2px solid var(--jw-blue); outline-offset: 6px; }
 
 .jw-team-portrait {
   height: clamp(140px, 12.4vw, 176px);
@@ -148,10 +239,29 @@
   .jw-team-heading { padding-top: 27px; }
   .jw-team-mobile-break { display: block; }
   .jw-team-heading h2 { font-size: 29px; }
-  .jw-team-members { margin-top: 36px; }
+  .jw-team-members {
+    margin-top: 36px;
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: clamp(78px, 23.5vw, 112px);
+    gap: 14px;
+    padding-bottom: 8px;
+    scroll-snap-type: none;
+    scroll-behavior: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .jw-team-members::-webkit-scrollbar { display: none; }
+  .jw-team-members > .jw-team-member-copy { display: list-item; }
+  .jw-team-portrait { height: clamp(96px, 28vw, 128px); margin-bottom: 13px; }
+  .jw-team-members h3 { font-size: 14px; margin-bottom: 7px; }
+  .jw-team-members p { font-size: 11px; line-height: 1.75; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .jw-person, .jw-person-joint { animation: none; }
+  .jw-person,
+  .jw-person.jw-person--team .jw-person-joint,
+  .jw-person.jw-person--fieldwork .jw-person-joint { animation: none; }
   .jw-team-members { scroll-snap-type: none; }
+  .jw-team-members > .jw-team-member-copy { display: none; }
 }

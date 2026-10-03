@@ -121,7 +121,7 @@ def test_langgraph_model_actually_selects_tools_and_synthesizes(rig,monkeypatch)
     assert (NAME+' 最新门店承接公告','智能体补查') in rig[0]
     assert any(i.agent_findings for i in r.indicators)
     assert r.criteria['matches'] and len(calls)==4
-    assert r.risk.model_assessed and r.risk.level=='undetermined'
+    assert r.risk.model_assessed and r.risk.level=='medium'
 
 
 def test_agent_loop_is_bounded_even_if_model_keeps_requesting_tools(rig,monkeypatch):

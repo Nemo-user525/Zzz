@@ -1,5 +1,7 @@
 import { useEffect, useId, useRef } from 'react';
 
+const FAN_IMAGE = '/images/hz-fan-reference.jpg';
+
 /** The reference site's coin cadence and sine-in descent, applied to the supplied fan. */
 export function JianweiFanRain() {
   const host = useRef<HTMLDivElement>(null);
@@ -18,9 +20,15 @@ export function JianweiFanRain() {
     let x = 0;
     let angle = 0;
     let spin = 0;
+    let imageReady = false;
+    let hasSpawned = false;
+    let disposed = false;
+    const preload = new Image();
+    preload.fetchPriority = 'low';
+    preload.decoding = 'async';
     const random = (low: number, high: number) => low + Math.random() * (high - low);
     const tick = (now: number) => {
-      if (!active || document.hidden || reduced.matches) return;
+      if (disposed || !active || document.hidden || reduced.matches) return;
       elapsed += last ? now - last : 0;
       last = now;
       const progress = Math.min(elapsed / duration, 1);
@@ -30,7 +38,7 @@ export function JianweiFanRain() {
       else { active.remove(); active = null; }
     };
     const spawn = () => {
-      if (document.hidden || reduced.matches || active || !host.current) return;
+      if (disposed || !imageReady || document.hidden || reduced.matches || active || !host.current) return;
       const ns = 'http://www.w3.org/2000/svg';
       active = document.createElementNS(ns, 'svg');
       active.setAttribute('viewBox', '55 75 630 435');
@@ -58,7 +66,7 @@ export function JianweiFanRain() {
       filter.append(redToAlpha, transfer);
       defs.append(filter);
       const image = document.createElementNS(ns, 'image');
-      image.setAttribute('href', '/images/hz-fan-reference.jpg');
+      image.setAttribute('href', FAN_IMAGE);
       image.setAttribute('width', '740');
       image.setAttribute('height', '740');
       image.setAttribute('filter', `url(#${cutoutId})`);
@@ -73,12 +81,13 @@ export function JianweiFanRain() {
       elapsed = 0; last = 0;
       active.style.transform = `translate3d(${x}px,${-size * 1.4}px,0) rotate(${angle}deg)`;
       host.current.append(active);
+      hasSpawned = true;
       frame = requestAnimationFrame(tick);
     };
-    const schedule = (first = false) => {
+    const schedule = () => {
       clearTimeout(timer);
-      if (reduced.matches || document.hidden) return;
-      timer = setTimeout(() => { spawn(); schedule(); }, first ? random(2500, 4000) : random(8000, 16000));
+      if (disposed || !imageReady || reduced.matches || document.hidden) return;
+      timer = setTimeout(() => { spawn(); schedule(); }, hasSpawned ? random(8000, 16000) : 450);
     };
     const visibility = () => {
       clearTimeout(timer); cancelAnimationFrame(frame); last = 0;
@@ -90,13 +99,23 @@ export function JianweiFanRain() {
     const preference = () => {
       clearTimeout(timer); cancelAnimationFrame(frame);
       active?.remove(); active = null;
-      schedule(true);
+      schedule();
     };
-    schedule(true);
+    preload.onload = () => {
+      const decoding = typeof preload.decode === 'function' ? preload.decode() : Promise.resolve();
+      void decoding.catch(() => undefined).then(() => {
+        if (disposed) return;
+        imageReady = true;
+        schedule();
+      });
+    };
+    preload.src = FAN_IMAGE;
     document.addEventListener('visibilitychange', visibility);
     reduced.addEventListener('change', preference);
     return () => {
-      clearTimeout(timer); cancelAnimationFrame(frame); active?.remove();
+      disposed = true;
+      preload.onload = null;
+      clearTimeout(timer); cancelAnimationFrame(frame); active?.remove(); active = null;
       document.removeEventListener('visibilitychange', visibility);
       reduced.removeEventListener('change', preference);
     };

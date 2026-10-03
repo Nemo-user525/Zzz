@@ -1,15 +1,17 @@
 import type { ReactNode } from 'react';
+import { XiaoXMotion, type XiaoXActivity } from './XiaoXMotion';
 import './xiaox-agent.css';
 
 type XiaoXAgentProps = {
   children: ReactNode;
   feedback: ReactNode;
   busy: boolean;
+  activity?: XiaoXActivity;
   query: string;
   standalone?: boolean;
 };
 
-export function XiaoXAgent({ children, feedback, busy, query, standalone = false }: XiaoXAgentProps) {
+export function XiaoXAgent({ children, feedback, busy, query, activity, standalone = false }: XiaoXAgentProps) {
   const Heading = standalone ? 'h1' : 'h2';
 
   return <section className={'jw-xiaox-agent' + (busy ? ' is-searching' : '')} aria-labelledby="jw-agent-title">
@@ -17,7 +19,9 @@ export function XiaoXAgent({ children, feedback, busy, query, standalone = false
       <p className="jw-agent-eyebrow">观察查 <span>/</span> YOUR AI AGENT</p>
       <Heading id="jw-agent-title" tabIndex={-1}>你好，我是<span>小 X。</span></Heading>
       <p className="jw-agent-intro-copy">复杂的世界里，<br/>我陪你多看一眼。</p>
-      <p className="jw-agent-voice-tip">也可以点右下角的小狗，<br/>直接说给我听。</p>
+      <div className="jw-agent-decoration" aria-hidden="true">
+        <XiaoXMotion activity={activity ?? (busy ? 'searching' : 'idle')}/>
+      </div>
     </div>
     <div className="jw-agent-desk">
       <div className="jw-agent-card">

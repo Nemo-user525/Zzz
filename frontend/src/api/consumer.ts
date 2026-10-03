@@ -13,37 +13,63 @@ export type Cashflow = {mode:'evidence_anchored'|'sensitivity_only'; unit:string
 export type Analysis = {analysis_id:string; company_id:string; generated_at:string; evidence_as_of:string; mode:string; fallback:boolean; coverage_status:string; identity:Candidate; summary:string; changes:{id:string; title:string; fact_text:string; source_ids:string[]; consumer_relevance:string; event_date:string|null; published_at:string|null; stage:string; missing_evidence:string[]; interpretations:{text:string; supporting_source_ids:string[]; counter_source_ids:string[]}[]}[]; questions:string[]; unknowns:string[]; sources:Evidence[]; trace:Step[]; criteria:Criteria; counter_search_status:string; counter_source_ids:string[]; agent_status:string; indicators:Indicator[]; agent_framework:string; agent_model_used:boolean; agent_rounds:number};
 export type Capabilities = {search:string; qcc_configured:boolean; llm_mode:string; model_name?:string; agent_framework:string; agent_enabled:boolean; xiaohongshu:string; criteria:Criteria};
 export type RiskAnalysis = Analysis & {risk?:Risk; source_stats?:Record<string,number>; reviews?:Reviews; cashflow?:Cashflow};
+type ProgressHandler = (message: string) => void;
+type ResearchJob<T> = {status:string;message:string;result:T|null};
 async function request<T>(path:string, body?:unknown, signal?:AbortSignal):Promise<T> {
-  const timeout = AbortSignal.timeout(190000);
-  const response = await fetch('/api/consumer' + path, {method:body ? 'POST' : 'GET', headers:{'Content-Type':'application/json'}, body:body ? JSON.stringify(body) : undefined, signal:signal ? AbortSignal.any([signal,timeout]) : timeout});
-  const data = await response.json().catch(() => null);
-  if (!response.ok || !data) throw new ApiError(data?.code || 'research_error', data?.message || `查询失败（${response.status}），请重试`);
-  return data;
+  try {
+    const timeout = AbortSignal.timeout(30000);
+    const response = await fetch('/api/consumer' + path, {method:body ? 'POST' : 'GET', cache:'no-store', headers:{'Content-Type':'application/json'}, body:body ? JSON.stringify(body) : undefined, signal:signal ? AbortSignal.any([signal,timeout]) : timeout});
+    const data = await response.json().catch(() => null);
+    const error = data?.detail || data;
+    if (!response.ok || !data) throw new ApiError(error?.code || 'research_error', error?.message || (typeof error === 'string' ? error : `查询失败（${response.status}），请重试`));
+    return data;
+  } catch(error) {
+    if (signal?.aborted) throw new DOMException('Aborted','AbortError');
+    if (error instanceof ApiError) throw error;
+    throw new ApiError('network_error', '连接暂时中断或响应超时，请重试。当前填写内容已保留。');
+  }
+}
+async function pause(signal?:AbortSignal) {
+  await new Promise<void>((resolve,reject)=>{
+    const done=()=>{signal?.removeEventListener('abort',abort);resolve();};
+    const id=setTimeout(done,1500);
+    const abort=()=>{clearTimeout(id);signal?.removeEventListener('abort',abort);reject(new DOMException('Aborted','AbortError'));};
+    signal?.addEventListener('abort',abort,{once:true});
+    if(signal?.aborted) abort();
+  });
+}
+async function runJob<T>(path:string,body:unknown,signal?:AbortSignal,onProgress?:ProgressHandler):Promise<T> {
+  const {job_id}=await request<{job_id:string}>(path,body,signal);
+  const cancel=()=>{void fetch('/api/consumer/jobs/'+job_id,{method:'DELETE'}).catch(()=>{});};
+  signal?.addEventListener('abort',cancel,{once:true});
+  const deadline=Date.now()+1800000;
+  let failures=0;
+  try {
+    while(Date.now()<deadline) {
+      if(signal?.aborted) throw new DOMException('Aborted','AbortError');
+      let job:ResearchJob<T>;
+      try {
+        job=await request<ResearchJob<T>>('/jobs/'+job_id,undefined,signal);
+        failures=0;
+      } catch(error) {
+        // Retry only progress reads; never create a second investigation for a lost POST.
+        if(error instanceof ApiError && error.code==='network_error' && ++failures<=3 && !signal?.aborted) {
+          onProgress?.('连接暂时中断，正在重新获取进度…');
+          await pause(signal);continue;
+        }
+        throw error;
+      }
+      onProgress?.(job.message);
+      if(job.status==='completed' && job.result) return job.result;
+      if(job.status==='failed'||job.status==='cancelled') throw new Error(job.message);
+      await pause(signal);
+    }
+    throw new Error('调查时间超出上限，请重试');
+  } catch(error) {cancel();throw error;}
+  finally {signal?.removeEventListener('abort',cancel);}
 }
 export const consumerApi = {
   capabilities:(signal?:AbortSignal) => request<Capabilities>('/capabilities',undefined,signal),
-  discover:(query:string,location:string,signal?:AbortSignal) => request<Discovery>('/discovery',{query,location},signal),
-  analyse:async(investigation_id:string,candidate_id:string,conditions:Conditions,signal?:AbortSignal,onProgress?:(message:string)=>void):Promise<RiskAnalysis> => {
-    const {job_id}=await request<{job_id:string}>('/jobs',{investigation_id,candidate_id,...conditions},signal);
-    const cancel=()=>{void fetch('/api/consumer/jobs/'+job_id,{method:'DELETE'}).catch(()=>{});};
-    signal?.addEventListener('abort',cancel,{once:true});
-    try {
-      for(let attempt=0;attempt<900;attempt++) {
-        if(signal?.aborted) throw new DOMException('Aborted','AbortError');
-        const job=await request<{status:string;message:string;result:RiskAnalysis|null}>('/jobs/'+job_id,undefined,signal);
-        onProgress?.(job.message);
-        if(job.status==='completed' && job.result) return job.result;
-        if(job.status==='failed'||job.status==='cancelled') throw new Error(job.message);
-        await new Promise<void>((resolve,reject)=>{
-          const done=()=>{signal?.removeEventListener('abort',abort);resolve();};
-          const id=setTimeout(done,2000);
-          const abort=()=>{clearTimeout(id);signal?.removeEventListener('abort',abort);reject(new DOMException('Aborted','AbortError'));};
-          signal?.addEventListener('abort',abort,{once:true});
-          if(signal?.aborted) abort();
-        });
-      }
-      throw new Error('调查时间超出上限，请重试');
-    } catch(error) {cancel();throw error;}
-    finally {signal?.removeEventListener('abort',cancel);}
-  },
+  discover:(query:string,location:string,signal?:AbortSignal) => runJob<Discovery>('/discovery/jobs',{query,location},signal),
+  analyse:(investigation_id:string,candidate_id:string,conditions:Conditions,signal?:AbortSignal,onProgress?:ProgressHandler) => runJob<RiskAnalysis>('/jobs',{investigation_id,candidate_id,...conditions},signal,onProgress),
 };

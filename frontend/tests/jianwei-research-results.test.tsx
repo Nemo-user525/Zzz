@@ -19,16 +19,45 @@ const response: RiskAnalysis = {
 
 afterEach(cleanup);
 
-it('preserves backend uncertainty and low confidence across summary, risk, reviews and cashflow', () => {
-  render(<JianweiResearchResults report={response} showSources={vi.fn()} />);
-  expect(screen.getByText(response.summary)).toBeTruthy();
-  expect(screen.getByRole('heading', { name: '低确信度' })).toBeTruthy();
-  expect(screen.queryByRole('heading', { name: '中等确信度' })).toBeNull();
-  expect(screen.getByText(response.risk!.confidence_explanation!)).toBeTruthy();
-  expect(screen.getByText(response.risk!.review_impact!)).toBeTruthy();
-  expect(screen.getByText(response.risk!.cashflow_impact!)).toBeTruthy();
+it('retains all six evidence sections when a saved report returns only part of the analysis', () => {
+  render(<JianweiResearchResults report={response} showSources={vi.fn()} sections="details" />);
+  const section = screen.getByRole('region', { name: '分项调查结果' });
+  expect(within(section).getByRole('heading', { name: '六项证据指标' })).toBeTruthy();
+  expect(Array.from(section.querySelectorAll('[data-indicator]')).map(row => row.getAttribute('data-indicator')))
+    .toEqual(['identity', 'continuity', 'refund', 'changes', 'counter', 'coverage']);
+  expect(within(section).getAllByText('本次未返回该项分析。')).toHaveLength(5);
+  expect(within(section).getByText(response.indicators[0].explanation).closest('details')).toBeNull();
+  expect(within(section).getByRole('heading', { name: '判断依据够不够' })).toBeTruthy();
+});
+
+it('leads with low risk and an action even when source confidence is low', () => {
+  const lowRiskReport: RiskAnalysis = { ...response, risk: { ...response.risk!, level: 'low', label: '低风险', explanation: '现有材料持续显示经营稳定、履约记录良好。' } };
+  render(<JianweiResearchResults report={lowRiskReport} showSources={vi.fn()} />);
+  const conclusion = screen.getByRole('region', { name: '风险结论' });
+  expect(within(conclusion).getByRole('heading', { name: '低风险' })).toBeTruthy();
+  expect(within(conclusion).getByText('可继续考虑，优先选择按次或短期购买。')).toBeTruthy();
+  expect(within(conclusion).getByText(lowRiskReport.risk!.explanation)).toBeTruthy();
+  expect(within(conclusion).getByText('基于本次检索资料的风险初判')).toBeTruthy();
+  expect(screen.getByRole('heading', { name: '判断确信度' }).closest('details')?.open).toBe(false);
+  expect(screen.getByText(response.summary).closest('details')?.open).toBe(false);
+  expect(screen.getByText(response.risk!.confidence_explanation!).closest('details')?.open).toBe(false);
+  expect(screen.getByText(response.risk!.limitations[0]).closest('details')?.open).toBe(false);
+  fireEvent.click(screen.getByText('查看资料范围与判断说明'));
+  expect(screen.getByRole('heading', { name: '判断确信度' }).closest('details')?.open).toBe(true);
+  expect(screen.getByText('低确信度')).toBeTruthy();
+});
+
+it('retains report context, fallback status and material limits in closed details', () => {
+  render(<JianweiResearchResults report={{ ...response, fallback: true }} showSources={vi.fn()} />);
+  expect(screen.getByText(/备用分析：已启用/).closest('details')?.open).toBe(false);
+  expect(screen.getByText(response.summary).closest('details')?.open).toBe(false);
+  expect(screen.getByText(response.risk!.review_impact!).closest('details')?.open).toBe(false);
+  expect(screen.getByText(response.risk!.cashflow_impact!).closest('details')?.open).toBe(false);
   expect(screen.getByText(response.reviews!.observations[0].summary)).toBeTruthy();
-  expect(screen.getByText(response.risk!.limitations[0])).toBeTruthy();
+  expect(screen.getByText('不代表未来预测。')).toBeTruthy();
+  fireEvent.click(screen.getByText('评价与收支情景'));
+  expect(screen.getByRole('region', { name: '未来收支模拟' })).toBeTruthy();
+  expect(screen.getByText(/变化百分比是试算假设/)).toBeTruthy();
 });
 
 it('opens only supplied source records and explicitly marks unavailable citations', () => {
@@ -38,6 +67,7 @@ it('opens only supplied source records and explicitly marks unavailable citation
   fireEvent.click(within(indicators).getByRole('button', { name: '查看依据 · 1 条 ↗' }));
   expect(showSources).toHaveBeenCalledWith([evidence]);
   expect(within(indicators).getByText('1 条引用来源未返回，暂不可核对')).toBeTruthy();
+  expect(within(indicators).getByText('1 条引用来源未返回，暂不可核对').closest('details')?.open).toBe(false);
   const assessment = screen.getByRole('region', { name: '决策提示与判断依据' });
   expect(within(assessment).queryByRole('button')).toBeNull();
   expect(within(assessment).getByText('1 条引用来源未返回，暂不可核对')).toBeTruthy();
@@ -49,6 +79,7 @@ it('opens only supplied source records and explicitly marks unavailable citation
 
 it('uses the response horizon for cashflow table headers and the monthly formula', () => {
   render(<JianweiResearchResults report={response} showSources={vi.fn()} />);
+  fireEvent.click(screen.getByText('评价与收支情景'));
   expect(screen.getByRole('columnheader', { name: '第 9 月收款变化' })).toBeTruthy();
   expect(screen.getByRole('columnheader', { name: '第 9 月支出变化' })).toBeTruthy();
   expect(screen.getByRole('columnheader', { name: '9 个月累计收支差额' })).toBeTruthy();
@@ -56,10 +87,25 @@ it('uses the response horizon for cashflow table headers and the monthly formula
   expect(screen.queryByText(/第 6 月收款变化|6 个月累计收支差额|月份÷6/)).toBeNull();
 });
 
-it('shows missing assessments as unavailable instead of assigning a confidence or a safe result', () => {
+it('gives a provisional medium payment decision for an unavailable assessment without alleging company misconduct', () => {
   render(<JianweiResearchResults report={{ ...response, risk: undefined, reviews: undefined, cashflow: undefined, indicators: [], changes: [], questions: [] }} showSources={vi.fn()} />);
-  expect(screen.getByText('本次未返回决策评估，不能据此认定风险高低。')).toBeTruthy();
+  expect(screen.getByRole('heading', { name: '中风险' })).toBeTruthy();
+  expect(screen.getByText('建议控制预付金额，选择短期或按次支付。')).toBeTruthy();
+  expect(screen.getByText('预付决策建议，不表示企业已发生经营问题')).toBeTruthy();
+  expect(screen.queryByRole('heading', { name: '低风险' })).toBeNull();
   expect(screen.queryByRole('heading', { name: /确信度/ })).toBeNull();
   expect(screen.getByText('本次未形成可展示的变化记录，不代表企业没有变化。')).toBeTruthy();
   expect(screen.getByText('本次未返回进一步核对的问题。')).toBeTruthy();
+});
+
+it('keeps adverse and opposing evidence visible and renders the conclusion only in the summary', () => {
+  const report: RiskAnalysis = { ...response, risk: { ...response.risk!, level: 'low', explanation: '综合资料判断低风险。', reasons: [{ direction: 'adverse', explanation: '仍有退款延迟记录。', citations: [{ source_id: evidence.id, quote: '退款目前延迟三日。' }] }] } };
+  const { rerender } = render(<JianweiResearchResults report={report} showSources={vi.fn()} />);
+  expect(screen.getAllByRole('heading', { name: '低风险' })).toHaveLength(1);
+  expect(screen.getByText('仍有退款延迟记录。').closest('details')).toBeNull();
+  expect(screen.getByText('退款目前延迟三日。').closest('details')).toBeNull();
+  expect(screen.getByText(report.changes[0].interpretations[0].text).closest('details')).toBeNull();
+  rerender(<JianweiResearchResults report={report} showSources={vi.fn()} sections="details" />);
+  expect(screen.queryByRole('heading', { name: '低风险' })).toBeNull();
+  expect(screen.getByRole('region', { name: '分项调查结果' })).toBeTruthy();
 });

@@ -1,8 +1,9 @@
 """Build actual SVG paths from the approved character artwork and performance.
 
 Build-only dependency: vtracer. No raster images are embedded in any result.
-Preserve the source performance in 60 discrete frames at 12 fps, and the four
-different drawn poses of each fieldwork sprite. All paths use a fixed stage.
+Preserve the source performance in 60 discrete frames at 12 fps. Fieldwork
+characters keep their full-resolution first pose for articulated joint motion.
+All paths use the original fixed stage so joint coordinates remain exact.
 """
 from pathlib import Path
 import argparse
@@ -136,13 +137,13 @@ def fieldwork_ink_paths(image):
     """Keep the sprite's transparent silhouette and original fine ink shading.
 
     These sprites already have alpha, so unlike the printed team artwork they
-    need no paper extraction or enclosed-region filling. Eight gray tones keep
-    the hair, clothing and prop hatching that a binary threshold discards.
+    need no paper extraction or enclosed-region filling. Sixteen gray tones at
+    native source resolution retain hair, clothing and fine prop hatching.
     """
     rgba = np.asarray(image.convert('RGBA'))
     gray = np.asarray(image.convert('L')).astype(float)
     ink = np.clip(gray * 250 / 245, 0, 250)
-    quantized = np.round(ink / (250 / 7)) * (250 / 7)
+    quantized = np.round(ink / (250 / 15)) * (250 / 15)
     data = np.empty(rgba.shape, dtype=np.uint8)
     data[:, :, :3] = quantized[:, :, None].astype(np.uint8)
     # The original cutout has faint exterior matte flecks; retain its solid
@@ -152,9 +153,9 @@ def fieldwork_ink_paths(image):
     Image.fromarray(data).save(buffer, format='PNG')
     svg = vtracer.convert_raw_image_to_svg(
         buffer.getvalue(), img_format='png', colormode='color', hierarchical='stacked',
-        mode='spline', filter_speckle=2, color_precision=8, layer_difference=8,
-        corner_threshold=45, length_threshold=2, max_iterations=10,
-        splice_threshold=35, path_precision=1,
+        mode='spline', filter_speckle=1, color_precision=8, layer_difference=8,
+        corner_threshold=45, length_threshold=1.5, max_iterations=10,
+        splice_threshold=35, path_precision=2,
     )
     return path_elements(svg)
 
@@ -204,24 +205,16 @@ def action_frames(kinds=('observer', *FIELDWORK_ACTIONS)):
         image = Image.open(PUBLIC / 'images' / name).convert('RGBA')
         width, height = image.width // 2, image.height // 2
         frames = []
-        for y in range(2):
-            for x in range(2):
-                frame = image.crop((x * width, y * height, (x + 1) * width, (y + 1) * height))
-                if kind == 'observer':
-                    frames.append(paths(frame))
-                else:
-                    # These marginal illustrations display below 150 CSS px.
-                    # Keep enough source detail for retina displays without
-                    # tracing invisible full-resolution paper grain; retain
-                    # the 627px stage so existing joint coordinates stay exact.
-                    trace_width = min(width, 384)
-                    trace_height = round(height * trace_width / width)
-                    frame = frame.resize((trace_width, trace_height), Image.Resampling.LANCZOS)
-                    vector = fieldwork_ink_paths(frame)
-                    frames.append(f'<g transform="scale({width / trace_width:g})">{vector}</g>')
+        poses = ((x, y) for y in range(2) for x in range(2)) if kind == 'observer' else ((0, 0),)
+        for x, y in poses:
+            frame = image.crop((x * width, y * height, (x + 1) * width, (y + 1) * height))
+            # Fieldwork animates separate head/hand paths from frame-0. Trace
+            # that pose at native resolution instead of storing three unused
+            # poses or reducing the ink detail to a 384px intermediate image.
+            frames.append(paths(frame) if kind == 'observer' else fieldwork_ink_paths(frame))
         result = write_svg(f'{kind}-actions.svg', ''.join(
             f'<g id="frame-{index}">{frame}</g>' for index, frame in enumerate(frames)), width, height)
-        result.update(frames=4, width=width, height=height,
+        result.update(frames=len(frames), width=width, height=height,
                       unique_frames=len(set(hashlib.sha256(frame.encode()).hexdigest() for frame in frames)))
         results.append(result)
         print(f'{kind}: {result["bytes"]} bytes', flush=True)
@@ -276,7 +269,7 @@ if __name__ == '__main__':
     else:
         assets = video_frames() + action_frames() + [team_paths()]
     manifest = {'format': 'SVG path only; external use references, no raster embedding',
-                'build_tool': 'vtracer 0.6.15; eight-tone team and fieldwork ink, two-tone hero performance',
+                'build_tool': 'vtracer 0.6.15; eight-tone team ink, native-resolution sixteen-tone fieldwork ink, two-tone hero performance',
                 'assets': assets, 'total_bytes': sum(a['bytes'] for a in assets),
                 'total_gzip_bytes': sum(a['gzip_bytes'] for a in assets)}
     (DEST / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding='utf-8')

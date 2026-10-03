@@ -8,10 +8,13 @@ afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 const source = (id: string, excerpt: string) => ({ id, excerpt, title: '报告来源', publisher: '公开网站' } as Evidence);
 
 describe('search tools', () => {
-  it('keeps unavailable map lookup explicit and does not invent places', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ configured: false, message: '地图尚未启用，可直接填写地址。' }) }));
+  it('hides map lookup when the service is not configured', async () => {
+    const json = vi.fn().mockResolvedValue({ configured: false, message: '地图尚未启用，可直接填写地址。' });
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json }));
     render(<JianweiSearchTools onSelectPlace={vi.fn()}/>);
-    expect(await screen.findByText('地图尚未启用，可直接填写地址。')).toBeTruthy();
+    await waitFor(() => expect(json).toHaveBeenCalled());
+    expect(screen.queryByText('找不到准确地址？')).toBeNull();
+    expect(screen.queryByText('从地图选门店 ↗')).toBeNull();
     expect(screen.queryByRole('button', { name: '查找地点' })).toBeNull();
   });
 
@@ -19,7 +22,7 @@ describe('search tools', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce({ ok: true, json: async () => ({ configured: true, message: '可查地点' }) }).mockResolvedValueOnce({ ok: true, json: async () => ({ places: [{ id: 'P1', name: '示例店', address: '杭州市示例路', city: '杭州', district: '', marker_url: '', relationship_status: '经营主体待核对' }] }) }));
     const choose = vi.fn();
     render(<JianweiSearchTools onSelectPlace={choose}/>);
-    fireEvent.click(screen.getByText('从地图选门店 ↗'));
+    fireEvent.click(await screen.findByText('从地图选门店 ↗'));
     fireEvent.change(await screen.findByPlaceholderText('门店或品牌名称'), { target: { value: '示例店' } });
     fireEvent.click(screen.getByRole('button', { name: '查找地点' }));
     await waitFor(() => expect(screen.getByText('示例店')).toBeTruthy());

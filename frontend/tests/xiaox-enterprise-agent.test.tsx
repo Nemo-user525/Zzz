@@ -19,39 +19,41 @@ const fetchMock = vi.fn<typeof fetch>();
 beforeEach(() => { vi.stubGlobal('fetch', fetchMock); fetchMock.mockReset(); });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
-it('reports unconfigured WorkBuddy independently from the working MCP provider', async () => {
+it('keeps backend setup details out of the customer UI when the service is unavailable', async () => {
   fetchMock.mockImplementation(() => response({ ...connection, configured: false, app_configured: false,
     status: 'not_configured', message: '请先配置 WorkBuddy 开放平台应用。' }));
   render(<XiaoXEnterpriseAgent companyName={COMPANY} onClose={vi.fn()}/>);
-  expect(await screen.findByText('请先配置 WorkBuddy 开放平台应用。')).toBeTruthy();
-  expect(screen.getByText(/当前查证使用企查查 MCP/)).toBeTruthy();
-  expect((screen.getByRole('button', { name: '查询企业资料' }) as HTMLButtonElement).disabled).toBe(true);
-  fireEvent.click(screen.getByRole('button', { name: '查询企业资料' }));
+  expect(await screen.findByText(/企业资料查询暂时不可用/)).toBeTruthy();
+  expect(screen.queryByText(/请先配置|OAuth|Client ID|Client Secret|当前查证使用|WorkBuddy/)).toBeNull();
+  expect(screen.queryByRole('button', { name: '查询企业资料' })).toBeNull();
   expect(fetchMock).toHaveBeenCalledTimes(1);
-  expect(screen.getByRole('button', { name: '配置 WorkBuddy' })).toBeTruthy();
+  expect(screen.queryByRole('button', { name: '配置 WorkBuddy' })).toBeNull();
+  expect(screen.getByRole('button', { name: '继续查看查证内容' })).toBeTruthy();
 });
 
 it('requires a confirmed company and never auto-submits when opened', async () => {
   fetchMock.mockImplementation(() => response(connection));
   render(<XiaoXEnterpriseAgent onClose={vi.fn()}/>);
-  const link = await screen.findByRole('link', { name: '去确认企业 ↗' });
+  const link = await screen.findByRole('link', { name: '开始查证' });
   expect(link.getAttribute('href')).toBe('/investigations/new');
-  expect((screen.getByRole('button', { name: '查询企业资料' }) as HTMLButtonElement).disabled).toBe(true);
+  expect(screen.queryByRole('button', { name: '查询企业资料' })).toBeNull();
   expect(fetchMock).toHaveBeenCalledTimes(1);
 });
 
-it('queries only the WorkBuddy endpoint and displays its original source fields', async () => {
-  fetchMock.mockImplementation((path) => response(String(path).endsWith('/status') ? connection : result));
+it.each(['workbuddy', 'qcc_mcp'])('queries the configured %s service through the backend without customer credentials', async provider => {
+  fetchMock.mockImplementation((path) => response(String(path).endsWith('/status') ? { ...connection, provider } : { ...result, provider }));
   render(<XiaoXEnterpriseAgent companyName={COMPANY} onClose={vi.fn()}/>);
   const button = await screen.findByRole('button', { name: '查询企业资料' });
   expect(fetchMock).toHaveBeenCalledTimes(1);
   fireEvent.click(button);
-  expect(await screen.findByText(result.message)).toBeTruthy();
+  expect(await screen.findByText('已找到这家企业的相关资料。')).toBeTruthy();
   expect(screen.getByText('注册资本：100万元')).toBeTruthy();
   expect(screen.getByText('企查查 MCP（WorkBuddy 回传）')).toBeTruthy();
   expect(fetchMock.mock.calls[1][0]).toBe('/api/consumer/enterprise-agent/query');
   expect(JSON.parse(fetchMock.mock.calls[1][1]?.body as string)).toEqual({ company_name: COMPANY, identity_confirmed: true });
   expect(screen.getByRole('link', { name: '查看来源说明 ↗' }).getAttribute('href')).toBe('https://agent.qcc.com/guide');
+  expect(screen.queryByRole('button', { name: '配置 WorkBuddy' })).toBeNull();
+  expect(screen.queryByLabelText(/Client ID|Client Secret/)).toBeNull();
 });
 
 it('aborts a query and ignores a late response when the confirmed company changes', async () => {
@@ -72,7 +74,7 @@ it('aborts a query and ignores a late response when the confirmed company change
 it('allows retrying a status failure and aborts status reads on unmount', async () => {
   fetchMock.mockRejectedValueOnce(new Error('network unavailable')).mockImplementation(() => response(connection));
   const view = render(<XiaoXEnterpriseAgent companyName={COMPANY} onClose={vi.fn()}/>);
-  fireEvent.click(await screen.findByRole('button', { name: '重试连接状态' }));
+  fireEvent.click(await screen.findByRole('button', { name: '重新尝试' }));
   await screen.findByRole('button', { name: '查询企业资料' });
   const signal = fetchMock.mock.calls[1][1]?.signal;
   view.unmount();
@@ -84,7 +86,8 @@ it('shows a genuine connector error without inventing company information', asyn
     : { ...result, status: 'offline', message: 'WorkBuddy 本地助理未在线。', sources: [], matched_company_name: null }));
   render(<XiaoXEnterpriseAgent companyName={COMPANY} onClose={vi.fn()}/>);
   fireEvent.click(await screen.findByRole('button', { name: '查询企业资料' }));
-  expect(await screen.findByText('WorkBuddy 本地助理未在线。')).toBeTruthy();
+  expect(await screen.findByText('本次企业资料查询未完成，请稍后重试。')).toBeTruthy();
+  expect(screen.queryByText('WorkBuddy 本地助理未在线。')).toBeNull();
   expect(screen.queryByText('注册资本：100万元')).toBeNull();
   await waitFor(() => expect((screen.getByRole('button', { name: '查询企业资料' }) as HTMLButtonElement).disabled).toBe(false));
 });
@@ -100,5 +103,5 @@ it('reports real query activity to the dog and clears it when waiting stops', as
   fireEvent.click(screen.getByRole('button', { name: '停止等待' }));
   expect(signal?.aborted).toBe(true);
   expect(onBusyChange).toHaveBeenLastCalledWith(false);
-  expect(screen.getByText(/WorkBuddy 已收到的任务可能仍在执行/)).toBeTruthy();
+  expect(screen.getByText('已停止等待，本次查询可能仍在处理。')).toBeTruthy();
 });

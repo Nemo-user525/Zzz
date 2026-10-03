@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { JianweiPerson, JianweiTeam } from './JianweiPeople';
 import { JianweiObserverVideo } from './JianweiObserverVideo';
 import { JianweiOutlineText } from './JianweiOutlineText';
 import { JianweiPhoneStory } from './JianweiPhoneStory';
 import { JianweiArchiveCabinet } from './JianweiArchiveCabinet';
 import { JianweiFinanceNotes } from './JianweiFinanceNotes';
+import { JianweiMagnifierStage } from './JianweiMagnifierStage';
+import { JianweiDate } from './JianweiDate';
 
 const Arrow = () => <span aria-hidden="true">↗</span>;
 
@@ -88,23 +90,13 @@ export function JianweiHeader({ path = window.location.pathname }: { path?: stri
 }
 
 export function JianweiHero() {
-  const stage = useRef<HTMLDivElement>(null);
   usePaperMotion();
   return <section className="jw-hero jw-blueprint-hero" id="top" aria-label="见微 · MICROINSIGHT">
     <JianweiFinanceNotes/>
     <p className="jw-kicker">从细微处，看见变化</p>
-    <div className="jw-stage" ref={stage} onPointerMove={event => {
-      if (event.pointerType !== 'mouse' || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
-      const rect = event.currentTarget.getBoundingClientRect();
-      stage.current?.style.setProperty('--look-x', `${((event.clientX - rect.left) / rect.width - .5) * 10}px`);
-      stage.current?.style.setProperty('--look-y', `${((event.clientY - rect.top) / rect.height - .5) * 7}px`);
-    }} onPointerLeave={() => { stage.current?.style.setProperty('--look-x', '0px'); stage.current?.style.setProperty('--look-y', '0px'); }}>
-      <h1 className="jw-research-title" aria-label="见微 MICROINSIGHT"><span className="jw-title-chinese">见微</span><span className="jw-title-english"><span className="jw-title-word">MICRO</span><span className="jw-title-word">INSIGHT</span></span></h1>
-      <div className="jw-magnifier-control" aria-hidden="true">
-        <img className="jw-gold-magnifier" src="/images/gold-magnifier.png" alt="" fetchPriority="high" width="1500" height="1002"/>
-      </div>
+    <JianweiMagnifierStage>
       <div className="jw-observer" aria-hidden="true"><JianweiObserverVideo/></div>
-    </div>
+    </JianweiMagnifierStage>
     <div className="jw-hero-byline"><em>见微</em><span>· 一次从名字开始的查证</span></div>
     <p className="jw-hero-context">办卡前，先看清这家店。</p>
     <a className="jw-scroll" href="#intro" aria-label="向下阅读 Intro">
@@ -119,11 +111,11 @@ export function JianweiHero() {
 }
 export function JianweiIntro() {
   return <section className="jw-intro" id="intro">
-    <div className="jw-section-meta"><strong>见微 · Intro</strong><span>细微之处，藏着答案。</span><em>让证据说话。</em><span>01 — 03</span></div>
+    <div className="jw-section-meta"><strong>见微 · Intro</strong><span>细微之处，藏着答案。</span><em>让证据说话。</em><JianweiDate/></div>
     <div className="jw-manifesto">
       <JianweiFinanceNotes variant="intro"/>
-      <div className="jw-passage-stage"><ReadingPassage lines={['一块招牌，还不是全部。', '一条评价，一次变更，', '一份被忽略的公告，', '都可能是故事的另一面。']}/><JianweiPerson role="detective" className="jw-margin-person jw-margin-person-left"/><span className="jw-hand-note jw-note-left">别急着下结论 ↗</span></div>
-      <div className="jw-passage-stage jw-manifesto-second"><ReadingPassage className="jw-reading-green" lines={['见微，把零散的线索', '串成有出处的记录。', '从看见变化，到核对出处，', '让每一个问题，都有所回应。']}/><JianweiPerson role="connector" className="jw-margin-person jw-margin-person-right"/><span className="jw-hand-note jw-note-right">找到背后的联系 ↙</span></div>
+      <div className="jw-passage-stage"><ReadingPassage lines={['一块招牌，还不是全部。', '一条评价，一次变更，', '一份被忽略的公告，', '都可能是故事的另一面。']}/><div className="jw-passage-illustration jw-passage-illustration--left"><JianweiPerson role="detective" className="jw-margin-person jw-margin-person-left"/><span className="jw-hand-note jw-note-left">别急着下结论 ↗</span></div></div>
+      <div className="jw-passage-stage jw-manifesto-second"><ReadingPassage className="jw-reading-green" lines={['见微，把零散的线索', '串成有出处的记录。', '从看见变化，到核对出处，', '让每一个问题，都有所回应。']}/><div className="jw-passage-illustration jw-passage-illustration--right"><JianweiPerson role="connector" className="jw-margin-person jw-margin-person-right"/><span className="jw-hand-note jw-note-right">找到背后的联系 ↙</span></div></div>
     </div>
     <a className="jw-text-link" href="/investigations/new">从你在意的那家店开始 <Arrow/></a>
     <div className="jw-office-story" id="archive"><JianweiFinanceNotes variant="archive"/><div className="jw-office-copy"><span className="jw-hand-note">不只看表面。</span><h2>招牌背后，<br/>还有一家公司。</h2><p>打开见微的档案柜，翻一翻企业档案、关联关系与公开线索。你在意的细节，都值得被看见。</p><JianweiPerson role="analyst" className="jw-office-analyst"/></div><JianweiArchiveCabinet/></div>
@@ -137,9 +129,9 @@ export function JianweiAbout() {
       <div className="jw-section-meta"><strong>关于见微 · The way we see</strong><span>从微小线索，到完整视角。</span><span>03 — 03</span></div>
       <JianweiPhoneStory/>
       <div className="jw-faq"><p className="jw-faq-label">Before you begin.<br/><span>你可能想知道</span></p><div>
-        <details><summary>见微能帮助我判断什么？<span aria-hidden="true">＋</span></summary><p>了解一家门店背后的经营主体，查看有出处的公开变化，并找到值得向门店进一步核实的问题。适用于办卡、买课、充值与续费前的资料研究。</p></details>
-        <details><summary>每一个判断，都能找到依据吗？<span aria-hidden="true">＋</span></summary><p>查证卡提供引文、来源链接、资料取得时间与核验状态。搜索摘要、公开原文和接口返回会分别标注；品牌线索与所选公司的事实也会区分。</p></details>
-        <details><summary>查不到资料意味着什么？<span aria-hidden="true">＋</span></summary><p>只表示本次资料仍有缺口，不代表门店安全或危险。见微不输出评级、倒闭预测或付款保证；无法核对时会保留未知和下一步问题。</p></details>
+        <details><summary>见微能帮助我判断什么？<span aria-hidden="true">＋</span></summary><p>综合本次找到的经营、履约与消费反馈资料，给出低、中、高风险初判、判断理由和付款建议。适用于办卡、买课、充值与续费前的资料研究。</p></details>
+        <details><summary>每一个判断，都能找到依据吗？<span aria-hidden="true">＋</span></summary><p>风险判断卡提供引文、来源链接与资料时间。搜索摘要、网页正文和接口资料都可参与初判，并保留各自的来源类型；品牌背景与所选公司资料分别呈现，支持和相反信息一并保留。</p></details>
+        <details><summary>查不到资料意味着什么？<span aria-hidden="true">＋</span></summary><p>没有可用资料时，按中风险给出控制预付的建议，这是付款策略，不表示企业已有经营问题。已有资料持续支持经营稳定时，可以判断为低风险。结论基于本次资料，不是付款保证。</p></details>
       </div></div>
     </section>
   </>;
@@ -148,7 +140,7 @@ export function JianweiAbout() {
 export function JianweiHomeClosing() {
   return <>
     <JianweiTeam/>
-    <section className="jw-claim"><JianweiFinanceNotes variant="closing"/><p>在你作出下一个决定之前。</p><h2><JianweiOutlineText/></h2><a href="/investigations/new">开始观察查 <Arrow/></a><JianweiPerson role="guardian" className="jw-claim-guardian"/><span className="jw-claim-mark" aria-hidden="true">↗</span></section>
+    <section className="jw-claim"><JianweiFinanceNotes variant="closing"/><p>在你作出下一个决定之前。</p><h2><JianweiOutlineText/></h2><JianweiPerson role="guardian" className="jw-claim-guardian"/><span className="jw-claim-mark" aria-hidden="true">↗</span></section>
   </>;
 }
 

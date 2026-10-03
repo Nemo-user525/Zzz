@@ -9,3 +9,4 @@ createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></Re
 import './jianwei-blueprint.css';
 import './jianwei-polish.css';
 import './jianwei-reference.css';
+import './jianwei-typography.css';

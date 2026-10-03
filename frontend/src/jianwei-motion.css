@@ -30,7 +30,12 @@
 .jw-scroll svg{display:block;width:32px;height:50px}
 .jw-compass{top:44%}
 .jw-intro{position:relative;padding-bottom:80px}
-.jw-intro .jw-section-meta em{font:400 20px var(--jw-hand)}
+.jw-blueprint-hero .jw-kicker,.jw-intro .jw-section-meta>*{font-family:var(--jw-hand)}
+.jw-intro .jw-section-meta{align-items:center;gap:20px 28px}
+.jw-intro .jw-section-meta strong{font-size:24px}
+.jw-intro .jw-section-meta>span:nth-child(2){font-size:22px;line-height:1.5}
+.jw-intro .jw-section-meta em{font:400 24px/1.5 var(--jw-hand)}
+.jw-intro .jw-section-meta .jw-section-index{font-size:15px;white-space:nowrap}
 .jw-manifesto{font-size:clamp(32px,4.35vw,66px);padding:110px 6% 40px;line-height:1.7;letter-spacing:-.055em}
 .jw-passage-stage{position:relative}
 .jw-manifesto .jw-reading,.jw-manifesto .jw-hand-note{font-family:'Jianwei Handwritten','KaiTi','STKaiti',cursive;font-weight:400;letter-spacing:0}
@@ -69,3 +74,4 @@
 @media(max-width:400px){.jw-stage{height:270px}.jw-hero{min-height:695px}.jw-title{font-size:35vw}.jw-archive{top:36%}.jw-lens-orbit{top:18%}.jw-hero-byline{font-size:22px}.jw-manifesto{font-size:5.5vw}.jw-scribble-one{font-size:15px}}
 @media(prefers-reduced-motion:reduce){.jw-dot-field:before,.jw-magnifier,.jw-observer{animation:none}.jw-lens-orbit{will-change:auto}.jw-letter{color:var(--read-ink,#171a18);transform:none;transition:none}}
 @media(prefers-reduced-motion:reduce){.jw-reading-outline .jw-letter{color:var(--read-ink,#171a18)}.jw-reading-outline .jw-letter:after{opacity:1;transition:none}}
+@media(max-width:760px){.jw-intro .jw-section-meta{gap:14px 16px}.jw-intro .jw-section-meta strong{font-size:20px}.jw-intro .jw-section-meta>span:nth-child(2){font-size:18px}.jw-intro .jw-section-meta em{font-size:18px}.jw-intro .jw-section-meta .jw-section-index{font-size:13px}}

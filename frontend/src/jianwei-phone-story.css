@@ -1,7 +1,7 @@
 .jw-phone-story {
   position: relative;
   width: var(--phone-stage-width, 100vw);
-  height: 340svh;
+  height: 220svh;
   margin: 48px 0 100px calc(50% - var(--phone-stage-width, 100vw) / 2);
   scroll-margin-top: -32px;
 }
@@ -53,12 +53,11 @@
 .jw-phone-story :is(button,a):focus-visible { outline: 2px solid var(--jw-blue); outline-offset: 6px; }
 .jw-phone-scroll-hint { position: absolute; z-index: 3; right: 5%; bottom: 35px; display: flex; align-items: center; gap: 14px; color: #647c8c; font: 24px/1 Georgia,serif; }
 .jw-phone-scroll-hint>span { font: 8px/1.5 system-ui,sans-serif; letter-spacing: .15em; }
-.jw-phone-scroll-progress { position: absolute; z-index: 4; bottom: 0; left: 0; right: 0; height: 3px; background: #2868a2; transform: scaleX(var(--phone-progress)); transform-origin: left; }
 /* Keep the immersive demonstration clear; an open voice session stays available. */
 .jw-blueprint:has(.jw-phone-story[data-in-view='true']) .jw-xiaox-companion:not(.is-open) { visibility: hidden; pointer-events: none; }
 @media (max-width: 1050px) { .jw-phone-scroll-hint>span { display: none; } }
 @media (max-width: 760px) {
-  .jw-phone-story { height: 330svh; margin-top: 28px; margin-bottom: 65px; }
+  .jw-phone-story { height: 215svh; margin-top: 28px; margin-bottom: 65px; }
   .jw-phone-scene-label { top: 18px; left: 6%; font-size: 8px; }
   .jw-phone-story .jw-phone-fullscreen { top: 10px; right: 5%; padding: 3px 9px; font-size: 9px; }
   .jw-phone-story .jw-phone-narrative { top: 47px; left: 6%; width: 88%; max-width: none; transform: none; }

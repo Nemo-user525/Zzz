@@ -1,4 +1,6 @@
 import { expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { gunzipSync } from 'node:zlib';
 import { createPaperMatte } from '../src/xiaoxTransparency';
 
 const size = 17;
@@ -44,6 +46,34 @@ it('bridges a small compression gap in the outline without erasing the enclosed 
   expect(pixelAt(frame, 0, 0)[3]).toBe(0);
 });
 
+it('preserves the white coat when its pale pencil outline has a four-pixel gap', () => {
+  const frame = pencilFrame();
+  for (let y = 5; y <= 11; y++) {
+    for (let x = 5; x <= 11; x++) {
+      if (x === 5 || x === 11 || y === 5 || y === 11) frame.set([206, 206, 206, 255], (y * size + x) * 4);
+    }
+  }
+  for (let x = 7; x <= 10; x++) frame.set([246, 242, 235, 255], (5 * size + x) * 4);
+  createPaperMatte(size, size)(frame);
+  expect(pixelAt(frame, 8, 8)).toEqual([255, 255, 255, 255]);
+  expect(pixelAt(frame, 8, 2)[3]).toBe(0);
+  expect(pixelAt(frame, 2, 8)[3]).toBe(0);
+});
+
+it('preserves a white coat cropped at the frame bottom instead of treating its border pixels as background', () => {
+  const frame = pencilFrame();
+  for (let y = 6; y < size; y++) {
+    for (let x = 5; x <= 11; x++) {
+      frame.set(x === 5 || x === 11 ? [0, 0, 0, 255] : [255, 255, 255, 255], (y * size + x) * 4);
+    }
+  }
+  createPaperMatte(size, size)(frame);
+  expect(pixelAt(frame, 8, 8)).toEqual([255, 255, 255, 255]);
+  expect(pixelAt(frame, 8, 16)).toEqual([255, 255, 255, 255]);
+  expect(pixelAt(frame, 1, 16)[3]).toBe(0);
+  expect(pixelAt(frame, 15, 16)[3]).toBe(0);
+});
+
 it('removes the pale fringe from an antialiased pencil edge on a dark backdrop', () => {
   const frame = pencilFrame();
   frame.set([165, 165, 165, 255], (8 * size + 4) * 4);
@@ -61,4 +91,23 @@ it('reuses buffers without retaining a previous frame mask', () => {
   const blank = new Uint8ClampedArray(size * size * 4).fill(255);
   expect(matte(blank)).toBe(0);
   for (let index = 3; index < blank.length; index += 4) expect(blank[index]).toBe(0);
+});
+
+it.each([
+  { clip: 'photographing-evidence', coat: [[95, 200], [120, 220], [130, 239], [110, 235]] },
+  { clip: 'presenting-report', coat: [[110, 210], [95, 228], [130, 230], [120, 239]] },
+])('preserves the cropped coat in an actual decoded $clip video frame', ({ clip, coat }) => {
+  // Real 240px RGBA frames captured from the supplied MP4s, compressed losslessly.
+  const path = `tests/fixtures/xiaox/${clip}.rgba.gz`;
+  const source = new Uint8ClampedArray(gunzipSync(readFileSync(path)));
+  const frame = source.slice();
+  createPaperMatte(240, 240)(frame);
+  for (const [x, y] of coat) {
+    const offset = (y * 240 + x) * 4;
+    expect(Array.from(frame.slice(offset, offset + 4))).toEqual(Array.from(source.slice(offset, offset + 4)));
+    expect(frame[offset + 3]).toBe(255);
+  }
+  for (const [x, y] of [[0, 0], [239, 0], [0, 239], [239, 239], [10, 210], [225, 230]]) {
+    expect(frame[(y * 240 + x) * 4 + 3]).toBe(0);
+  }
 });

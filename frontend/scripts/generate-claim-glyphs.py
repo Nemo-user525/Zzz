@@ -1,4 +1,7 @@
-"""Export the claim's original serif outlines; browser masking removes overlap seams."""
+"""Export Long Cang handwriting for the claim's scroll-revealed vector lettering.
+
+The local font subset is licensed under public/fonts/OFL-LongCang.txt.
+"""
 from pathlib import Path
 import json
 import sys
@@ -11,8 +14,8 @@ from fontTools.ttLib import TTFont
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.transformPen import TransformPen
 
-font = TTFont(workspace / "output/noto-serif-sc-full.ttf")
-glyphs = font.getGlyphSet(location={"wght": 400})
+font = TTFont(frontend / "public/fonts/long-cang-claim.woff2")
+glyphs = font.getGlyphSet()
 cmap = font.getBestCmap()
 scale = 1000 / font["head"].unitsPerEm
 paths = {}

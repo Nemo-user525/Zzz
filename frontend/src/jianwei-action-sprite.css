@@ -20,24 +20,76 @@
 
 .jw-action-joint {
   transform-origin: 0 0;
-  animation: jw-fieldwork-head 6.4s ease-in-out infinite paused;
+  animation: jw-fieldwork-read 5.6s ease-in-out infinite paused;
 }
-.jw-action-joint--hand { animation-name: jw-fieldwork-hand; animation-duration: 5.6s; animation-delay: -2.3s; }
 .jw-action-sprite[data-action-playing="true"] .jw-action-joint { animation-play-state: running; }
-.jw-action-sprite--binoculars .jw-action-joint--head { animation-delay: -1.5s; }
-.jw-action-sprite--researcher .jw-action-joint--head { animation-delay: -3s; }
-.jw-action-sprite--connector .jw-action-joint { animation-delay: -2s; animation-duration: 7.2s; }
-.jw-action-sprite--guardian .jw-action-joint { --jw-hand-turn: -.65deg; --jw-hand-return: .35deg; animation-duration: 7.8s; }
-@keyframes jw-fieldwork-head {
-  0%, 16%, 88%, 100% { transform: rotate(0); }
-  36%, 48% { transform: rotate(1.2deg); }
-  65%, 73% { transform: rotate(-.7deg); }
+
+/* Visible gestures at the small page scale, with a brief rest between actions. */
+.jw-action-sprite--analyst .jw-action-joint--head { animation-delay: -1.1s; }
+.jw-action-sprite--binoculars .jw-action-joint--head {
+  animation-name: jw-fieldwork-look;
+  animation-duration: 6.8s;
+  animation-delay: -3.4s;
 }
-@keyframes jw-fieldwork-hand {
-  0%, 20%, 90%, 100% { transform: rotate(0); }
-  40%, 54% { transform: rotate(var(--jw-hand-turn, -1.5deg)); }
-  70%, 78% { transform: rotate(var(--jw-hand-return, .7deg)); }
+.jw-action-sprite--binoculars .jw-action-joint--hand {
+  animation-name: jw-fieldwork-grip;
+  animation-duration: 6.8s;
+  animation-delay: -3.4s;
+}
+.jw-action-sprite--researcher .jw-action-joint--head {
+  --jw-reading-dip: 4deg;
+  --jw-reading-lift: -2deg;
+  animation-duration: 7s;
+  animation-delay: -4.6s;
+}
+.jw-action-sprite--researcher .jw-action-joint--hand {
+  animation-name: jw-fieldwork-type;
+  animation-duration: 5.8s;
+  animation-delay: -1.7s;
+}
+.jw-action-sprite--connector .jw-action-joint--head {
+  animation-name: jw-fieldwork-board;
+  animation-duration: 6.4s;
+  animation-delay: -2.8s;
+}
+.jw-action-sprite--guardian .jw-action-joint--hand {
+  animation-name: jw-fieldwork-scan;
+  animation-duration: 7.2s;
+  animation-delay: -2.4s;
+}
+
+@keyframes jw-fieldwork-read {
+  0%, 10%, 87%, 100% { transform: rotate(0); }
+  27%, 39% { transform: rotate(var(--jw-reading-dip, 6.5deg)); }
+  55%, 62% { transform: rotate(var(--jw-reading-lift, -2.5deg)); }
+  73% { transform: rotate(1.8deg); }
+}
+@keyframes jw-fieldwork-look {
+  0%, 12%, 88%, 100% { transform: rotate(0); }
+  31%, 43% { transform: rotate(-4.5deg); }
+  61%, 69% { transform: rotate(2.8deg); }
+}
+@keyframes jw-fieldwork-grip {
+  0%, 25%, 78%, 100% { transform: rotate(0); }
+  39%, 46% { transform: rotate(-4.5deg); }
+  58% { transform: rotate(2deg); }
+  66% { transform: rotate(-1.2deg); }
+}
+@keyframes jw-fieldwork-type {
+  0%, 10%, 46%, 71%, 100% { transform: rotate(0); }
+  15%, 27%, 39%, 62% { transform: rotate(-4.2deg); }
+  21%, 33%, 56%, 67% { transform: rotate(1.2deg); }
+}
+@keyframes jw-fieldwork-board {
+  0%, 10%, 88%, 100% { transform: rotate(0); }
+  29%, 40% { transform: rotate(-5.5deg); }
+  60%, 69% { transform: rotate(6deg); }
+}
+@keyframes jw-fieldwork-scan {
+  0%, 10%, 91%, 100% { transform: rotate(0); }
+  31%, 42% { transform: rotate(-2.7deg); }
+  64%, 73% { transform: rotate(1.8deg); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .jw-action-joint { animation: none; }
+  .jw-action-sprite .jw-action-joint { animation: none; }
 }

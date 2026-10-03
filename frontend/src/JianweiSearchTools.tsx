@@ -46,7 +46,7 @@ export function JianweiSearchTools({ onSelectPlace, report }: Props) {
     } finally { if (token === generation.current) setBusy(false); }
   }
   return <div className="jw-search-tools">
-    <details className="jw-search-tool">
+    {capability?.configured && <details className="jw-search-tool">
       <summary><span>找不到准确地址？</span><b>从地图选门店 ↗</b></summary>
       <div className="jw-search-tool-body">
         <p>{capability?.message || '正在检查地点查询服务…'}</p>
@@ -63,7 +63,7 @@ export function JianweiSearchTools({ onSelectPlace, report }: Props) {
           {place.marker_url && <a href={place.marker_url} target="_blank" rel="noreferrer">在地图查看 ↗</a>}</div>
         </article>)}</div>
       </div>
-    </details>
+    </details>}
     {report && <JianweiEvidenceFinder report={report}/>}
   </div>;
 }

@@ -6,7 +6,7 @@ import uuid
 from fastapi import HTTPException
 from app.db import consumer as cache
 from app.schemas.consumer import Discovery, IdentityCandidate, Step, Analysis, Change, Interpretation, RiskAssessment
-from app.services import consumer_search as web, consumer_agent, consumer_indicators
+from app.services import consumer_search as web, consumer_agent, consumer_indicators, consumer_risk
 from app.services.consumer_registry import lookup
 
 COMPANY = re.compile(r'[\u4e00-\u9fffA-Za-z0-9（）()·]{4,48}?(?:股份有限公司|有限责任公司|有限公司|个人独资企业|个体工商户)')
@@ -129,7 +129,7 @@ async def analysis(body):
         sources=sources, trace=trace, criteria=reference, counter_search_status=counter.value,
         counter_source_ids=counter.source_ids, agent_status=agent_status, indicators=indicators,
         agent_model_used=model_used, agent_rounds=state['rounds'],
-        risk=RiskAssessment(explanation='本轮联网补查失败，历史材料不足以评级。') if unavailable else state['risk'],
+        risk=consumer_risk.fallback(sources, identity.name, state['reviews'], state['cashflow']) if unavailable else state['risk'],
         reviews=state['reviews'], cashflow=state['cashflow'],
         source_stats={'total': len(sources), 'websites': len({web.publisher_key(s.url) for s in sources}),
             'company': sum(s.scope == 'selected_entity' for s in sources),

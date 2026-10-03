@@ -1,4 +1,5 @@
 .jw-blueprint .jw-companion-enterprise-panel .jw-voice-heading h2{font-size:18px}
+.jw-blueprint .jw-enterprise-start{display:flex;align-items:center;justify-content:space-between;box-sizing:border-box;text-decoration:none}
 .jw-blueprint .jw-enterprise-connection{margin:16px 0;font-size:12px;line-height:1.8}
 .jw-blueprint .jw-enterprise-connection>section>strong{font-weight:500;color:#365467}
 .jw-blueprint .jw-enterprise-connection>section>p{margin:8px 0;color:#597482}

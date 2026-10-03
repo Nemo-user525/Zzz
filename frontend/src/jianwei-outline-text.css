@@ -21,16 +21,16 @@
 .jw-silhouette-letter {
   --letter: clamp(0, (var(--read) * var(--count) - var(--i)), 1);
   display: block;
-  flex: 0 0 .95em;
-  width: .95em;
-  height: 1.045em;
+  flex: 0 0 1.05em;
+  width: 1.05em;
+  height: 1.155em;
   overflow: visible;
 }
 
 .jw-silhouette-edge {
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.5px;
+  stroke-width: .75px;
   stroke-linejoin: round;
 }
 

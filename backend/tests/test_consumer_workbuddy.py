@@ -11,7 +11,7 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from app.schemas.consumer import Step
-from app.services import consumer_registry, consumer_search, consumer_workbuddy as wb, workbuddy_client as wc
+from app.services import consumer_registry, consumer_search, consumer_qcc_mcp, consumer_workbuddy as wb, workbuddy_client as wc
 
 NAME = '接口测试有限公司'
 
@@ -299,24 +299,27 @@ def test_refresh_preserves_refresh_token_and_binds_app(monkeypatch):
     assert not wc.status()['configured']
 
 
-def test_enterprise_agent_status_is_independent_of_selected_registry(monkeypatch):
+def test_enterprise_agent_status_reuses_selected_mcp_configuration_without_frontend_settings(monkeypatch):
     monkeypatch.setenv('QCC_PROVIDER', 'mcp')
+    monkeypatch.setattr(consumer_qcc_mcp, 'credentials', lambda: (consumer_qcc_mcp.DEFAULT_URL, 'private-mcp-key'))
+    monkeypatch.setattr(consumer_qcc_mcp, 'LAST', {})
     response = local_api().get('/api/consumer/enterprise-agent/status')
     assert response.status_code == 200
     assert response.headers['cache-control'] == 'no-store'
     data = response.json()
-    assert data['provider'] == 'workbuddy'
+    assert data['provider'] == 'qcc_mcp'
     assert data['active_registry_provider'] == 'qcc_mcp'
-    assert data['selected'] is False and data['configured'] is False
-    assert data['status'] == 'not_configured'
-    assert data['configurable'] is True
+    assert data['selected'] is True and data['configured'] is True
+    assert data['status'] == 'ready'
+    assert data['configurable'] is False
     assert not any(key in data for key in ('client_secret', 'access_token', 'refresh_token'))
+    assert 'private-mcp-key' not in response.text
     remote = TestClient(app, base_url='https://demo.example', client=('203.0.113.1', 123))
     assert remote.get('/api/consumer/enterprise-agent/status').json()['configurable'] is False
 
 
 def test_explicit_enterprise_query_never_falls_back_when_workbuddy_unconfigured(monkeypatch):
-    monkeypatch.setenv('QCC_PROVIDER', 'mcp')
+    monkeypatch.setenv('QCC_PROVIDER', 'workbuddy')
     async def forbidden(*args, **kwargs):
         pytest.fail('explicit WorkBuddy request used a different provider')
     monkeypatch.setattr(consumer_registry, 'lookup', forbidden)
@@ -333,7 +336,7 @@ def test_explicit_enterprise_query_never_falls_back_when_workbuddy_unconfigured(
 
 
 def test_explicit_enterprise_query_returns_actual_workbuddy_evidence(monkeypatch):
-    monkeypatch.setenv('QCC_PROVIDER', 'mcp')
+    monkeypatch.setenv('QCC_PROVIDER', 'workbuddy')
     calls = provider(monkeypatch)
     response = local_api().post('/api/consumer/enterprise-agent/query',
         json={'company_name': NAME, 'identity_confirmed': True})
@@ -352,3 +355,55 @@ def test_explicit_enterprise_query_returns_actual_workbuddy_evidence(monkeypatch
 ])
 def test_enterprise_query_requires_explicit_confirmed_identity(body):
     assert local_api().post('/api/consumer/enterprise-agent/query', json=body).status_code == 422
+
+
+def test_enterprise_query_uses_selected_mcp_and_precise_company_only(monkeypatch):
+    monkeypatch.setenv('QCC_PROVIDER', 'mcp')
+    rows = [row.model_copy(update={'publisher': '企查查官方 MCP'}) for row in wb.evidence('test', NAME, [record()])]
+    calls = []
+    async def lookup(query, exact=False):
+        calls.append((query, exact))
+        return rows, Step(action='企查查 MCP', status='completed', detail='官方返回企业资料', source_ids=[r.id for r in rows]), NAME
+    async def forbidden(*args, **kwargs):
+        pytest.fail('MCP query silently switched provider')
+    monkeypatch.setattr(consumer_qcc_mcp, 'lookup', lookup)
+    monkeypatch.setattr(wb, 'lookup', forbidden)
+    response = local_api().post('/api/consumer/enterprise-agent/query',
+        json={'company_name': NAME, 'identity_confirmed': True})
+    assert response.status_code == 200 and calls == [(NAME, True)]
+    data = response.json()
+    assert data['provider'] == 'qcc_mcp' and data['matched_company_name'] == NAME
+    assert data['sources'][0]['publisher'] == '企查查官方 MCP'
+    assert data['step']['source_ids'] == [row.id for row in rows]
+
+
+def test_mcp_failure_is_reported_without_workbuddy_or_model_fallback(monkeypatch):
+    monkeypatch.setenv('QCC_PROVIDER', 'mcp')
+    async def failure(query, exact=False):
+        return [], Step(action='企查查 MCP', status='failed', detail='接口未完成响应'), None
+    async def forbidden(*args, **kwargs):
+        pytest.fail('failed connector switched provider')
+    monkeypatch.setattr(consumer_qcc_mcp, 'lookup', failure)
+    monkeypatch.setattr(wb, 'lookup', forbidden)
+    from app.services import consumer_model
+    monkeypatch.setattr(consumer_model, 'structured', forbidden)
+    data = local_api().post('/api/consumer/enterprise-agent/query',
+        json={'company_name': NAME, 'identity_confirmed': True}).json()
+    assert data['provider'] == 'qcc_mcp' and data['status'] == 'failed'
+    assert data['sources'] == [] and data['matched_company_name'] is None
+
+
+def test_unsupported_direct_provider_never_makes_another_query(monkeypatch):
+    monkeypatch.setenv('QCC_PROVIDER', 'direct')
+    async def forbidden(*args, **kwargs):
+        pytest.fail('unsupported provider executed another query')
+    monkeypatch.setattr(consumer_qcc_mcp, 'lookup', forbidden)
+    monkeypatch.setattr(wb, 'lookup', forbidden)
+    api = local_api()
+    status = api.get('/api/consumer/enterprise-agent/status').json()
+    assert status['provider'] == 'direct' and status['status'] == 'unsupported_provider'
+    assert status['configured'] is False and status['configurable'] is False
+    result = api.post('/api/consumer/enterprise-agent/query',
+        json={'company_name': NAME, 'identity_confirmed': True}).json()
+    assert result['provider'] == 'direct' and result['status'] == 'unsupported_provider'
+    assert result['sources'] == [] and result['matched_company_name'] is None

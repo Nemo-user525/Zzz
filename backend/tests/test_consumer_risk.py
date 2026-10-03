@@ -21,9 +21,9 @@ def draft(level, rows, direction='adverse'):
                   'citations':[{'source_id':s.id,'quote':s.excerpt} for s in rows]}])
 
 
-def test_high_needs_independent_sources_and_body():
+def test_high_can_use_independent_search_excerpts_without_body_gate():
     a,b=row(),row('two.example',text='涉及会员的退款尚未履行，应核实处理进度')
-    assert risk.assess(draft('high',[a,b]),[a,b],NAME,'test',2).level=='medium'
+    assert risk.assess(draft('high',[a,b]),[a,b],NAME,'test',2).level=='high'
     b.verification_status='page_text'
     assert risk.assess(draft('high',[a,b]),[a,b],NAME,'test',2).level=='high'
 
@@ -40,7 +40,9 @@ def test_unresolved_brand_complaints_prevent_low_risk():
     d=draft('low',rows,'reassuring')
     assert risk.assess(d,rows,NAME,'test',3).level=='low'
     brand=row('brand.example','品牌门店有退款投诉，经营者未核对');brand.scope='brand_context'
-    assert risk.assess(d,rows+[brand],NAME,'test',3).level=='undetermined'
+    result = risk.assess(d,rows+[brand],NAME,'test',3)
+    assert result.level=='medium' and result.decision_basis=='information_gap'
+    assert not any(r.direction=='adverse' for r in result.reasons)
 
 
 def test_search_date_is_labeled_as_search_metadata_not_event_date():
@@ -54,8 +56,9 @@ def test_missing_evidence_is_never_low_or_adverse():
     r=RiskDraft(level='low',explanation='没有搜到风险不能代表安全。',reasons=[])
     assert risk.assess(r,[],NAME,'test',0).level=='undetermined'
     a=row(text='发布正常营业说明',status='page_text')
-    assert risk.assess(draft('low',[a],'reassuring'),[a],NAME,'test',1).level=='undetermined'
-    assert risk.assess(draft('high',[a],'context'),[a],NAME,'test',1).level=='undetermined'
+    assert risk.assess(draft('low',[a],'reassuring'),[a],NAME,'test',1).level=='medium'
+    result=risk.assess(draft('high',[a],'context'),[a],NAME,'test',1)
+    assert result.level=='medium' and result.decision_basis=='information_gap'
 
 
 def test_risk_cannot_cite_brand_or_invented_quote():
@@ -206,11 +209,11 @@ def test_promotion_and_court_victory_cannot_establish_operating_strength(claim):
     assert not result.reasons
 
 
-def test_undetermined_summary_does_not_keep_model_claim_of_safety():
+def test_cautious_summary_does_not_keep_unsupported_model_claim_of_safety():
     a=row(text='公司宣传材料',status='search_excerpt');d=draft('low',[a],'context')
     d.explanation='当前资料确认公司经营稳定。'
     result=risk.assess(d,[a],NAME,'model',1)
-    assert result.level=='undetermined' and '经营稳定' not in result.explanation
+    assert result.level=='medium' and '经营稳定' not in result.explanation
 
 
 def test_coverage_counts_websites_instead_of_varying_publisher_labels():

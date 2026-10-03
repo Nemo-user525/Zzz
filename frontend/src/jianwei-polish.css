@@ -59,9 +59,7 @@
 .jw-blueprint .jw-demo-label { border-left-color: var(--jw-blue); }
 .jw-blueprint .jw-source-status { color: var(--jw-blue); border-color: var(--jw-line); }
 
-/* Task pages keep one navigation level, including below the landing-page breakpoint. */
-.jw-blueprint.jw-task-active .jw-header nav,
-.jw-blueprint.jw-task-active .jw-header .jw-header-action { display: none !important; }
+/* Keep the same navigation available throughout a query. */
 .jw-blueprint.jw-task-active .jw-header { min-height: 88px; height: auto; flex-wrap: nowrap; }
 .jw-blueprint.jw-task-active .jw-header .jw-brand { flex: 0 1 auto; min-width: 0; }
 .jw-blueprint .consumer-main.jw-home-entry { padding-block: 70px 90px; }
@@ -223,9 +221,10 @@
   .consumer-shell .jw-footer nav { justify-content: flex-start; max-width: none; margin-top: 0; }
 }
 @media (max-width:760px) {
-  .jw-blueprint.jw-task-active .jw-header { min-height: 74px; padding-block: 18px; }
+  .jw-blueprint.jw-task-active .jw-header { min-height: 106px; padding-block: 17px; flex-wrap: wrap; row-gap: 10px; }
+  .jw-blueprint.jw-task-active .jw-header nav { order: 3; width: 100%; justify-content: center; font-size: 16px; }
   .jw-blueprint .consumer-main.jw-home-entry { padding-block: 45px 55px; }
-  .jw-blueprint.jw-task-active .jw-workflow-page { padding: 100px 6% 40px; }
+  .jw-blueprint.jw-task-active .jw-workflow-page { padding: 140px 6% 40px; }
   .jw-blueprint.jw-task-active .jw-focused-form { grid-template-columns: minmax(0,1fr); gap: 24px; padding-block: 26px; }
   .jw-blueprint.jw-task-active .jw-identity-title h2 { font-size: 24px; }
   .jw-blueprint-hero .jw-observer { width: 41%; }

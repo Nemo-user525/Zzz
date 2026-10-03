@@ -160,12 +160,12 @@ class CashflowAssessment(Strict):
 
 class RiskAssessment(Strict):
     decision_level: Literal['low', 'medium', 'high'] = 'medium'
-    decision_label: str = '中等决策风险 · 先核实再预付'
+    decision_label: str = '中风险'
     decision_basis: Literal['company_evidence', 'information_gap'] = 'information_gap'
-    decision_explanation: str = '信息不足时按谨慎预付规则给出中等决策风险，建议按次或短期购买；这不表示公司存在不良经营事件。'
+    decision_explanation: str = '按当前决策条件判断为中风险，建议小额、短期或按次购买；这不表示公司存在不良经营事件。'
     level: Literal['low', 'medium', 'high', 'undetermined'] = 'undetermined'
-    label: str = '证据不足，暂不评级'
-    explanation: str = '尚未完成有来源支持的模型评估。'
+    label: str = '中风险'
+    explanation: str = '按当前决策条件判断为中风险，建议小额、短期或按次购买；这不表示公司存在不良经营事件。'
     reasons: list[RiskReason] = Field(default_factory=list, max_length=6)
     limitations: list[str] = Field(default_factory=list)
     model: str = ''

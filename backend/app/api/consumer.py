@@ -3,7 +3,7 @@ from fastapi import APIRouter, Response, HTTPException, Request
 from pydantic import BaseModel, SecretStr, Field
 from fastapi.responses import RedirectResponse
 from urllib.parse import urlsplit
-from app.schemas.consumer import DiscoveryInput, AnalysisInput, Discovery, Analysis
+from app.schemas.consumer import DiscoveryInput, AnalysisInput, Discovery, Analysis, Step
 from app.services import consumer, consumer_criteria, consumer_model, qcc, consumer_progress
 from app.services import consumer_qcc_session, consumer_workbuddy, workbuddy_client, consumer_qcc_mcp
 import logging
@@ -125,22 +125,32 @@ def capabilities(request: Request):
 
 
 def enterprise_agent_status():
-    """Report the requested agent independently from the default registry adapter."""
-    connection = consumer_workbuddy.status()
+    """Use the server-selected connector and its existing private configuration."""
     active = ('workbuddy' if consumer_workbuddy.selected() else
               'qcc_mcp' if consumer_qcc_mcp.selected() else 'direct')
+    if active == 'workbuddy':
+        connection = consumer_workbuddy.status()
+        scope = 'WorkBuddy 本地助理调用已授权的企查查企业连接器；结果只来自本次回传。'
+    elif active == 'qcc_mcp':
+        connection = consumer_qcc_mcp.status()
+        scope = '服务端直接调用已配置的企查查官方企业连接器；结果只来自本次接口返回。'
+    else:
+        connection = {'provider': 'direct', 'configured': False, 'status': 'unsupported_provider',
+                      'message': '当前企业查询通道暂不支持小 X 查询，请稍后再试。'}
+        scope = '未执行企业查询。'
     return connection | {
         'active_registry_provider': active,
-        'selected': active == 'workbuddy',
+        'selected': active != 'direct',
+        'configurable': False,
         'service': '企查查企业查询',
-        'scope': 'WorkBuddy 本地助理调用已授权的企查查企业连接器；结果只来自本次回传。',
+        'scope': scope,
     }
 
 
 @router.get('/enterprise-agent/status')
 def get_enterprise_agent_status(request: Request, response: Response):
     response.headers['Cache-Control'] = 'no-store'
-    return enterprise_agent_status() | {'configurable': bool(local_operator(request))}
+    return enterprise_agent_status()
 
 
 class EnterpriseAgentQuery(BaseModel):
@@ -151,11 +161,20 @@ class EnterpriseAgentQuery(BaseModel):
 
 @router.post('/enterprise-agent/query')
 async def query_enterprise_agent(body: EnterpriseAgentQuery, response: Response):
-    """Explicit WorkBuddy path: never substitute MCP or a local model reply."""
+    """Query the selected connector only; failures never switch provider."""
     response.headers['Cache-Control'] = 'no-store'
-    rows, step, matched = await consumer_workbuddy.lookup(body.company_name, exact=True)
+    if consumer_workbuddy.selected():
+        provider = 'workbuddy'
+        rows, step, matched = await consumer_workbuddy.lookup(body.company_name, exact=True)
+    elif consumer_qcc_mcp.selected():
+        provider = 'qcc_mcp'
+        rows, step, matched = await consumer_qcc_mcp.lookup(body.company_name, exact=True)
+    else:
+        provider = 'direct'
+        rows, matched = [], None
+        step = Step(action='企业查询', status='unsupported_provider', detail='当前企业查询通道暂不支持小 X 查询，请稍后再试。')
     return {
-        'provider': 'workbuddy',
+        'provider': provider,
         'service': '企查查企业查询',
         'company_name': body.company_name,
         'matched_company_name': matched,
@@ -191,15 +210,20 @@ async def analyse(body: AnalysisInput, response: Response):
     return await bounded(consumer.analysis, body)
 
 
-@router.post('/jobs', status_code=202)
-async def start_job(body: AnalysisInput, response: Response):
+async def create_job(action, body, response: Response):
     response.headers['Cache-Control'] = 'no-store'
     for ident, job in list(jobs.items()):
         if job['expires'] < time.monotonic():
             job['task'].cancel()
             del jobs[ident]
-    if len(jobs) >= 30 or sum(j['status'] == 'running' for j in jobs.values()) >= 3:
+    if sum(j['status'] == 'running' for j in jobs.values()) >= 3:
         raise HTTPException(429, detail='当前调查较多，请稍后重试')
+    # Finished history cannot prevent a new search, including the same company.
+    terminal = sorted((job['expires'], ident) for ident, job in jobs.items() if job['status'] != 'running')
+    for _, old_ident in terminal:
+        if len(jobs) < 30:
+            break
+        del jobs[old_ident]
     ident = uuid.uuid4().hex
     job = {'status': 'running', 'message': '准备调查…', 'expires': time.monotonic()+3600, 'result': None}
     jobs[ident] = job
@@ -207,7 +231,7 @@ async def start_job(body: AnalysisInput, response: Response):
     async def work():
         token = consumer_progress.callback.set(lambda message: job.update(message=message))
         try:
-            result = await bounded(consumer.analysis, body)
+            result = await bounded(action, body)
             job.update(status='completed', message='调查完成', result=result.model_dump(mode='json'))
         except asyncio.CancelledError:
             job.update(status='cancelled', message='调查已取消')
@@ -218,6 +242,16 @@ async def start_job(body: AnalysisInput, response: Response):
             consumer_progress.callback.reset(token)
     job['task'] = asyncio.create_task(work())
     return {'job_id': ident}
+
+
+@router.post('/jobs', status_code=202)
+async def start_job(body: AnalysisInput, response: Response):
+    return await create_job(consumer.analysis, body, response)
+
+
+@router.post('/discovery/jobs', status_code=202)
+async def start_discovery_job(body: DiscoveryInput, response: Response):
+    return await create_job(consumer.discovery, body, response)
 
 
 @router.get('/jobs/{ident}')

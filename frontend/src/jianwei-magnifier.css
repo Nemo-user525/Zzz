@@ -1,0 +1,114 @@
+/* The source photo stays intact. Its glass is overlaid with a clipped copy of
+   the title, sharing the original stage's container units and responsive type. */
+.jw-blueprint-hero {
+  /* The rotated photo includes transparent corners; keep their bounding box
+     from creating horizontal scroll when the lens reaches the title edges. */
+  overflow-x: clip;
+}
+
+.jw-blueprint-hero .jw-magnifier-stage .jw-magnifier-control {
+  left: 46%;
+  top: 8%;
+  transition: none;
+}
+
+.jw-lens-definitions {
+  position: absolute;
+  pointer-events: none;
+}
+
+.jw-lens-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  visibility: hidden;
+  cursor: default;
+  /* The title stage owns tracking; the moving glass never steals its hit area. */
+  pointer-events: none;
+}
+
+.jw-magnifier-stage[data-lens-ready="true"] .jw-lens-scene {
+  visibility: visible;
+}
+
+.jw-lens-sample,
+.jw-lens-glaze {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.jw-blueprint .jw-lens-keyboard {
+  position: absolute;
+  z-index: 6;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.jw-blueprint .jw-lens-keyboard:focus-visible {
+  outline: 2px solid #15347b;
+  outline-offset: 8px;
+}
+
+.jw-blueprint .jw-lens-keyboard[hidden] { display: none; }
+
+.jw-blueprint .jw-magnifier-stage[data-lens-mode="following"] {
+  cursor: grabbing;
+  user-select: none;
+}
+
+@media (max-width: 600px) {
+  .jw-blueprint-hero .jw-magnifier-stage .jw-magnifier-control { top: 11%; }
+}
+
+.jw-lens-sample {
+  background: var(--jw-paper, #fafaf9);
+}
+
+.jw-lens-glaze {
+  background:
+    radial-gradient(ellipse var(--jw-glass-radius) var(--jw-glass-radius) at var(--jw-glass-x) var(--jw-glass-y), transparent 65%, #40546e16 91%, #27374f30 100%),
+    linear-gradient(125deg, #fff6 12%, #e4ecf318 44%, #b3c5d11c 64%, #fff5 89%);
+  opacity: calc(.85 - var(--jw-glass-focus, 0) * .2);
+}
+
+/* Keep the original title and its live lens copy in step without container units. */
+@supports not (font-size: 1cqw) {
+  .jw-blueprint-hero .jw-magnifier-stage .jw-title-chinese {
+    font-size: calc(16 * var(--jw-stage-unit, .936vw));
+  }
+
+  .jw-blueprint-hero .jw-magnifier-stage .jw-title-english {
+    font-size: calc(14 * var(--jw-stage-unit, .936vw));
+    margin-top: calc(3.2 * var(--jw-stage-unit, .936vw));
+  }
+
+  .jw-blueprint-hero .jw-magnifier-stage .jw-observer {
+    --jw-observer-size: max(42px, calc(6.73 * var(--jw-stage-unit, .936vw)));
+    width: var(--jw-observer-size);
+    right: calc(3.47 * var(--jw-stage-unit, .936vw) - var(--jw-observer-size) * .291667);
+    top: calc(30.572 * var(--jw-stage-unit, .936vw) - var(--jw-observer-size) * .994444);
+  }
+
+  @media (max-width: 600px) {
+    .jw-blueprint-hero .jw-magnifier-stage .jw-title-chinese {
+      font-size: calc(30.8 * var(--jw-stage-unit, .92vw));
+    }
+
+    .jw-blueprint-hero .jw-magnifier-stage .jw-title-english {
+      font-size: calc(23.75 * var(--jw-stage-unit, .92vw));
+      margin-top: calc(4 * var(--jw-stage-unit, .92vw));
+    }
+
+    .jw-blueprint-hero .jw-magnifier-stage .jw-observer {
+      width: calc(14.5 * var(--jw-stage-unit, .92vw));
+      right: 3.6%;
+      top: calc(42.65 * var(--jw-stage-unit, .92vw));
+    }
+  }
+}

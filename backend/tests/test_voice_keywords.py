@@ -16,6 +16,15 @@ from app.services import voice_keywords as keywords
     ('你好', '', ''),
     ('讲个笑话', '', ''),
     ('帮我查一下', '', ''),
+    ('帮我查一下杭州今天天气怎么样', '', ''),
+    ('海底捞和蜜雪冰城', '', ''),
+    ('我想买乐刻运动的年卡。', '乐刻运动', ''),
+    ('我要办理杭州的悦动健身的会员卡', '悦动健身', '杭州'),
+    ('我想买杭州的悦动健身的年卡', '悦动健身', '杭州'),
+    ('帮我查一下悦动健身的私教课靠谱吗', '悦动健身', ''),
+    ('我想办一张年卡', '', ''),
+    ('买买乐', '买买乐', ''),
+    ('买点网络科技有限公司', '买点网络科技有限公司', ''),
 ])
 def test_local_fields(text, query, location):
     assert keywords.fallback(text).model_dump() == {'query': query, 'location': location}
@@ -26,6 +35,14 @@ def test_ambiguous_request_does_not_replace_query(monkeypatch):
     result = asyncio.run(keywords.extract('帮我查北京和上海的门店'))
     assert result['needs_clarification'] is True
     assert result['query'] == ''
+
+
+def test_short_purchase_request_extracts_merchant_without_model(monkeypatch):
+    monkeypatch.setattr(keywords.consumer_model, 'effective_mode', lambda: 'offline')
+    result = asyncio.run(keywords.extract('我想买乐刻运动的年卡。'))
+    assert result['query'] == '乐刻运动'
+    assert result['needs_clarification'] is False
+    assert result['keyword_source'] == 'local'
 
 
 def test_model_cannot_invent_company_or_rewrite_homophones(monkeypatch):

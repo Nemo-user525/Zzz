@@ -1,0 +1,15 @@
+Use case: style-transfer
+Asset type: transparent PNG refrigerator-magnet asset for a Chinese research-themed website.
+Input image: Image 1 is the EDIT TARGET, a lavender and ivory piped-cream diamond magnet. Edit this exact design.
+
+Primary request: Change its current shiny resin/pearl finish into soft MATTE hand-piped buttercream. The entire object should feel like delicate, airy, velvety frosting, with shallow rounded grooves, subtle fine cream texture, and broad diffuse shading. Use soft ambient studio lighting. Highlights must be very low contrast and broad, never glossy, metallic, pearlescent, mirror-like, glassy, or plastic.
+
+Preserve: the recognisable wide horizontal diamond silhouette; pale lavender plus warm ivory palette; front-facing view; cream piping around the diamond edge; clean transparent alpha background. Maintain the original centered composition on a square canvas, ideally 1254 x 1254. The complete visible object should occupy approximately 96% of canvas width and 60% of canvas height, with approximately 20% transparent space above and below. Do not crop any piping or decorations.
+
+Center panel: a larger, smooth, plain, matte pale-lavender diamond-shaped base plate, completely blank and unobstructed, occupying about 65% of the object's width so Chinese text can be overlaid later in code. Keep the central panel flat, clear and visually calm. Reduce the thickness of the decorative rim slightly if necessary for this central negative space.
+
+Decorations: Simplify the tiny flowers and pearls if needed. Any remaining dots, flowers or beads must also be matte cream or soft fondant, never reflective pearls. Keep decoration restrained and confined to the border.
+
+Text: none. No letters, no Chinese characters, no logo, no watermark.
+Background: genuinely transparent RGBA with clean alpha edges; no backdrop, no checkerboard baked into the image, no floor or cast shadow outside the silhouette.
+Avoid: metal, chrome, foil, silver sheen, gold sheen, pearlescence, sharp white highlights, gloss, lacquer, translucent resin, hard plastic, candy glaze, excessive ornament.

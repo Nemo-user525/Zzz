@@ -36,7 +36,7 @@ TOPICS = {
     '美团公开线索': 'site:meituan.com',
     '本地媒体': '门店 消费者 城市 新闻',
     '员工供应商': '员工 工资 供应商 付款',
-    '经营正向材料': '新店 开业 正常营业 服务 公告',
+    '经营正向材料': '持续经营 盈利 年报 资本充足率 正常营业 服务 公告',
     '后续处理': '整改 撤销 履行完毕 和解 退款完成',
     '经营收支': '经营活动现金流入 现金流出 营业收入 成本 年报',
     '用户口碑': '用户评价 顾客反馈 好评 差评 服务体验',
@@ -193,7 +193,8 @@ def validate_findings(findings, rows, name):
 
 async def synthesize(state):
     if consumer_model.effective_mode() == 'offline':
-        return {'findings': [], 'trace': state['trace'] + [Step(action='智能体解释', status='not_configured', detail='未配置推理模型；仅展示 LangGraph 执行的公开检索与规则指标') ]}
+        return {'findings': [], 'risk': consumer_risk.fallback(state['sources'], state['identity']['name'], state.get('reviews'), state.get('cashflow')),
+                'trace': state['trace'] + [Step(action='资料初判', status='completed', detail='根据本次收集资料的具体表述形成初步风险判断') ]}
     eligible = state['sources']
     findings, observations, facts, reviewed_ids = [], [], [], set()
     synthesis_calls = 0
@@ -208,7 +209,7 @@ async def synthesize(state):
             '每项必须引用 source_id 和逐字位于 excerpt 的短 quote；不引用训练样本作为当前企业证据。'
             '区分材料声称、可能解释和未证实的服务联系；回应材料不自动推翻其他事件。'
             '数据库主题匹配只帮助发现要问的问题，你必须独立分析资料，并提出其他可能解释。'
-            '不能给出安全结论、概率、未核实的事件日期或趋势；findings只能引用selected_entity材料。'
+            '可对现有资料作初步判断，但不能承诺安全、虚构概率或事件日期；趋势必须有跨期材料支持；findings只能引用selected_entity材料。'
             'reviews必须覆盖本批每个review_required=true的来源，每个恰好一项，包括品牌资料；按正面/负面/混合/不明确分类，'
             '导航、新闻、品牌营销和官方账号宣传不是顾客评价，kind=non_review，不能计为正面顾客反馈。quote必须逐字复制excerpt。'
             'cashflow_facts仅提取所选公司明确披露的“经营活动现金流入小计/流出小计”，'
@@ -268,17 +269,21 @@ async def synthesize(state):
         update('正在综合数据库参考、当前证据与回应材料，校验风险等级和引用…')
         instruction = (
             '依据已逐批阅读的资料、带原文引用的观察及数据库主题参考，独立评估消费者预付服务风险。'
-            '等级 low=多渠道具体正向依据充分且没有尚待解决的显著不利线索；medium=有需核实的不利线索；'
-            'high=多来源支持的严重持续履约问题；undetermined=信息不足或主体/时间矛盾无法判定。'
+            '必须基于现有资料下初步判断，不以是否独立核实、是否读取网页正文作为评级前提；搜索摘要也可以支持判断。'
+            '等级 low=具体经营、持续盈利、资本实力或履约正向资料占优且没有当前显著反向证据；medium=正反资料混合、有不利线索或仅能支持谨慎交易；'
+            'high=多来源支持的严重持续履约问题。只有完全没有可用主体材料时才用undetermined。'
+            '有实质的长期正向材料时应敢于给low，不能因为材料标为search_excerpt或未独立核实而机械改成medium。'
+            '不根据公司名、知名度、单纯宣传或未搜到负面给低风险；一律以本次来源的具体内容为依据。'
             '不要用数据库主题相似度或资料数量直接算等级。每项理由必须引用本次 source_id 与逐字 excerpt；'
             '必须考虑回应、事件是否过时、总部与门店区别；超过两年的材料没有当前后续时只作context，不作当前adverse。资料缺失不能作为 adverse。禁止输出跑路概率。'
             '必须综合reviews中的全部评价（含正面、负面、品牌归属不明和重复文本）及cashflow收支模拟，'
             '在review_impact和cashflow_impact分别说明如何影响等级或不确定性。品牌资料仅可作context理由，不能当所选公司的adverse证据。'
             '收支情景的固定百分比是假设，不是实际预测；无真实现金收支基线不能据此认定公司资金短缺。'
-            '用户数量、教练数量、宣传简介和单次诉讼胜诉不能证明当前经营稳定、正常运营或未来履约能力；缺少直接正文支持时只描述原始事实。'
+            '用户数量、教练数量、宣传简介和单次诉讼胜诉不能证明当前经营稳定、正常运营或未来履约能力；相关解释必须由原文或摘要中的具体内容支持。'
             '同时给出confidence低/中/高及简短依据，这是判断证据充分度，禁止虚构准确率。保持推理简洁。'
             '综合时比较支持与反对同一结论的材料，区分当前事实、历史背景与条件模拟；说明最影响等级的证据及缺口。'
-            '在内部完成主体一致性、时间有效性、引文支持和收支假设的交叉检查；最终只返回结论和可核对依据。'
+            '在内部完成主体一致性、时间有效性、引文支持和收支假设的交叉检查；最终先明确低/中/高风险及行动建议，再说明具体依据。'
+            '不要用待核实、暂不评级或降级结果代替结论；边界统一为基于本次公开资料的初步判断。'
             'reasons只能引用sources里的source_id和连续原句；数据库、调查状态、评价统计和模拟假设不是可引用来源。没有可引用事实时reasons=[]。')
         draft, draft_calls = await risk_draft(instruction, risk_data)
         synthesis_calls += draft_calls
@@ -287,7 +292,7 @@ async def synthesize(state):
         except ValueError:
             update('风险综合已完成，正在修正评级依据的引用格式…')
             draft = await consumer_model.structured(instruction, risk_data | {'previous_answer':draft.model_dump(),
-                'correction':'上一版来源校验失败。只保留由所选原文片段直接支持的理由。超过两年且无当前后续的负面只能作context；话题聚合页不能证明其中其他新闻属于该公司；官网署名与App宣传不能证明企业存续；用户数量、宣传和单次诉讼胜诉不能推出经营稳定或履约能力；现金流、资金链与模拟不能引用无财务内容的网页。未知source_id、导航栏目、跨主体负面或引用系统统计必须删除。重新检查等级，必要时undetermined，reasons可为空。'}, RiskDraft, reasoning=True)
+                'correction':'上一版来源校验失败。只保留由所选原文或摘要片段直接支持的理由。超过两年且无当前后续的负面只能作context；话题聚合页不能证明其中其他新闻属于该公司；官网署名与App宣传不能证明企业存续；用户数量、宣传和单次诉讼胜诉不能推出经营稳定或履约能力；现金流、资金链与模拟不能引用无财务内容的网页。未知source_id、导航栏目、跨主体负面或引用系统统计必须删除。重新基于保留资料给低/中/高初判；只有完全无可用材料时用undetermined，reasons可为空。'}, RiskDraft, reasoning=True)
             synthesis_calls += 1
             risk = consumer_risk.assess(draft, state['sources'], state['identity']['name'], consumer_model.model_name(), sum(s.scope=='selected_entity' for s in eligible), reviews, cashflow, discard_invalid=True)
         return {'findings': findings, 'risk': risk, 'reviews':reviews, 'cashflow':cashflow, 'model_calls': state['model_calls'] + synthesis_calls,
@@ -297,10 +302,7 @@ async def synthesize(state):
         cashflow = consumer_outlook.simulate(facts, eligible, state['identity']['name'])
         return {'findings': findings, 'reviews':reviews, 'cashflow':cashflow,
                 'model_calls':state['model_calls']+synthesis_calls,
-                'risk': RiskAssessment(explanation='最终模型评估未完成；已核对的证据与评价予以保留。企业风险仍未知，预付决策采用信息不足时的谨慎规则。',
-                    review_impact=f'已审阅 {reviews.reviewed_count}/{reviews.collected_count} 条评价材料；最终综合未完成，逐条结果保留在下方。',
-                    cashflow_impact='收支情景已生成并保留；最终综合未完成，假设情景不用于认定公司资金短缺。',
-                    reviewed_source_count=sum(s.id in reviewed_ids and s.scope=='selected_entity' for s in eligible)), 'model_failed': True,
+                'risk': consumer_risk.fallback(state['sources'], state['identity']['name'], reviews, cashflow), 'model_failed': True,
                 'trace': state['trace'] + [Step(action='智能体解释', status='failed', detail=f'最终评估未完成（{type(exc).__name__}）；已保留 {len(reviewed_ids)} 条资料的阅读结果，决策风险使用公开的谨慎规则') ]}
 
 

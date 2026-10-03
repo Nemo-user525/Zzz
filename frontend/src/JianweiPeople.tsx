@@ -1,6 +1,6 @@
 import { JianweiFinanceNotes } from './JianweiFinanceNotes';
-import { useId, useRef } from 'react';
-import { JianweiActionSprite, type JianweiActionKind } from './JianweiActionSprite';
+import { useEffect, useId, useRef, type RefObject } from 'react';
+import { JianweiActionSprite, fieldworkStages, type FieldworkKind } from './JianweiActionSprite';
 import { useJianweiMotion } from './useJianweiVectorFrame';
 import vectorManifest from '../public/images/vectors/manifest.json';
 import './jianwei-people.css';
@@ -22,7 +22,7 @@ const people: Record<JianweiPersonRole, { crop: [number, number, number, number]
 
 const roles = Object.keys(people) as JianweiPersonRole[];
 
-const fieldworkSprites: Partial<Record<JianweiPersonRole, JianweiActionKind>> = {
+const fieldworkSprites: Partial<Record<JianweiPersonRole, FieldworkKind>> = {
   detective: 'analyst',
   analyst: 'binoculars',
   researcher: 'researcher',
@@ -42,7 +42,7 @@ const fieldwork: Record<JianweiPersonRole, { crop: [number, number, number, numb
   guardian: { crop: [972, 431, 205, 188], pose: 'lookout' },
 };
 
-type ActionPart = { name: 'head' | 'hand' | 'papers'; path: string; pivot: [number, number] };
+type ActionPart = { name: 'head' | 'hand' | 'papers' | 'paper-lower'; path: string; pivot: [number, number] };
 
 // Separate articulated regions rather than translating or rocking the entire illustration.
 // Every pivot is a joint in the reference image's original 1536 × 1024 coordinates.
@@ -54,7 +54,8 @@ const teamActions: Record<JianweiPersonRole, ActionPart[]> = {
   analyst: [
     { name: 'head', path: 'M331 286 Q335 267 354 267 Q376 269 375 290 L368 306 L357 320 L340 312 L330 303 Z', pivot: [348, 315] },
     { name: 'hand', path: 'M348 337 L380 330 L382 359 L365 369 L347 357 Z', pivot: [349, 347] },
-    { name: 'papers', path: 'M406 276 H452 V335 H406 Z M393 363 H446 V424 H393 Z', pivot: [424, 350] },
+    { name: 'papers', path: 'M406 276 H452 V335 H406 Z', pivot: [429, 305] },
+    { name: 'paper-lower', path: 'M393 363 H446 V424 H393 Z', pivot: [419, 394] },
   ],
   researcher: [
     { name: 'head', path: 'M544 289 L552 267 L584 260 L602 279 L608 300 L590 321 L566 315 L549 304 Z', pivot: [570, 317] },
@@ -111,7 +112,8 @@ export function JianweiPerson({ role, className = '', variant = 'fieldwork' }: {
   const playing = useJianweiMotion(stageRef);
   const sprite = variant === 'fieldwork' ? fieldworkSprites[role] : undefined;
   if (sprite) {
-    return <span className={`jw-person jw-person--${role} jw-person--fieldwork ${className}`.trim()} aria-hidden="true">
+    const [, , width, height] = fieldworkStages[sprite];
+    return <span className={`jw-person jw-person--${role} jw-person--fieldwork ${className}`.trim()} style={{ aspectRatio: `${width} / ${height}` }} aria-hidden="true">
       <JianweiActionSprite kind={sprite}/>
     </span>;
   }
@@ -142,7 +144,127 @@ export function JianweiPerson({ role, className = '', variant = 'fieldwork' }: {
   </span>;
 }
 
+/** Native scrolling stays available while the mobile row gently advances. */
+function useMobileTeamLoop(ref: RefObject<HTMLUListElement | null>) {
+  useEffect(() => {
+    const row = ref.current;
+    if (!row || typeof window.matchMedia !== 'function') return;
+    const mobile = window.matchMedia('(max-width: 760px)');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let visible = typeof IntersectionObserver === 'undefined';
+    let pressed = false, focused = false, disposed = false;
+    let frame = 0, resumeTimer = 0, last = 0, resumeAt = 0;
+    let cycle = 0, position = row.scrollLeft, expectedScroll = position;
+
+    const canPlay = () => mobile.matches && !reduced.matches && visible && !document.hidden && !pressed && !focused && cycle > 0;
+    function stop() {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(resumeTimer);
+      frame = resumeTimer = last = 0;
+    }
+    function sync() {
+      stop();
+      if (disposed || !canPlay()) return;
+      const delay = resumeAt - performance.now();
+      if (delay > 0) resumeTimer = window.setTimeout(sync, delay);
+      else frame = requestAnimationFrame(tick);
+    }
+    function tick(now: number) {
+      frame = 0;
+      if (disposed || !canPlay()) return;
+      // Keep fractional progress even on browsers that round scrollLeft.
+      position += last ? Math.min(now - last, 48) * .016 : 0;
+      last = now;
+      position = (position % cycle + cycle) % cycle;
+      row!.scrollLeft = position;
+      expectedScroll = row!.scrollLeft;
+      frame = requestAnimationFrame(tick);
+    }
+    function measure() {
+      const first = row!.firstElementChild as HTMLElement | null;
+      const copy = row!.querySelector<HTMLElement>('.jw-team-member-copy');
+      cycle = mobile.matches && !reduced.matches && first && copy ? copy.offsetLeft - first.offsetLeft : 0;
+      if (!mobile.matches) row!.scrollLeft = 0;
+      position = row!.scrollLeft;
+      if (cycle > 0) {
+        position = (position % cycle + cycle) % cycle;
+        row!.scrollLeft = position;
+      }
+      expectedScroll = row!.scrollLeft;
+      sync();
+    }
+    function pause() {
+      resumeAt = performance.now() + 1800;
+      sync();
+    }
+    function scroll() {
+      // Programmatic frames also dispatch scroll; only a changed position is
+      // a manual gesture. Momentum keeps postponing automatic movement.
+      if (Math.abs(row!.scrollLeft - expectedScroll) < 1) return;
+      position = expectedScroll = row!.scrollLeft;
+      pause();
+    }
+    function pointerDown() { pressed = true; focused = false; sync(); }
+    function pointerUp() {
+      if (!pressed) return;
+      pressed = false;
+      position = expectedScroll = row!.scrollLeft;
+      pause();
+    }
+    function focusIn() { focused = !pressed && row!.matches(':focus-visible'); sync(); }
+    function keyDown() { focused = true; sync(); }
+    function focusOut(event: FocusEvent) {
+      focused = event.relatedTarget instanceof HTMLElement && row!.contains(event.relatedTarget) && event.relatedTarget.matches(':focus-visible');
+      pause();
+    }
+    function visibilityChanged() {
+      if (document.hidden) pressed = false;
+      sync();
+    }
+    const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      sync();
+    });
+    const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+    observer?.observe(row);
+    resize?.observe(row);
+    mobile.addEventListener('change', measure);
+    reduced.addEventListener('change', measure);
+    window.addEventListener('resize', measure);
+    document.addEventListener('visibilitychange', visibilityChanged);
+    row.addEventListener('scroll', scroll, { passive: true });
+    row.addEventListener('wheel', pause, { passive: true });
+    row.addEventListener('pointerdown', pointerDown, { passive: true });
+    window.addEventListener('pointerup', pointerUp);
+    window.addEventListener('pointercancel', pointerUp);
+    row.addEventListener('focusin', focusIn);
+    row.addEventListener('focusout', focusOut);
+    row.addEventListener('keydown', keyDown);
+    measure();
+    return () => {
+      disposed = true;
+      stop();
+      observer?.disconnect();
+      resize?.disconnect();
+      mobile.removeEventListener('change', measure);
+      reduced.removeEventListener('change', measure);
+      window.removeEventListener('resize', measure);
+      document.removeEventListener('visibilitychange', visibilityChanged);
+      row.removeEventListener('scroll', scroll);
+      row.removeEventListener('wheel', pause);
+      row.removeEventListener('pointerdown', pointerDown);
+      window.removeEventListener('pointerup', pointerUp);
+      window.removeEventListener('pointercancel', pointerUp);
+      row.removeEventListener('focusin', focusIn);
+      row.removeEventListener('focusout', focusOut);
+      row.removeEventListener('keydown', keyDown);
+    };
+  }, [ref]);
+}
+
 export function JianweiTeam() {
+  const members = useRef<HTMLUListElement>(null);
+  useMobileTeamLoop(members);
   return <section className="jw-team" aria-labelledby="jw-team-heading">
     <JianweiFinanceNotes variant="entry" className="jw-finance-notes--team"/>
     <div className="jw-team-heading">
@@ -150,12 +272,12 @@ export function JianweiTeam() {
       <h2 id="jw-team-heading">不同的眼睛，<br className="jw-team-mobile-break"/>看见更完整的真相。</h2>
       <p>各自多看一眼，把线索放在一起。</p>
     </div>
-    <ul className="jw-team-members">
-      {roles.map(role => <li key={role}>
+    <ul ref={members} className="jw-team-members" tabIndex={0} aria-label="观察小队，可左右滑动查看">
+      {[false, true].map(copy => roles.map(role => <li key={`${copy ? 'copy' : 'original'}-${role}`} className={copy ? 'jw-team-member-copy' : undefined} aria-hidden={copy || undefined}>
         <div className="jw-team-portrait"><JianweiPerson role={role} variant="team"/></div>
         <h3>{people[role].name}</h3>
         <p>{people[role].description}</p>
-      </li>)}
+      </li>))}
     </ul>
   </section>;
 }

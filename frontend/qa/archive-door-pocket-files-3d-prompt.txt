@@ -1,0 +1,27 @@
+Use case: product-mockup
+Asset type: isolated transparent PNG of an upper door-mounted document pocket, to be composited onto a pale blue 3D archive cabinet website.
+
+Primary request: Create one charming, genuinely three-dimensional wall-mounted shallow storage pocket holding a small set of stationery: two or three slightly staggered ivory archive cards/paper sheets, one kraft-paper envelope with a visible triangular flap in front, and one small pale blue booklet toward the right. Keep the objects restrained, simple, and clearly identifiable at small display size.
+
+The pocket itself is warm white with a very subtle icy-blue undertone, made of smooth matte molded plastic or satin powder-coated material. It has an obviously thick, softly rounded front lip, rounded corners, visible upper rim/top surface, real interior depth, a back wall, left and right side walls. The papers sit convincingly INSIDE the pocket. Build physically convincing solid 3D geometry, with real paper/booklet thickness, beveled edges, soft contact shadows and ambient occlusion between objects and in the pocket cavity. The tray should have depth you can read immediately, not a flat rectangle.
+
+Style/medium: premium Blender/Cinema4D soft product render, realistic volumetric 3D forms with refined tactile materials, softly stylized, polished, quiet and friendly. No drawn contours, no vector illustration, no SVG look, no cel shading.
+
+Composition/camera: landscape 3:2 canvas. Single isolated assembly centered, occupying about 90% of canvas width and 80% of height. Straight-on front-centered ORTHOGRAPHIC camera with only a gentle 12-degree downward view, showing enough top surface/interior to make the depth clear. Keep horizontal edges almost exactly horizontal: no three-quarter rotation, no dramatic perspective, no tilted composition. All object edges and every bit of shadow must stay within the canvas.
+
+Lighting: large soft light from upper left; a short, faint, soft lower-right mounting/contact shadow close to the pocket only. Gentle broad material highlights and nuanced shading. Integrate visually with a powder-blue metal locker. Do not use large detached floor shadows or make the assembly look levitating.
+
+Palette: creamy off-white tray and paper; pale powder blue booklet; muted kraft tan envelope. Low saturation, subtle blue-grey shaded surfaces. Unmarked paper and booklet covers, no text of any kind.
+
+Background: genuinely transparent RGBA alpha, including around and between the isolated objects. No wall, no cabinet door, no background panel, no tabletop, no base, no floor, no studio sweep. Do not bake a checkerboard or white rectangle into the image.
+Avoid: lettering, pseudo-text, Chinese characters, logos, watermarks, labels, thick outlines, line drawing, flat vector art, flat gradients, UI buttons, decorative badge, metal reflections, overstuffing, extra objects.
+
+Refinement prompt (second builtin imagegen call, using first render as edit target):
+Use case: precise-object-edit
+Edit target: the supplied 3D document pocket render. Keep the same document arrangement, pale ivory papers, kraft envelope, powder-blue booklet, matte off-white material, detailed 3D geometry, front orthographic camera, and upper-left soft lighting.
+
+Make TWO targeted corrections only:
+1. Remove absolutely ALL the cloudy pale glow, halo, haze, gradient background, and broad shadow outside the solid object silhouette. The empty area must be mathematically transparent alpha, not partially transparent grey, white, black, fog, light bloom, or a vignette. There must be crisp clean anti-aliased object edges suitable for compositing over a solid blue cabinet door. Keep realistic ambient occlusion and contact shading INSIDE the pocket; at most a tiny, short, faint dark contact shadow may cling directly to the bottom/right edge. No floor, wall, studio background, glow, reflection or haze.
+2. Reduce the height of the front wall by about 30% to make this read as a shallow door-mounted organizer tray instead of a deep basket, exposing a little more of the documents and envelope. Preserve a thick softly rounded upper lip, side walls and visible interior depth. The overall object remains convincingly volumetric and professionally 3D rendered.
+
+Keep the landscape 3:2 canvas and the overall assembly centered at approximately 90% width and 80% height with clean transparent margins. Keep all object edges inside the canvas. No writing, labels, logo or watermark.

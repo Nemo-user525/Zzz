@@ -1,4 +1,4 @@
-import { useEffect, useState, type RefObject } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 
 export function useJianweiMotion(ref: RefObject<HTMLElement | null>, paused = false) {
   const [playing, setPlaying] = useState(false);
@@ -29,13 +29,17 @@ export function useJianweiMotion(ref: RefObject<HTMLElement | null>, paused = fa
 export function useJianweiVectorFrame(ref: RefObject<HTMLElement | null>, frameCount: number, durationMs: number, paused = false, phaseMs = 0) {
   const playing = useJianweiMotion(ref, paused);
   const [frame, setFrame] = useState(0);
+  const elapsed = useRef(0);
   useEffect(() => {
-    if (!playing) { setFrame(0); return; }
+    if (!playing) return;
     const start = performance.now();
-    const update = () => setFrame(Math.floor(((performance.now() - start + phaseMs) % durationMs) / durationMs * frameCount));
+    const update = () => setFrame(Math.floor(((elapsed.current + performance.now() - start + phaseMs) % durationMs) / durationMs * frameCount));
     update();
     const timer = window.setInterval(update, Math.min(durationMs / frameCount, 100));
-    return () => window.clearInterval(timer);
+    return () => {
+      elapsed.current = (elapsed.current + performance.now() - start) % durationMs;
+      window.clearInterval(timer);
+    };
   }, [playing, frameCount, durationMs, phaseMs]);
   return { frame, playing };
 }

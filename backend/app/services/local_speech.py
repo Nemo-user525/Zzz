@@ -70,7 +70,7 @@ def _get_sensevoice():
             return _sensevoice
         model_path = Path(os.environ.get("XRAY_SENSEVOICE_MODEL_PATH", str(DEFAULT_SENSEVOICE)))
         if not all((model_path / filename).is_file() for filename in ("model.int8.onnx", "tokens.txt")):
-            raise SpeechError("speech_not_configured", "高清中文语音识别模型尚未准备好，请稍后重试或输入文字。", 503)
+            raise SpeechError("speech_not_configured", "中文语音识别模型尚未准备好，请稍后重试或输入文字。", 503)
         try:
             import sherpa_onnx
             _sensevoice = sherpa_onnx.OfflineRecognizer.from_sense_voice(

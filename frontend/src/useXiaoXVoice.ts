@@ -68,6 +68,7 @@ export function useXiaoXVoice(onTranscript: (text: string, fields?: VoiceFields)
   const [processing, setProcessing] = useState(false);
   const [level, setLevel] = useState(0);
   const [message, setMessage] = useState(() => supported ? '' : UNSUPPORTED);
+  const [engineNotice, setEngineNotice] = useState('');
   const sessionRef = useRef<VoiceSession | null>(null);
   const transcriptRef = useRef(onTranscript);
   transcriptRef.current = onTranscript;
@@ -93,7 +94,7 @@ export function useXiaoXVoice(onTranscript: (text: string, fields?: VoiceFields)
     setListening(false);
     setLevel(0);
     if (session.sampleCount < session.sampleRate * 0.15) {
-      finish(session, '录音太短，没有收集到清晰声音。点一下小 X，开始说话后再点一下结束。');
+      finish(session, '录音太短，没有收集到清晰声音。点击「重新录音」，说完后点击「结束录音」。');
       return;
     }
     const audio = encodeVoiceWav(session.chunks, session.sampleRate);
@@ -118,12 +119,13 @@ export function useXiaoXVoice(onTranscript: (text: string, fields?: VoiceFields)
           return;
         }
         const text = typeof payload.text === 'string' ? payload.text.trim() : '';
+        setEngineNotice(payload.degraded === true && typeof payload.engine_message === 'string' ? payload.engine_message : '');
         const fields: VoiceFields = {
           query: typeof payload.query === 'string' ? payload.query.slice(0, 80) : '',
           location: typeof payload.location === 'string' ? payload.location.slice(0, 60) : '',
           needs_clarification: payload.needs_clarification !== false,
         };
-        finish(session, text ? (fields.needs_clarification ? '听到了，但还没确定要查哪一家。' : '已识别名称和位置，正在填入查询栏。') : '没有听清，请靠近麦克风再说一次，或直接输入文字。', text, fields);
+        finish(session, text ? (fields.needs_clarification ? '听到了，但还没确定要查哪一家。' : '已提取名称，请核对后填入查询栏。') : '没有听清，请靠近麦克风再说一次，或直接输入文字。', text, fields);
       } catch {
         if (sessionRef.current === session) finish(session, '语音服务暂时无法连接，请检查网络后重试，或直接输入文字。');
       }
@@ -142,8 +144,9 @@ export function useXiaoXVoice(onTranscript: (text: string, fields?: VoiceFields)
     setListening(true);
     setProcessing(false);
     setLevel(0);
+    setEngineNotice('');
     setMessage('正在开启麦克风，请允许浏览器使用麦克风…');
-    session.timer = setTimeout(() => finish(session, '等待麦克风授权超时。允许访问后，请再点一下小 X。'), 20000);
+    session.timer = setTimeout(() => finish(session, '等待麦克风授权超时。允许访问后，请点击「重新录音」。'), 20000);
     void (async () => {
       try {
         // Create/resume during the user's click so browsers can unlock audio.
@@ -189,7 +192,7 @@ export function useXiaoXVoice(onTranscript: (text: string, fields?: VoiceFields)
         });
         clearTimeout(session.timer);
         session.timer = setTimeout(stop, 20000);
-        setMessage('小 X 正在听。说完后再点一下小 X，或停顿两秒自动结束。');
+        setMessage('小 X 正在听。说完后点击「结束录音」，或停顿两秒自动结束。');
       } catch (error) { finish(session, microphoneError(error)); }
     })();
   }, [finish, stop]);
@@ -205,5 +208,5 @@ export function useXiaoXVoice(onTranscript: (text: string, fields?: VoiceFields)
     if (session) { releaseAudio(session); session.request?.abort(); session.chunks = []; }
   }, []);
 
-  return { supported, listening, processing, level, interim: '', message, start, stop, cancel };
+  return { supported, listening, processing, level, interim: '', message, engineNotice, start, stop, cancel };
 }

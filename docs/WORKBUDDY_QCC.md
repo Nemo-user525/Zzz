@@ -4,12 +4,14 @@
 
 网页确认公司 → 后端调用 WorkBuddy Local Assistant OpenAPI → 已授权的企查查工商连接器 → 回传企业字段 → X-Ray 校验并纳入模型，结合数据库主题参考、公开资料、全部保留的评价材料和收支情景，输出风险及确信度。无需粘贴提示词、手动运行队列或安装项目自定义 MCP。
 
-## 配置入口
+## 服务端配置
 
-1. 启动项目，访问本机首页，点击 **配置 WorkBuddy**。当前单端口演示可直接打开 `http://127.0.0.1:8086/?configure=workbuddy`。
+消费者页面不提供应用凭据、OAuth 或 Cookie 配置入口，`?configure=workbuddy` 也不再打开配置表单。默认 `QCC_PROVIDER=mcp` 由后端直接读取 `configs/qcc-mcp.json`，无需 WorkBuddy 应用授权。以下仅用于部署者显式启用可选 WorkBuddy 通道。
+
+1. 在服务端配置下文的应用参数，保持凭据只在后端读取。
 2. 打开 [WorkBuddy 开放平台](https://open.workbuddy.cn/)，注册开发者并创建符合业务的第三方应用。申请本地助理读取 `user.localassistant.readable` 和调用 `user.localassistant.invokable` 权限。应用类型的可申请权限以平台界面为准；没有这两项权限时需要平台开通。
-3. 把配置页显示的回调地址原样登记。例如单端口演示为 `http://127.0.0.1:8086/api/consumer/workbuddy/callback`，Vite 开发页面通常为 `http://127.0.0.1:5173/api/consumer/workbuddy/callback`。平台需接受所登记的地址；注册要求以平台审核为准。
-4. 平台生成 Client ID / Secret 后，在本机配置页填写并保存。Secret 仅显示一次时请自行安全保管。**应用审核启用后**点击“授权连接 WorkBuddy”，由本人在官方页面授权。回调会返回项目首页。
+3. 在平台登记 `WORKBUDDY_REDIRECT_URI`，例如 `http://127.0.0.1:8086/api/consumer/workbuddy/callback`。平台需接受所登记的地址；注册要求以平台审核为准。
+4. 平台生成 Client ID / Secret 后，由部署者存入服务端配置。**应用审核启用后**，通过保留的本机管理接口发起官方授权，并由账号本人完成。消费者无需参与此流程。
 5. 打开 WorkBuddy，确保“本地助理”在线，并连接“企查查（工商信息）”。企业连接器的官方地址是 `https://agent.qcc.com/mcp/company/stream`；法律数据连接器是另一个服务。企查查授权、数据范围、额度和 WorkBuddy 使用额度仍由对应账号决定。
 6. 在 X-Ray 搜索并确认企业。程序自动查询工商登记，以及当前权限允许的财务、变更、年报，每个工具最多一次。WorkBuddy 若要求确认操作，需要在其界面处理；程序不自动批准工具权限。
 
@@ -27,7 +29,7 @@ WORKBUDDY_REDIRECT_URI=http://127.0.0.1:8086/api/consumer/workbuddy/callback
 WORKBUDDY_QCC_TIMEOUT=150
 ```
 
-网页保存到 `data/runtime/workbuddy-app.json` 的完整应用配置优先于环境变量和项目 `.env`，避免新 ID 与旧 Secret、回调混用。要恢复环境变量配置，停服务后移除此私有配置文件。OAuth 令牌保存在 `data/runtime/workbuddy-oauth.json`，按平台返回的有效期自动刷新，且绑定 Client ID；更换应用后需重新授权。两份文件、模型权重和运行时均被 Git 忽略。换电脑安装项目依赖和模型，配置应用并重新授权，保持那台机器的 WorkBuddy 本地助理在线。
+本机管理接口保存到 `data/runtime/workbuddy-app.json` 的完整应用配置优先于环境变量和项目 `.env`，避免新 ID 与旧 Secret、回调混用。要恢复环境变量配置，停服务后移除此私有配置文件。OAuth 令牌保存在 `data/runtime/workbuddy-oauth.json`，按平台返回的有效期自动刷新，且绑定 Client ID；更换应用后需重新授权。两份文件、模型权重和运行时均被 Git 忽略。换电脑安装项目依赖和模型，配置应用并重新授权，保持那台机器的 WorkBuddy 本地助理在线。
 
 高级配置 `WORKBUDDY_ACCESS_TOKEN` 仅接受由自己的第三方应用经官方流程获得、包含这两项权限的 OpenAPI 令牌，优先于 OAuth 文件；手工令牌不自动刷新。不要填入桌面软件内部登录令牌。
 
@@ -37,11 +39,11 @@ WORKBUDDY_QCC_TIMEOUT=150
 
 ### 小 X 专用企业查询接口
 
-`GET /api/consumer/enterprise-agent/status` 独立报告 WorkBuddy 的应用授权状态，并通过 `active_registry_provider` 标明普通调查当前使用的企业数据通道。即使普通调查已连接企查查 MCP，也不会把该状态显示成 WorkBuddy 已连接。`configured` 仅表示配置可用，仍需一次真实查询验证本地助理在线、连接器权限及字段回传。
+`GET /api/consumer/enterprise-agent/status` 报告后端当前选择的企业服务，`provider` 与 `active_registry_provider` 准确区分 `qcc_mcp` 和 `workbuddy`。默认复用 `configs/qcc-mcp.json`，`configurable` 固定为 `false`。前端只展示查询功能和面向用户的可用性提示，不展示凭据、内部连接说明或授权表单。
 
-`POST /api/consumer/enterprise-agent/query` 接收 `{ "company_name": "已确认的完整企业名称", "identity_confirmed": true }`，明确走现有 WorkBuddy 本地助理企业查询协议，不受默认 `QCC_PROVIDER` 影响。成功时返回本次 `sources` 与 `step`；未配置、未授权、离线或失败时返回相应 `status`、`message` 及空资料，不回退企查查直连或其他模型来冒充 WorkBuddy 回答。语音识别出的品牌或门店关键词应先填入查询栏并完成主体确认，再调用此接口。
+`POST /api/consumer/enterprise-agent/query` 接收 `{ "company_name": "已确认的完整企业名称", "identity_confirmed": true }`，按 `QCC_PROVIDER` 选择官方 MCP 或 WorkBuddy，并要求精确匹配完整企业名称。成功时返回本次 `sources` 与 `step`；失败不切换通道，也不生成替代资料。`direct` 暂不支持这个入口，明确返回不可用。语音识别出的品牌或门店关键词先填入查询栏并完成主体确认，再调用此接口。
 
-这条协议通过 WorkBuddy 的已授权本地助理调用仓库原有的企查查连接器。当前本机仍缺少 WorkBuddy 应用凭据与授权；新增路由及隔离测试不代表该真实账号线路已接通。需要让普通调查也使用同一连接器时，在完成授权后设置 `QCC_PROVIDER=workbuddy` 并重启后端；保存应用凭据不会暗中切换普通调查的数据通道。
+默认 MCP 通道已使用仓库现有配置完成一次真实工商登记查询，返回主体匹配资料；这不代表 WorkBuddy OpenAPI 已授权。可选 WorkBuddy 通道仍需要独立的官方应用凭据与授权，只有显式设置 `QCC_PROVIDER=workbuddy` 并重启后端后才会使用。以下 WorkBuddy 协议边界仅适用于该可选通道。
 
 - 选择 `QCC_PROVIDER=workbuddy` 后，查询失败不会回退旧 Cookie、浏览器、HAR 或直连 QCC API。旧实现仅在显式 `direct` 时使用，历史研究入口另有独立设置。
 - 先确认完整公司名；品牌和门店关键词仍经公开搜索寻找候选。当前不通过 WorkBuddy 模糊匹配工商主体。

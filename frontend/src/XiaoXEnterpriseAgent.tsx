@@ -1,14 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Evidence, Step } from './api/consumer';
-import { WorkBuddyConnection } from './WorkBuddyConnection';
 import './xiaox-enterprise-agent.css';
 
-type Connection = {
-  provider: 'workbuddy'; configured: boolean; configurable: boolean; app_configured?: boolean;
-  status: string; message?: string; active_registry_provider?: string;
-};
+type Provider = 'workbuddy' | 'qcc_mcp';
+type Connection = { provider: Provider; configured: boolean };
 type QueryResult = {
-  provider: 'workbuddy'; company_name: string; matched_company_name: string | null;
+  provider: Provider; company_name: string; matched_company_name: string | null;
   status: string; message: string; sources: Evidence[]; step: Step;
 };
 
@@ -43,10 +40,10 @@ export function XiaoXEnterpriseAgent({ companyName, onClose, onBusyChange }: {
         const response = await fetch('/api/consumer/enterprise-agent/status', { signal: controller.signal });
         if (!response.ok) throw new Error();
         const value = await response.json() as Connection;
-        if (value.provider !== 'workbuddy' || typeof value.configured !== 'boolean') throw new Error();
+        if (!['workbuddy', 'qcc_mcp'].includes(value.provider) || typeof value.configured !== 'boolean') throw new Error();
         if (!controller.signal.aborted) setConnection(value);
       } catch {
-        if (!controller.signal.aborted) { setConnection(null); setStatusError('暂时无法读取 WorkBuddy 连接状态，请重试。'); }
+        if (!controller.signal.aborted) { setConnection(null); setStatusError('企业资料查询暂时不可用，请稍后再试。'); }
       } finally { if (!controller.signal.aborted) setChecking(false); }
     })();
     return () => controller.abort();
@@ -69,10 +66,10 @@ export function XiaoXEnterpriseAgent({ companyName, onClose, onBusyChange }: {
       });
       if (!response.ok) throw new Error();
       const value = await response.json() as QueryResult;
-      if (value.provider !== 'workbuddy' || value.company_name !== name || !Array.isArray(value.sources)) throw new Error();
+      if (value.provider !== connection.provider || value.company_name !== name || !Array.isArray(value.sources)) throw new Error();
       if (!controller.signal.aborted && activeQuery.current === controller) setResult(value);
     } catch {
-      if (!controller.signal.aborted && activeQuery.current === controller) setQueryError('本次 WorkBuddy 查询未完成，请稍后重试。');
+      if (!controller.signal.aborted && activeQuery.current === controller) setQueryError('本次查询未完成，请稍后重试。');
     } finally {
       if (!controller.signal.aborted && activeQuery.current === controller) { setBusy(false); activeQuery.current = null; }
     }
@@ -80,29 +77,36 @@ export function XiaoXEnterpriseAgent({ companyName, onClose, onBusyChange }: {
 
   function stopWaiting() {
     activeQuery.current?.abort(); activeQuery.current = null; setBusy(false);
-    setQueryError('已停止等待。WorkBuddy 已收到的任务可能仍在执行。');
+    setQueryError('已停止等待，本次查询可能仍在处理。');
   }
 
   return <section className="jw-companion-voice jw-companion-enterprise-panel" aria-labelledby="jw-enterprise-title" onKeyDown={event => {
     if (event.key === 'Escape') { event.stopPropagation(); onClose(); }
   }}>
-    <div className="jw-voice-heading"><h2 id="jw-enterprise-title">WorkBuddy 企业查询</h2><button type="button" onClick={onClose} aria-label="关闭 WorkBuddy 企业查询">×</button></div>
-    {checking && <p className="jw-voice-status" role="status">正在读取连接状态…</p>}
-    {statusError && <div><p className="jw-voice-notice" role="alert">{statusError}</p><button type="button" className="jw-enterprise-secondary" onClick={() => setRevision(value => value + 1)}>重试连接状态</button></div>}
-    {connection && <>
-      <div className="jw-enterprise-connection"><WorkBuddyConnection standalone session={connection} onChange={value => {
-        setConnection(current => ({ ...current, ...value, provider: 'workbuddy' }));
-        setResult(null); setRevision(value => value + 1);
-      }}/></div>
-      {connection.active_registry_provider === 'qcc_mcp' && <p className="jw-enterprise-scope">当前查证使用企查查 MCP；这里单独调用 WorkBuddy 的企业查询连接器。</p>}
-      {name ? <p className="jw-enterprise-company">已确认的企业<strong>{name}</strong></p> : <p className="jw-enterprise-scope">先在查证流程中确认完整公司名称，再查询企业资料。<a href="/investigations/new">去确认企业 ↗</a></p>}
-      <button type="button" className="jw-voice-apply" disabled={!connection.configured || !name || busy || checking} onClick={() => void query()}>{busy ? '等待 WorkBuddy 返回…' : '查询企业资料'}</button>
-      {busy && <><p role="status" className="jw-voice-status">正在通过 WorkBuddy 调用企查查连接器，请保持本地助理在线。</p><button type="button" className="jw-enterprise-secondary" onClick={stopWaiting}>停止等待</button></>}
+    <div className="jw-voice-heading"><h2 id="jw-enterprise-title">小 X · 企业查询</h2><button type="button" onClick={onClose} aria-label="关闭企业查询">×</button></div>
+    {!name ? <>
+      <p className="jw-voice-status">告诉我你想了解的门店、品牌或公司。</p>
+      <p className="jw-enterprise-scope">我们先找到它背后的经营主体，再一起核对资料。也可以点小狗，直接说给我听。</p>
+      <a className="jw-voice-apply jw-enterprise-start" href="/investigations/new">开始查证 <span aria-hidden="true">↗</span></a>
+    </> : <>
+      <p className="jw-enterprise-company">已确认的企业<strong>{name}</strong></p>
+      {checking && <p className="jw-voice-status" role="status">正在准备查询…</p>}
+      {!checking && (statusError || (connection && !connection.configured)) && <>
+        <p className="jw-voice-notice" role="status">企业资料查询暂时不可用，请稍后再试。已有的查证内容仍会保留。</p>
+        <button type="button" className="jw-enterprise-secondary" onClick={() => setRevision(value => value + 1)}>重新尝试</button>
+        <button type="button" className="jw-voice-apply" onClick={onClose}>继续查看查证内容</button>
+      </>}
+      {connection?.configured && <>
+        <button type="button" className="jw-voice-apply" disabled={busy || checking} onClick={() => void query()}>{busy ? '正在查询…' : '查询企业资料'}</button>
+        {busy && <><p role="status" className="jw-voice-status">正在查找这家企业的资料，请稍等…</p><button type="button" className="jw-enterprise-secondary" onClick={stopWaiting}>停止等待</button></>}
+      </>}
     </>}
     {queryError && <p role="alert" className="jw-voice-notice">{queryError}</p>}
     {result && <div className="jw-enterprise-result">
-      <p role="status" className="jw-voice-status">{result.message}</p>
-      {result.sources.length > 0 && <><p className="jw-enterprise-scope">以下为本次 WorkBuddy 回传字段，未独立在线复验。</p>
+      <p role="status" className="jw-voice-status">{result.status === 'completed'
+        ? result.sources.length ? '已找到这家企业的相关资料。' : '本次未找到可展示的企业资料。'
+        : '本次企业资料查询未完成，请稍后重试。'}</p>
+      {result.sources.length > 0 && <><p className="jw-enterprise-scope">以下资料由企业信息来源返回，尚未独立核验。</p>
         {result.sources.slice(0, 6).map(source => <details key={source.id}>
           <summary>{source.title}</summary><small>{source.publisher}</small><p>{source.excerpt}</p><small>{source.page_status}</small>
           {publicLink(source.url) && <a href={publicLink(source.url)} target="_blank" rel="noreferrer">查看来源说明 ↗</a>}

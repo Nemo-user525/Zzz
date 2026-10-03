@@ -5,8 +5,7 @@ import './jianwei-phone-story.css';
 
 const chapters = [
   { label: '认清主体', eyebrow: '01 / START WITH A NAME', title: <>一个名字，<br/>是查证的开始。</>, description: '招牌、品牌、收款方，可能不是同一家公司。先确认你在意的那家店，背后究竟是谁。', detail: '门店名称 → 经营主体' },
-  { label: '追溯线索', eyebrow: '02 / FOLLOW THE EVIDENCE', title: <>每条线索，<br/>都有迹可循。</>, description: '把公告、经营变化与消费反馈放在一起看。保留原始出处，也留意时间、关联和仍待核实的部分。', detail: '公开资料 → 有出处的记录' },
-  { label: '带走核对卡', eyebrow: '03 / MAKE YOUR NEXT MOVE', title: <>看清之后，<br/>再做决定。</>, description: '分清已经知道的、还不知道的，以及付款前该问的问题。把这张核对卡，带到下一次沟通里。', detail: '已知 · 未知 · 下一步' },
+  { label: '追溯线索', eyebrow: '02 / FOLLOW THE EVIDENCE', title: <>每条线索，<br/>都有迹可循。</>, description: '把公告、经营变化与消费反馈放在一起看。综合时间、主体关联和正反面信息，形成有依据的风险判断。', detail: '公开资料 → 风险初判与依据' },
 ];
 
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
@@ -16,7 +15,7 @@ const mix = (start: number, end: number, progress: number) => start + (end - sta
 export function JianweiPhoneStory() {
   const story = useRef<HTMLDivElement>(null);
   const viewport = useRef<HTMLDivElement>(null);
-  const [chapter, setChapter] = useState<0 | 1 | 2>(0);
+  const [chapter, setChapter] = useState<0 | 1>(0);
   const [fullscreen, setFullscreen] = useState(false);
   const [fullscreenMessage, setFullscreenMessage] = useState('');
 
@@ -56,12 +55,10 @@ export function JianweiPhoneStory() {
       current = media.matches ? target : mix(current, target, .16);
       if (Math.abs(target - current) < .0005) current = target;
       // Hold each composition briefly; use the whole viewport for the journey.
-      const segment = current < .5 ? clamp((current - .06) / .38) : clamp((current - .56) / .38);
+      const segment = clamp((current - .06) / .88);
       const eased = segment * segment * (3 - 2 * segment);
-      const pose = current < .5
-        ? { x: mix(-travelX, travelX, eased), y: mix(travelY, -travelY, eased), ry: mix(32, -26, eased) }
-        : { x: mix(travelX, -travelX, eased), y: mix(-travelY, travelY * .3, eased), ry: mix(-26, 12, eased) };
-      const nextChapter = current < .25 ? 0 : current < .75 ? 1 : 2;
+      const pose = { x: mix(-travelX, travelX, eased), y: mix(travelY, -travelY, eased), ry: mix(32, -26, eased) };
+      const nextChapter = current < .5 ? 0 : 1;
       const snap = (value: number) => Math.round(value * window.devicePixelRatio) / window.devicePixelRatio;
       stage.style.setProperty('--phone-x', `${media.matches ? (mobile ? 0 : -travelX) : snap(pose.x)}px`);
       stage.style.setProperty('--phone-y', `${media.matches ? 0 : snap(pose.y)}px`);
@@ -91,7 +88,7 @@ export function JianweiPhoneStory() {
     if (!story.current || !viewport.current) return;
     const top = parseFloat(getComputedStyle(viewport.current).top) || 0;
     const distance = story.current.offsetHeight - viewport.current.offsetHeight;
-    window.scrollTo({ top: window.scrollY + story.current.getBoundingClientRect().top - top + distance * [0, .5, 1][index], behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+    window.scrollTo({ top: window.scrollY + story.current.getBoundingClientRect().top - top + distance * index, behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
   };
 
   const toggleFullscreen = async () => {
@@ -132,7 +129,6 @@ export function JianweiPhoneStory() {
         {chapters.map((item, index) => <button type="button" key={item.label} aria-current={chapter === index ? 'step' : undefined} onClick={() => goToChapter(index)}><span>0{index + 1}</span>{item.label}</button>)}
       </nav>
       <div className="jw-phone-scroll-hint" aria-hidden="true"><span>SCROLL TO DISCOVER</span> ↓</div>
-      <div className="jw-phone-scroll-progress" aria-hidden="true"/>
     </div>
   </div>;
 }

@@ -9,6 +9,10 @@ CITY = re.compile('|'.join(sorted(CITIES, key=len, reverse=True)))
 LEGAL = re.compile(r'(?:股份有限公司|有限责任公司|有限公司|个人独资企业|个体工商户|银行|大学|医院)$')
 LEADING = re.compile(r'^(?:(?:嗯|呃|那个|你好|小[ Xx叉]|请|麻烦|能不能|可以|我想|我要|我需要|帮我|给我|替我|查询|查一下|查一查|查查|查找|查|了解一下|了解|看看|看一下|搜索一下|搜索|一下|下|关于|的|在|位于)[，,、\s]*)+')
 TRAILING = re.compile(r'(?:这家(?:公司|企业|店|门店)|这个(?:品牌|公司)|的(?:企业|公司)?(?:信息|资料|风险|经营状况)|是否|有没有|怎么样|靠谱吗|好不好|能不能|看看|帮我|请问|谢谢|可以吗|好吗|吧|呢|吗|呀|啊).*$')
+CONSUMER_PRODUCT = r'(?:会员卡|储值卡|预付卡|健身卡|年卡|季卡|月卡|次卡|课程|私教课|培训课|套餐)'
+PURCHASE = r'(?:购买|办理|续办|续费|充值|报名|预付|买|办|报)(?:一张|一份|一套|一个|一下)?'
+PRODUCT_SUFFIX = re.compile(r'的' + CONSUMER_PRODUCT + r'(?:业务|服务)?$')
+PURCHASE_PREFIX = re.compile(r'^' + PURCHASE + r'\s*')
 
 
 class Fields(BaseModel):
@@ -25,6 +29,8 @@ def fallback(text: str) -> Fields:
     value = re.sub(r'\s+', ' ', text).strip(' ，,。.!！?？')
     if re.search(r'^(?:你好|你是谁|谢谢|再见|开始|结束|取消|停止|跳舞|今天天气|讲个笑话)[。！!？，,\s]*$', value):
         return Fields()
+    if re.search(r'天气|几点|笑话|你是谁|唱歌|跳舞', value) and not re.search(r'公司|企业|门店|品牌|工作室|培训|舞蹈|商店', value):
+        return Fields()
     # An explicit correction wins; do not combine two companies into one query.
     value = re.split(r'(?:不对[，,]?|改成|换成|我是说)', value)[-1].strip()
     value = LEADING.sub('', value)
@@ -38,10 +44,19 @@ def fallback(text: str) -> Fields:
         value = value[:explicit.start()] + value[explicit.end():]
     value = re.split(r'[，,。；;]', value)[0].strip()
     value = TRAILING.sub('', value).strip(' 的，,。！!？?')
+    # A card/course is the reason for a search, not part of the company name.
+    # Only strip purchase verbs when a matching product suffix makes that intent
+    # explicit; ordinary brand names such as 买买乐 must remain untouched.
+    if not LEGAL.search(value):
+        if PRODUCT_SUFFIX.search(value):
+            value = PRODUCT_SUFFIX.sub('', value)
+            value = PURCHASE_PREFIX.sub('', value).strip()
+        elif re.fullmatch(PURCHASE + r'\s*' + CONSUMER_PRODUCT, value):
+            value = ''
     if not LEGAL.search(value) and location:
         value = re.sub(r'^' + re.escape(location) + r'市?(?:的)?', '', value)
     value = LEADING.sub('', value).strip(' 的，,。！!？?')
-    if len(value) < 2 or len(value) > 80 or re.search(r'以及|或者|和.+(?:公司|门店|健身)|还有|有没有|如何|怎么|为什么', value):
+    if len(value) < 2 or len(value) > 80 or re.search(r'以及|或者|还有|有没有|如何|怎么|为什么', value) or (not LEGAL.search(value) and re.search(r'.+[和与].+', value)):
         return Fields(location=location)
     return Fields(query=value, location=location)
 
@@ -63,6 +78,7 @@ async def extract(text: str) -> dict:
             candidate = await asyncio.wait_for(consumer_model.structured(
                 '这是语音输入字段提取任务，不是企业调查。只从 transcript 原文逐字提取一个要查询的门店、品牌或公司名称 query，和城市/地址 location。'
                 '删除请求动词、语气词、风险问题。保留完整公司法定名称，不把名称里的城市删除。'
+                '购买或办卡意图只提取商家名称，例如“我想买乐刻运动的年卡”提取“乐刻运动”，不保留“买”和“的年卡”。'
                 'query 与 location 必须分别为原文连续片段，不纠正同音字、不翻译、不添加原文没有的字。'
                 '没有明确企业/品牌/门店对象、同时要求多家且未明确改口、只是聊天时 query 为空。'
                 '只输出 query 和 location 两个字符串；不需要任何引用。',

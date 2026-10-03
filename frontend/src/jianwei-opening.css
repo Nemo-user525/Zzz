@@ -1,0 +1,88 @@
+.jw-opening {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: var(--jw-paper, #fafaf9);
+  background-image: radial-gradient(circle, #75757540 .75px, transparent 1px);
+  background-size: 22px 22px;
+  color: #4f504d;
+  opacity: 1;
+  outline: none;
+  transition: opacity 250ms ease;
+}
+
+.jw-opening[data-phase='leaving'] { opacity: 0; }
+
+.jw-opening-scene {
+  position: relative;
+  width: min(520px, 86vw, 76svh);
+  aspect-ratio: 1.12;
+  display: grid;
+  place-items: center;
+  mix-blend-mode: multiply;
+}
+
+.jw-opening-dog {
+  display: block;
+  position: relative;
+  z-index: 1;
+  width: 62%;
+  max-width: 320px;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  animation: jw-opening-arrive 600ms ease both;
+}
+
+.jw-opening-note {
+  position: absolute;
+  left: var(--opening-x);
+  top: var(--opening-y);
+  font: 400 clamp(22px, 2.1vw, 31px)/1.1 'Jianwei Ink Free', 'Ink Free', 'Segoe Print', cursive;
+  letter-spacing: -.025em;
+  color: rgb(79 80 77 / 56%);
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  transform: translate(-50%, -50%) rotate(var(--opening-angle));
+  animation: jw-opening-pencil 2.7s ease-in-out var(--opening-delay) infinite both;
+}
+
+.jw-opening-note:nth-child(3n) { color: rgb(79 80 77 / 32%); }
+.jw-opening-note:nth-child(3n + 1) { color: rgb(79 80 77 / 74%); }
+
+.jw-opening-signature {
+  position: absolute;
+  bottom: max(30px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  font: italic 17px/1.4 'Jianwei Editorial', Georgia, serif;
+  color: #6d777580;
+  white-space: nowrap;
+}
+
+@keyframes jw-opening-arrive {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes jw-opening-pencil {
+  0%, 100% { opacity: .24; translate: 0 3px; }
+  48% { opacity: 1; translate: 0 -3px; }
+}
+@media (max-width: 600px) {
+  .jw-opening-scene { width: min(340px, 88vw, 76svh); }
+  .jw-opening-note { font-size: 23px; }
+  .jw-opening-signature { bottom: 34px; font-size: 15px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jw-opening { transition: none; }
+  .jw-opening-note, .jw-opening-dog { animation: none; }
+}
+@media print { .jw-opening { display: none; } }
