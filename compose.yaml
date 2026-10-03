@@ -1,0 +1,20 @@
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    init: true
+    ports:
+      - "127.0.0.1:8086:8086"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      PORT: "8086"
+      XRAY_DB_PATH: /app/storage/xray.sqlite3
+      XRAY_STORAGE_PATH: /app/storage
+    volumes:
+      - xray-storage:/app/storage
+    stop_grace_period: 30s
+
+volumes:
+  xray-storage:

@@ -8,6 +8,11 @@ data/xray.sqlite3
 *.log
 *.har
 .env
+.env.*
+!.env.example
+!.env.*.example
+storage/
+frontend/qa/*.rgba
 data/backups/
 data/raw/
 data/extracted/

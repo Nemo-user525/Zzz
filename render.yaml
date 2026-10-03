@@ -1,0 +1,25 @@
+# Creates a PAID, continuously running service. Review the platform's price before deploying.
+services:
+  - type: web
+    name: jianwei-microinsight
+    runtime: docker
+    repo: https://github.com/Nemo-user525/Zzz
+    branch: feat/history-evidence
+    plan: starter
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeployTrigger: off
+    disk:
+      name: jianwei-storage
+      mountPath: /app/storage
+      sizeGB: 2
+    envVars:
+      - key: XRAY_DB_PATH
+        value: /app/storage/xray.sqlite3
+      - key: XRAY_STORAGE_PATH
+        value: /app/storage
+      - key: CONSUMER_MODEL_PROVIDER
+        value: auto
+      - key: XRAY_INSTALL_VOICE_MODEL
+        value: "1"
