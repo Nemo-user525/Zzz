@@ -34,7 +34,7 @@ pwsh -File .\start-local.ps1 -Action Stop
 
 1. 登录自己的 Render 账号并连接 GitHub 仓库 `Nemo-user525/Zzz`。
 2. 新建 Blueprint，选择 `feat/history-evidence` 分支及仓库根目录的 `render.yaml`。
-3. 配置使用 **Starter 付费常驻服务与 2GB 持久磁盘**，请在平台确认当前费用后再部署。本仓库没有创建服务、绑定付款或产生托管费用。
+3. 配置使用 **Standard 付费常驻服务与 2GB 持久磁盘**，给离线语音识别留出内存。请在平台确认当前费用后再部署。本仓库没有创建服务、绑定付款或产生托管费用。
 4. 在服务的 Environment 设置自己的 `OPENROUTER_API_KEY`、`QCC_MCP_API_KEY` 等接口配置；WorkBuddy 如启用，需把回调地址改成实际域名的 `/api/consumer/workbuddy/callback`。不要将私有配置提交 Git。
 5. 部署成功后，使用平台实际显示的 HTTPS 地址。没有成功的部署结果前，不应把示例地址当作可用网址。
 

@@ -5,7 +5,7 @@ services:
     runtime: docker
     repo: https://github.com/Nemo-user525/Zzz
     branch: feat/history-evidence
-    plan: starter
+    plan: standard
     region: singapore
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/health
