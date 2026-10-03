@@ -17,9 +17,9 @@ def mark_conflicts(facts: list[dict]) -> list[dict]:
     groups: dict[tuple, set[Decimal]] = defaultdict(set)
     for f in facts:
         if f["verification_status"] == "verified" and f["value_yuan"] is not None:
-            groups[(f["company_id"], f["field"], f["period"], f["scope"])].add(Decimal(str(f["value_yuan"])))
+            groups[(f["company_id"], f["field"], f["period"], f["scope"], f.get('unit', 'CNY'), f.get('revision', 'original'))].add(Decimal(str(f["value_yuan"])))
     for f in facts:
-        key = (f["company_id"], f["field"], f["period"], f["scope"])
+        key = (f["company_id"], f["field"], f["period"], f["scope"], f.get('unit', 'CNY'), f.get('revision', 'original'))
         if len(groups[key]) > 1:
             f["verification_status"] = "conflicted"
             f["review_note"] += "；同口径来源数值冲突，待人工复核"

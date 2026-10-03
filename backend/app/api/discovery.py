@@ -3,7 +3,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from app.services import amap, qcc
+from app.services import amap, qcc_openapi as qcc
 
 
 router = APIRouter(prefix="/api")

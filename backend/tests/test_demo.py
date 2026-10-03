@@ -59,7 +59,8 @@ def test_conflict_and_configurable_roles():
     seed()
     client = TestClient(app)
     config = client.get("/api/use-cases").json()
-    assert len(config["use_cases"]) == 2
+    assert {'supplier-trade-credit', 'finance-manager-credit-terms', 'consumer-large-prepayment'} <= {p['id'] for p in config['use_cases']}
+    assert config['default_use_case_id'] == 'consumer-large-prepayment'
     assert config["use_cases"][1]["output_template"]["sections"][0]["fields"][0] == "legal_name"
     assert client.get("/api/companies/halo-688173").json()["legal_name"] == "希荻微电子集团股份有限公司"
     assert client.get("/api/risk-events/event-zinitix-management/explanation").json()["mode"] == "offline"

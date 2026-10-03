@@ -69,6 +69,10 @@ def explain(event: dict, source_excerpt: str) -> dict:
     try:
         raw = _call(prompt)
         parsed = Explanation.model_validate_json(raw)
+        # Free paraphrase cannot establish entailment. Until a citation-level verifier
+        # exists, accept only the supplied supported text and deterministic questions.
+        if parsed.plain_language not in {event['explanation'], source_excerpt} or parsed.question_to_verify != fallback.question_to_verify or parsed.caveat != fallback.caveat:
+            raise ValueError('模型输出包含未经支持的改写，回退确定性模板')
         return {"mode": mode, "fallback": False, "explanation": parsed.model_dump()}
     except (httpx.HTTPError, ValueError, KeyError, IndexError, ValidationError):
         return {"mode": "offline", "fallback": True, "explanation": fallback.model_dump()}

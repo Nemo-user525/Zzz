@@ -1,10 +1,18 @@
 openapi: 3.0.3
 info:
-  title: X-Ray offline demo API
+  title: X-Ray legacy trade API
   version: 1.0.0
+  description: Consumer research and the current complete contract are in openapi-consumer.json. Historical additive endpoints are in openapi-v2.json. Existing v1 arrays remain unchanged.
 servers:
   - url: http://localhost:8000
 paths:
+  /api/sources/{source_id}/document:
+    get:
+      parameters: [{name: source_id, in: path, required: true, schema: {type: string}}]
+      responses:
+        '200': {description: Hash checked local PDF, content: {application/pdf: {schema: {type: string, format: binary}}}}
+        '404': {$ref: '#/components/responses/Error'}
+        '409': {$ref: '#/components/responses/Error'}
   /api/use-cases:
     get:
       responses:
@@ -209,6 +217,7 @@ components:
       type: object
       required: [company_id, opening_cash_yuan, safety_floor_yuan, order_amount_yuan, prepayment_rate, payment_term_days, delay_days, other_net_cashflows]
       properties:
+        cost_payment_rule: {type: string, enum: [per_shipment_not_before_cost_day, fixed_day], default: per_shipment_not_before_cost_day}
         company_id: {type: string}
         opening_cash_yuan: {type: number, minimum: 0}
         safety_floor_yuan: {type: number, minimum: 0}
@@ -232,6 +241,19 @@ components:
       type: object
       required: [cash_curve, minimum_balance_yuan, minimum_day, first_breach_day, shortfall_yuan, final_payment_day, outside_view_payment, assumptions, formula_breakdown, evidence_event_ids, data_labels]
       properties:
+        cash_ledger:
+          type: array
+          items:
+            type: object
+            required: [day, amount_yuan, kind, label, outside_view]
+            properties:
+              day: {type: integer}
+              amount_yuan: {type: number}
+              kind: {type: string, enum: [prepayment, direct_cost, remainder, other]}
+              label: {type: string}
+              outside_view: {type: boolean}
+        warnings: {type: array, items: {type: string}}
+        cost_payment_rule: {type: string}
         cash_curve: {type: array, items: {$ref: '#/components/schemas/CashPoint'}}
         minimum_balance_yuan: {type: number}
         minimum_day: {type: integer}
@@ -255,5 +277,18 @@ components:
             properties:
               name: {type: string}
               result: {$ref: '#/components/schemas/SimulationResult'}
+              decline: {type: boolean}
+              inputs:
+                description: Actual parameters, with Decimal values encoded as strings to preserve cents.
+                type: object
+                additionalProperties: true
         opportunity_cost_yuan: {type: number}
         explanation: {type: string}
+
+# Additive v1 fields (2026-10-02): SimulationInput.cost_payment_rule defaults to
+# per_shipment_not_before_cost_day; fixed_day is also supported.
+# SimulationResult.cash_ledger lists day, amount_yuan, kind, label, outside_view.
+# SimulationResult.warnings explains direct-cost precedence and day-end netting.
+# Comparison.variants[].inputs exposes actual parameters; decline is boolean.
+# GET /api/sources/{source_id}/document serves a hash-checked local PDF.
+# Research API typed schemas and paths: ./openapi-v2.json

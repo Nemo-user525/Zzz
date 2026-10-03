@@ -1,0 +1,35 @@
+{
+  "companies": {
+    "halo-688173": {
+      "unknowns": [
+        "供应商与该客户的历史付款记录未取得",
+        "最新子公司上市状态尚未复核",
+        "统一社会信用代码暂无法核实"
+      ]
+    }
+  },
+  "facts": {
+    "fact-revenue": "financial",
+    "fact-operating-cash": "financial",
+    "fact-net-assets": "financial",
+    "fact-zinitix-status": "event"
+  },
+  "events": {
+    "event-zinitix-management": {
+      "fact_ids": [
+        "fact-zinitix-status"
+      ],
+      "type": "控股子公司上市地位风险",
+      "stage": "管理股指定",
+      "affected_entity": "Zinitix Co., Ltd.（控股子公司）",
+      "required_tokens": [
+        "Zinitix",
+        "2026年9月3日",
+        "指定为管理股"
+      ],
+      "reviewer_type": "agent",
+      "reviewed_at": "2026-10-02",
+      "note": "本轮核对完整原文文本；原数据的人工标记为历史自述，没有具名复核记录"
+    }
+  }
+}

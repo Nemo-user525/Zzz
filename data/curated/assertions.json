@@ -1,0 +1,808 @@
+[
+  {
+    "id": "claim-1216516397",
+    "announcement_id": "1216516397",
+    "expected_sha256": "dc4cbdf91feb51486b98875be98d35c72807288a8ce6165cbd4bf18bad9e826b",
+    "entity_name": "广东紫晶信息存储技术股份有限公司",
+    "field": "公司披露收到拟终止上市事先告知书",
+    "page": 1,
+    "excerpt": "4月21日，广东紫晶信息存储技术股份有限公司（以下简称公司）收到上海证券交易所下发的《关于拟终止广东紫晶信息存储技术股份有限公司股票上市的事先告知书》，具体内容如下：",
+    "value": "事先告知",
+    "stage": "事先告知",
+    "event_type": "delisting_notice",
+    "is_outcome": false,
+    "occurred_at": "2023-04-21",
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:17:31.027052+00:00",
+    "required_tokens": [
+      "4月21日，广东紫晶",
+      "具体内容如下："
+    ],
+    "category": "event"
+  },
+  {
+    "id": "claim-1216958401",
+    "announcement_id": "1216958401",
+    "expected_sha256": "0438449d40f8f6b059e1f113fb0356fddb7c53ee631036468cb2707e1bc77ffe",
+    "entity_name": "广东紫晶信息存储技术股份有限公司",
+    "field": "公司披露收到终止上市决定",
+    "page": 1,
+    "excerpt": "广东紫晶信息存储技术股份有限公司（以下简称“公司”）于2023年5月31日收到上海证券交易所出具的自律监管决定书﹝2023﹞116号《关于广东紫晶信息存储技术股份有限公司股票终止上市的决定》，上海证券交易所决定公司股票终止上市。",
+    "value": "终止上市决定",
+    "stage": "终止上市决定",
+    "event_type": "delisting_decided",
+    "is_outcome": true,
+    "occurred_at": "2023-05-31",
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:17:31.027052+00:00",
+    "required_tokens": [
+      "广东紫晶信息存储技术股份有限公司（以下简称“公司”）于",
+      "上海证券交易所决定公司股票终止上市。"
+    ],
+    "category": "event"
+  },
+  {
+    "id": "claim-1209386368",
+    "announcement_id": "1209386368",
+    "expected_sha256": "504bbf12135060654fe5aa94ef8fe9669505cd5821c1e3941ef0855ae5bddc1d",
+    "entity_name": "康得新复合材料集团股份有限公司",
+    "field": "公司披露收到事先告知书",
+    "page": 1,
+    "excerpt": "2021年3月15日，公司收到深圳证券交易所下发的《事先告知书》（中小板函【2021】第147号），现将具体内容公告如下：",
+    "value": "事先告知",
+    "stage": "事先告知",
+    "event_type": "delisting_notice",
+    "is_outcome": false,
+    "occurred_at": "2021-03-15",
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:17:31.027052+00:00",
+    "required_tokens": [
+      "2021年3月15日，公司收到",
+      "现将具体内容公告如下："
+    ],
+    "category": "event"
+  },
+  {
+    "id": "claim-1209643701",
+    "announcement_id": "1209643701",
+    "expected_sha256": "58bad65dae8d519b570bb2a44fe70a7853c6df3fab88ce33490b64a0444a4985",
+    "entity_name": "康得新复合材料集团股份有限公司",
+    "field": "公司披露收到终止上市决定",
+    "page": 1,
+    "excerpt": "康得新复合材料集团股份有限公司（以下简称：“康得新”或“公司”）于2021年4月6日收到深圳证券交易所《关于康得新复合材料集团股份有限公司股票终止上市的决定》（深证上[2021]353号），深圳证券交易所决定公司股票终止上市。",
+    "value": "终止上市决定",
+    "stage": "终止上市决定",
+    "event_type": "delisting_decided",
+    "is_outcome": true,
+    "occurred_at": "2021-04-06",
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:17:31.027052+00:00",
+    "required_tokens": [
+      "康得新复合材料集团股份有限公司（以下简称：",
+      "深圳证券交易所决定公司股票终止上市。"
+    ],
+    "category": "event"
+  },
+  {
+    "id": "claim-1216516411",
+    "announcement_id": "1216516411",
+    "expected_sha256": "77c07b528e0b131602b250a40f006daa41753f4d6512250854d55ca1bdb469dd",
+    "entity_name": "泽达易盛（天津）科技股份有限公司",
+    "field": "公司披露收到行政处罚决定",
+    "page": 1,
+    "excerpt": "2023年4月21日，公司收到中国证监会《行政处罚决定书》（〔2023〕29号）（以下简称《决定书》）。",
+    "value": "行政处罚决定已收到",
+    "stage": "行政处罚决定已收到",
+    "event_type": "regulatory_penalty",
+    "is_outcome": false,
+    "occurred_at": "2023-04-21",
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:17:31.027052+00:00",
+    "required_tokens": [
+      "2023年4月21日，公司收到",
+      "号）（以下简称《决定书》）。"
+    ],
+    "category": "event"
+  },
+  {
+    "id": "claim-1216958560",
+    "announcement_id": "1216958560",
+    "expected_sha256": "76617642fa06be3456ab40dca6e3a7c80657de0d4dfc46d9252dcf96d40b5719",
+    "entity_name": "泽达易盛（天津）科技股份有限公司",
+    "field": "公司披露收到终止上市决定",
+    "page": 1,
+    "excerpt": "泽达易盛（天津）科技股份有限公司（以下简称公司）于2023年5月31日收到上海证券交易所出具的自律监管决定书[2023]117号《关于泽达易盛（天津）科技股份有限公司股票终止上市的决定》，上海证券交易所决定公司股票终止上市。",
+    "value": "终止上市决定",
+    "stage": "终止上市决定",
+    "event_type": "delisting_decided",
+    "is_outcome": true,
+    "occurred_at": "2023-05-31",
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:17:31.027052+00:00",
+    "required_tokens": [
+      "泽达易盛（天津）科技股份有限公司（以下简称公司）于",
+      "上海证券交易所决定公司股票终止上市。"
+    ],
+    "category": "event"
+  },
+  {
+    "id": "claim-1220089344",
+    "announcement_id": "1220089344",
+    "expected_sha256": "6b0b84f43610c7829a0f0e57735e634849dba727531cb5e5551b9412c581cddf",
+    "entity_name": "保力新能源科技股份有限公司",
+    "field": "公司披露收到事先告知书",
+    "page": 1,
+    "excerpt": "2024年5月17日，保力新能源科技股份有限公司（以下简称“公司”）收到深圳证券交易所下发的《事先告知书》（创业板函〔2024〕第114号）。现将具体内容公告如下：",
+    "value": "事先告知",
+    "stage": "事先告知",
+    "event_type": "delisting_notice",
+    "is_outcome": false,
+    "occurred_at": "2024-05-17",
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:17:31.027052+00:00",
+    "required_tokens": [
+      "2024年5月17日，保力新能源",
+      "现将具体内容公告如下："
+    ],
+    "category": "event"
+  },
+  {
+    "id": "claim-1220542821",
+    "announcement_id": "1220542821",
+    "expected_sha256": "0f01dc414ac9e87b9deeb619321d341989756a35c6a4ced5b85e043dd565cab4",
+    "entity_name": "保力新能源科技股份有限公司",
+    "field": "公司披露收到终止上市决定",
+    "page": 1,
+    "excerpt": "保力新能源科技股份有限公司（以下简称“公司”）于2024年7月5日收到深圳证券交易所《关于保力新能源科技股份有限公司股票终止上市的决定》（深证上【2024】535号），深圳证券交易所决定终止公司股票上市。",
+    "value": "终止上市决定",
+    "stage": "终止上市决定",
+    "event_type": "delisting_decided",
+    "is_outcome": true,
+    "occurred_at": "2024-07-05",
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:17:31.027052+00:00",
+    "required_tokens": [
+      "保力新能源科技股份有限公司（以下简称“公司”）于",
+      "深圳证券交易所决定终止公司股票上市。"
+    ],
+    "category": "event"
+  },
+  {
+    "id": "claim-1211709038",
+    "announcement_id": "1211709038",
+    "expected_sha256": "409f8518a5fec272742ae6df39d414d836202227b1c2a484295eb8310fac4e16",
+    "entity_name": "康美药业股份有限公司",
+    "field": "公司披露法院批准重整计划",
+    "page": 1,
+    "excerpt": "2021年11月26日，揭阳中院裁定批准《康美药业股份有限公司重整计划》，",
+    "value": "重整计划批准",
+    "stage": "重整计划批准",
+    "event_type": "restructuring_plan_approved",
+    "is_outcome": true,
+    "occurred_at": "2021-11-26",
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:17:31.027052+00:00",
+    "required_tokens": [
+      "2021年11月26日，揭阳中院裁定批准",
+      "《康美药业股份有限公司重整计划》，"
+    ],
+    "category": "event"
+  },
+  {
+    "id": "claim-1212063282",
+    "announcement_id": "1212063282",
+    "expected_sha256": "1594edcb70e7941ce238f66e438b91e7c4a7f79790029ec4d71a6be4289e40ed",
+    "entity_name": "康美药业股份有限公司",
+    "field": "公司披露重整计划执行完毕",
+    "page": 1,
+    "excerpt": "揭阳市中级人民法院（以下简称“法院”）于2021年12月29日作出（2021）粤52破1号之四《民事裁定书》，裁定确认《康美药业股份有限公司重整计划》（以下简称“重整计划”）已执行完毕。",
+    "value": "重整计划执行完毕",
+    "stage": "重整计划执行完毕",
+    "event_type": "restructuring_completed",
+    "is_outcome": true,
+    "occurred_at": "2021-12-29",
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:17:31.027052+00:00",
+    "required_tokens": [
+      "揭阳市中级人民法院（以下简称“法院”）于",
+      "已执行完毕。"
+    ],
+    "category": "event"
+  },
+  {
+    "id": "claim-1225497117-total_assets_yuan",
+    "announcement_id": "1225497117",
+    "expected_sha256": "a7a1c8b8023828894c769cdabc174974a70201fe4ea58f6f1a0f698a3c808a1c",
+    "entity_name": "杭州士兰微电子股份有限公司",
+    "field": "total_assets_yuan",
+    "category": "financial",
+    "page": 2,
+    "excerpt": "总资产28,382,791,920.44",
+    "value": "28382791920.44",
+    "raw_value": "28,382,791,920.44",
+    "raw_unit": "元",
+    "unit": "CNY",
+    "period_end": "2026-06-30",
+    "scope": "报告摘要主要财务数据（原文列示口径）",
+    "audited": false,
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:55:19.912663+00:00",
+    "required_tokens": [
+      "总资产",
+      "28,382,791,920.44"
+    ],
+    "table_column": "本报告期/本报告期末第一数值列",
+    "unit_context": "单位：元",
+    "report_title": "2026年半年度报告摘要",
+    "table_locator": {
+      "value_bbox": [
+        252.02,
+        629.277,
+        330.88,
+        643.188
+      ],
+      "metric_bbox": [
+        95.54,
+        630.81,
+        127.189,
+        641.46
+      ],
+      "header_bbox": [
+        261.14,
+        609.81,
+        313.788,
+        620.46
+      ],
+      "column_range": [
+        238,
+        336
+      ],
+      "row_label": "总资产",
+      "column_label": "本报告期末"
+    }
+  },
+  {
+    "id": "claim-1225497117-revenue_yuan",
+    "announcement_id": "1225497117",
+    "expected_sha256": "a7a1c8b8023828894c769cdabc174974a70201fe4ea58f6f1a0f698a3c808a1c",
+    "entity_name": "杭州士兰微电子股份有限公司",
+    "field": "revenue_yuan",
+    "category": "financial",
+    "page": 2,
+    "excerpt": "营业收入7,261,927,577.24",
+    "value": "7261927577.24",
+    "raw_value": "7,261,927,577.24",
+    "raw_unit": "元",
+    "unit": "CNY",
+    "period_end": "2026-06-30",
+    "scope": "报告摘要主要财务数据（原文列示口径）",
+    "audited": false,
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:55:19.930765+00:00",
+    "required_tokens": [
+      "营业收入",
+      "7,261,927,577.24"
+    ],
+    "table_column": "本报告期/本报告期末第一数值列",
+    "unit_context": "单位：元",
+    "report_title": "2026年半年度报告摘要",
+    "table_locator": {
+      "value_bbox": [
+        257.3,
+        685.196,
+        330.88,
+        699.107
+      ],
+      "metric_bbox": [
+        95.54,
+        686.729,
+        137.629,
+        697.379
+      ],
+      "header_bbox": [
+        266.42,
+        665.729,
+        308.509,
+        676.379
+      ],
+      "column_range": [
+        238,
+        336
+      ],
+      "row_label": "营业收入",
+      "column_label": "本报告期"
+    }
+  },
+  {
+    "id": "claim-1225497117-operating_cashflow_yuan",
+    "announcement_id": "1225497117",
+    "expected_sha256": "a7a1c8b8023828894c769cdabc174974a70201fe4ea58f6f1a0f698a3c808a1c",
+    "entity_name": "杭州士兰微电子股份有限公司",
+    "field": "operating_cashflow_yuan",
+    "category": "financial",
+    "page": 2,
+    "excerpt": "经营活动产生的现金流量净额292,220,545.96",
+    "value": "292220545.96",
+    "raw_value": "292,220,545.96",
+    "raw_unit": "元",
+    "unit": "CNY",
+    "period_end": "2026-06-30",
+    "scope": "报告摘要主要财务数据（原文列示口径）",
+    "audited": false,
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:55:19.942843+00:00",
+    "required_tokens": [
+      "经营活动产生的现金流量净额",
+      "292,220,545.96"
+    ],
+    "table_column": "本报告期/本报告期末第一数值列",
+    "unit_context": "单位：元",
+    "report_title": "2026年半年度报告摘要",
+    "table_locator": {
+      "value_bbox": [
+        265.1,
+        755.277,
+        330.881,
+        769.188
+      ],
+      "metric_bbox": [
+        95.54,
+        756.81,
+        232.186,
+        767.46
+      ],
+      "header_bbox": [
+        266.42,
+        665.729,
+        308.509,
+        676.379
+      ],
+      "column_range": [
+        238,
+        336
+      ],
+      "row_label": "经营活动产生的现金流量净额",
+      "column_label": "本报告期"
+    }
+  },
+  {
+    "id": "claim-1225480389-total_assets_yuan",
+    "announcement_id": "1225480389",
+    "expected_sha256": "2d8e5bfc2310bbe80d03b57471cf86d285b422a29474dd1f3723aa0ffeadacd6",
+    "entity_name": "兆易创新科技集团股份有限公司",
+    "field": "total_assets_yuan",
+    "category": "financial",
+    "page": 2,
+    "excerpt": "总资产42,405,173,401.79",
+    "value": "42405173401.79",
+    "raw_value": "42,405,173,401.79",
+    "raw_unit": "元",
+    "unit": "CNY",
+    "period_end": "2026-06-30",
+    "scope": "报告摘要主要财务数据（原文列示口径）",
+    "audited": false,
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:55:19.958036+00:00",
+    "required_tokens": [
+      "总资产",
+      "42,405,173,401.79"
+    ],
+    "table_column": "本报告期/本报告期末第一数值列",
+    "unit_context": "单位：元",
+    "report_title": "2026年半年度报告摘要",
+    "table_locator": {
+      "value_bbox": [
+        260.9,
+        665.517,
+        339.76,
+        679.428
+      ],
+      "metric_bbox": [
+        89.9,
+        667.05,
+        121.549,
+        677.7
+      ],
+      "header_bbox": [
+        263.659,
+        646.05,
+        316.307,
+        656.7
+      ],
+      "column_range": [
+        235,
+        345
+      ],
+      "row_label": "总资产",
+      "column_label": "本报告期末"
+    }
+  },
+  {
+    "id": "claim-1225480389-revenue_yuan",
+    "announcement_id": "1225480389",
+    "expected_sha256": "2d8e5bfc2310bbe80d03b57471cf86d285b422a29474dd1f3723aa0ffeadacd6",
+    "entity_name": "兆易创新科技集团股份有限公司",
+    "field": "revenue_yuan",
+    "category": "financial",
+    "page": 2,
+    "excerpt": "营业收入11,565,760,432.15",
+    "value": "11565760432.15",
+    "raw_value": "11,565,760,432.15",
+    "raw_unit": "元",
+    "unit": "CNY",
+    "period_end": "2026-06-30",
+    "scope": "报告摘要主要财务数据（原文列示口径）",
+    "audited": false,
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:55:19.971610+00:00",
+    "required_tokens": [
+      "营业收入",
+      "11,565,760,432.15"
+    ],
+    "table_column": "本报告期/本报告期末第一数值列",
+    "unit_context": "单位：元",
+    "report_title": "2026年半年度报告摘要",
+    "table_locator": {
+      "value_bbox": [
+        260.9,
+        721.437,
+        339.76,
+        735.348
+      ],
+      "metric_bbox": [
+        89.9,
+        722.97,
+        131.989,
+        733.62
+      ],
+      "header_bbox": [
+        268.94,
+        702.089,
+        311.029,
+        712.739
+      ],
+      "column_range": [
+        235,
+        345
+      ],
+      "row_label": "营业收入",
+      "column_label": "本报告期"
+    }
+  },
+  {
+    "id": "claim-1225520347-total_assets_yuan",
+    "announcement_id": "1225520347",
+    "expected_sha256": "3084c71ac994ee131fb1f3c322f5fdf788e44337671bad57c7b8e8784fdd4de4",
+    "entity_name": "中芯国际集成电路制造有限公司",
+    "field": "total_assets_yuan",
+    "category": "financial",
+    "page": 3,
+    "excerpt": "总资产389,960,656",
+    "value": "389960656000",
+    "raw_value": "389,960,656",
+    "raw_unit": "千元",
+    "unit": "CNY",
+    "period_end": "2026-06-30",
+    "scope": "报告摘要主要财务数据（原文列示口径）",
+    "audited": false,
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:55:19.983132+00:00",
+    "required_tokens": [
+      "总资产",
+      "389,960,656"
+    ],
+    "table_column": "本报告期/本报告期末第一数值列",
+    "unit_context": "单位：千元",
+    "report_title": "2026年半年度报告摘要",
+    "table_locator": {
+      "value_bbox": [
+        296.3,
+        481.41,
+        354.161,
+        492.06
+      ],
+      "metric_bbox": [
+        89.9,
+        481.41,
+        121.549,
+        492.06
+      ],
+      "header_bbox": [
+        285.14,
+        460.529,
+        337.788,
+        471.179
+      ],
+      "column_range": [
+        262,
+        361
+      ],
+      "row_label": "总资产",
+      "column_label": "本报告期末"
+    }
+  },
+  {
+    "id": "claim-1225520347-revenue_yuan",
+    "announcement_id": "1225520347",
+    "expected_sha256": "3084c71ac994ee131fb1f3c322f5fdf788e44337671bad57c7b8e8784fdd4de4",
+    "entity_name": "中芯国际集成电路制造有限公司",
+    "field": "revenue_yuan",
+    "category": "financial",
+    "page": 3,
+    "excerpt": "营业收入38,635,115",
+    "value": "38635115000",
+    "raw_value": "38,635,115",
+    "raw_unit": "千元",
+    "unit": "CNY",
+    "period_end": "2026-06-30",
+    "scope": "报告摘要主要财务数据（原文列示口径）",
+    "audited": false,
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:55:19.994209+00:00",
+    "required_tokens": [
+      "营业收入",
+      "38,635,115"
+    ],
+    "table_column": "本报告期/本报告期末第一数值列",
+    "unit_context": "单位：千元",
+    "report_title": "2026年半年度报告摘要",
+    "table_locator": {
+      "value_bbox": [
+        302.18,
+        553.529,
+        354.761,
+        564.179
+      ],
+      "metric_bbox": [
+        89.9,
+        553.529,
+        131.989,
+        564.179
+      ],
+      "header_bbox": [
+        291.14,
+        532.529,
+        333.229,
+        543.179
+      ],
+      "column_range": [
+        262,
+        361
+      ],
+      "row_label": "营业收入",
+      "column_label": "本报告期"
+    }
+  },
+  {
+    "id": "claim-1225520347-operating_cashflow_yuan",
+    "announcement_id": "1225520347",
+    "expected_sha256": "3084c71ac994ee131fb1f3c322f5fdf788e44337671bad57c7b8e8784fdd4de4",
+    "entity_name": "中芯国际集成电路制造有限公司",
+    "field": "operating_cashflow_yuan",
+    "category": "financial",
+    "page": 3,
+    "excerpt": "经营活动产生的现金流量净额20,759,511",
+    "value": "20759511000",
+    "raw_value": "20,759,511",
+    "raw_unit": "千元",
+    "unit": "CNY",
+    "period_end": "2026-06-30",
+    "scope": "报告摘要主要财务数据（原文列示口径）",
+    "audited": false,
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:55:20.007910+00:00",
+    "required_tokens": [
+      "经营活动产生的现金流量净额",
+      "20,759,511"
+    ],
+    "table_column": "本报告期/本报告期末第一数值列",
+    "unit_context": "单位：千元",
+    "report_title": "2026年半年度报告摘要",
+    "table_locator": {
+      "value_bbox": [
+        302.18,
+        623.61,
+        354.761,
+        634.26
+      ],
+      "metric_bbox": [
+        89.9,
+        623.61,
+        226.546,
+        634.26
+      ],
+      "header_bbox": [
+        291.14,
+        532.529,
+        333.229,
+        543.179
+      ],
+      "column_range": [
+        262,
+        361
+      ],
+      "row_label": "经营活动产生的现金流量净额",
+      "column_label": "本报告期"
+    }
+  },
+  {
+    "id": "claim-1225532542-total_assets_yuan",
+    "announcement_id": "1225532542",
+    "expected_sha256": "669758baf88b785accc52f21ebf60312dab58191a90512e6a5dee183102e1318",
+    "entity_name": "希荻微电子集团股份有限公司",
+    "field": "total_assets_yuan",
+    "category": "financial",
+    "page": 3,
+    "excerpt": "总资产2,448,077,798.22",
+    "value": "2448077798.22",
+    "raw_value": "2,448,077,798.22",
+    "raw_unit": "元",
+    "unit": "CNY",
+    "period_end": "2026-06-30",
+    "scope": "报告摘要主要财务数据（原文列示口径）",
+    "audited": false,
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:55:20.019910+00:00",
+    "required_tokens": [
+      "总资产",
+      "2,448,077,798.22"
+    ],
+    "table_column": "本报告期/本报告期末第一数值列",
+    "unit_context": "单位：元",
+    "report_title": "2026年半年度报告摘要",
+    "table_locator": {
+      "value_bbox": [
+        224.059,
+        227.157,
+        297.639,
+        241.068
+      ],
+      "metric_bbox": [
+        89.9,
+        228.69,
+        121.549,
+        239.34
+      ],
+      "header_bbox": [
+        219.98,
+        207.69,
+        272.629,
+        218.34
+      ],
+      "column_range": [
+        190,
+        303
+      ],
+      "row_label": "总资产",
+      "column_label": "本报告期末"
+    }
+  },
+  {
+    "id": "claim-1225532542-revenue_yuan",
+    "announcement_id": "1225532542",
+    "expected_sha256": "669758baf88b785accc52f21ebf60312dab58191a90512e6a5dee183102e1318",
+    "entity_name": "希荻微电子集团股份有限公司",
+    "field": "revenue_yuan",
+    "category": "financial",
+    "page": 3,
+    "excerpt": "营业收入528,740,366.73",
+    "value": "528740366.73",
+    "raw_value": "528,740,366.73",
+    "raw_unit": "元",
+    "unit": "CNY",
+    "period_end": "2026-06-30",
+    "scope": "报告摘要主要财务数据（原文列示口径）",
+    "audited": false,
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:55:20.033216+00:00",
+    "required_tokens": [
+      "营业收入",
+      "528,740,366.73"
+    ],
+    "table_column": "本报告期/本报告期末第一数值列",
+    "unit_context": "单位：元",
+    "report_title": "2026年半年度报告摘要",
+    "table_locator": {
+      "value_bbox": [
+        231.98,
+        296.757,
+        297.64,
+        310.668
+      ],
+      "metric_bbox": [
+        89.9,
+        298.29,
+        131.989,
+        308.94
+      ],
+      "header_bbox": [
+        225.259,
+        277.29,
+        267.348,
+        287.94
+      ],
+      "column_range": [
+        190,
+        303
+      ],
+      "row_label": "营业收入",
+      "column_label": "本报告期"
+    }
+  },
+  {
+    "id": "claim-1225532542-operating_cashflow_yuan",
+    "announcement_id": "1225532542",
+    "expected_sha256": "669758baf88b785accc52f21ebf60312dab58191a90512e6a5dee183102e1318",
+    "entity_name": "希荻微电子集团股份有限公司",
+    "field": "operating_cashflow_yuan",
+    "category": "financial",
+    "page": 3,
+    "excerpt": "经营活动产生的现金流量净额-85,787,630.14",
+    "value": "-85787630.14",
+    "raw_value": "-85,787,630.14",
+    "raw_unit": "元",
+    "unit": "CNY",
+    "period_end": "2026-06-30",
+    "scope": "报告摘要主要财务数据（原文列示口径）",
+    "audited": false,
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:55:20.046280+00:00",
+    "required_tokens": [
+      "经营活动产生的现金流量净额",
+      "-85,787,630.14"
+    ],
+    "table_column": "本报告期/本报告期末第一数值列",
+    "unit_context": "单位：元",
+    "report_title": "2026年半年度报告摘要",
+    "table_locator": {
+      "value_bbox": [
+        233.78,
+        400.917,
+        297.761,
+        414.828
+      ],
+      "metric_bbox": [
+        88.9,
+        393.9,
+        187.1,
+        421.1
+      ],
+      "header_bbox": [
+        225.259,
+        277.29,
+        267.348,
+        287.94
+      ],
+      "column_range": [
+        190,
+        303
+      ],
+      "row_label": "经营活动产生的现金流量净额",
+      "column_label": "本报告期"
+    }
+  },
+  {
+    "id": "claim-1225545002",
+    "announcement_id": "1225545002",
+    "expected_sha256": "2831f261f85b1686cad429ecc4fffa575fdfa3c38edf2a499b6b91018c2bc575",
+    "entity_name": "希荻微电子集团股份有限公司",
+    "affected_entity": "Zinitix Co., Ltd.（控股子公司）",
+    "field": "公司披露子公司管理股指定预告",
+    "category": "event",
+    "page": 1,
+    "excerpt": "Zinitix将于2026年9月3日起被韩国交易所指定为管理股。",
+    "value": "子公司管理股指定预告",
+    "stage": "子公司管理股指定预告",
+    "event_type": "subsidiary_management_notice",
+    "is_outcome": false,
+    "occurred_at": null,
+    "effective_at": "2026-09-03",
+    "reviewer_type": "agent",
+    "reviewed_at": "2026-10-02T01:32:45.844052+00:00",
+    "required_tokens": [
+      "Zinitix",
+      "2026年9月3日",
+      "指定为管理股"
+    ]
+  }
+]

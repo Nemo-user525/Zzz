@@ -1,0 +1,2222 @@
+{
+  "health": {
+    "status": "ok",
+    "database_ready": true,
+    "verified_company_count": 1,
+    "verified_source_count": 2,
+    "as_of": "2026-09-03",
+    "llm_mode": "offline"
+  },
+  "useCases": {
+    "default_use_case_id": "supplier-trade-credit",
+    "use_cases": [
+      {
+        "id": "supplier-trade-credit",
+        "target_user": "向上市公司供货并提供账期的中小企业老板、销售负责人、财务负责人",
+        "decision_goal": "签约前核对客户公开风险线索，并比较交易条款对本方现金底线的影响",
+        "headline": "客户说：先发货，90 天后付款",
+        "subtitle": "在签下一笔订单前，先看清客户，再走一遍未来 90 天。",
+        "primary_action": "推演这笔订单",
+        "output_template": {
+          "title": "交易核对卡",
+          "sections": [
+            {
+              "id": "identity",
+              "title": "客户与覆盖范围",
+              "fields": [
+                "legal_name",
+                "ticker",
+                "coverage"
+              ]
+            },
+            {
+              "id": "evidence",
+              "title": "公开事实与出处",
+              "fields": [
+                "risk_events",
+                "financials",
+                "source_links"
+              ]
+            },
+            {
+              "id": "unknowns",
+              "title": "尚待核实",
+              "fields": [
+                "unknowns"
+              ]
+            },
+            {
+              "id": "assumptions",
+              "title": "交易情景",
+              "fields": [
+                "scenario_inputs",
+                "assumptions"
+              ]
+            },
+            {
+              "id": "calculation",
+              "title": "计算与谈判动作",
+              "fields": [
+                "formula_breakdown",
+                "shortfall_yuan",
+                "comparison"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "finance-manager-credit-terms",
+        "target_user": "制造企业财务负责人",
+        "decision_goal": "用现金底线确定账期、预付款和分批交付的谈判范围",
+        "headline": "给这笔订单留够现金缓冲",
+        "subtitle": "核对公开信息，再把条款改成能承受的现金安排。",
+        "primary_action": "计算现金缓冲",
+        "output_template": {
+          "title": "账期谈判核对卡",
+          "sections": [
+            {
+              "id": "facts",
+              "title": "客户公开事实",
+              "fields": [
+                "legal_name",
+                "risk_events",
+                "financials",
+                "source_links"
+              ]
+            },
+            {
+              "id": "gaps",
+              "title": "资料缺口",
+              "fields": [
+                "unknowns"
+              ]
+            },
+            {
+              "id": "terms",
+              "title": "本方现金与条款",
+              "fields": [
+                "scenario_inputs",
+                "formula_breakdown",
+                "shortfall_yuan",
+                "comparison"
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "demo": {
+    "company_id": "halo-688173",
+    "opening_cash_yuan": 3000000,
+    "safety_floor_yuan": 200000,
+    "order_amount_yuan": 1000000,
+    "gross_margin_rate": 0.18,
+    "direct_cost_yuan": null,
+    "prepayment_rate": 0,
+    "payment_term_days": 90,
+    "delay_days": 30,
+    "cost_day": 10,
+    "horizon_days": 90,
+    "shipments": [
+      {
+        "day": 10,
+        "fraction": 1
+      }
+    ],
+    "other_net_cashflows": [
+      {
+        "day": 75,
+        "amount_yuan": -2150000,
+        "label": "其他业务预计净流出（虚构）"
+      }
+    ]
+  },
+  "company": {
+    "id": "halo-688173",
+    "legal_name": "希荻微电子集团股份有限公司",
+    "ticker": "688173",
+    "industry": "集成电路设计",
+    "coverage": "2026半年报摘要 + 2026-09-03子公司风险公告；非全面尽调",
+    "updated_at": "2026-09-03",
+    "short_name": "希荻微",
+    "uscc": null,
+    "listed": true,
+    "financials": [
+      {
+        "field": "归属上市公司股东净资产",
+        "value_yuan": 1499708682.21,
+        "period": "2026-06-30",
+        "unit": "CNY",
+        "source_id": "src-report-20260829",
+        "scope": "合并",
+        "audited": false,
+        "excerpt": "归属于上市公司股东的净资产 1,499,708,682.21",
+        "verification_status": "verified"
+      },
+      {
+        "field": "经营活动现金流量净额",
+        "value_yuan": -85787630.14,
+        "period": "2026-01-01/2026-06-30",
+        "unit": "CNY",
+        "source_id": "src-report-20260829",
+        "scope": "合并",
+        "audited": false,
+        "excerpt": "经营活动产生的现金流量净额 -85,787,630.14",
+        "verification_status": "verified"
+      },
+      {
+        "field": "营业收入",
+        "value_yuan": 528740366.73,
+        "period": "2026-01-01/2026-06-30",
+        "unit": "CNY",
+        "source_id": "src-report-20260829",
+        "scope": "合并",
+        "audited": false,
+        "excerpt": "营业收入 528,740,366.73",
+        "verification_status": "verified"
+      }
+    ],
+    "unknowns": [
+      "供应商与该客户的历史付款记录未取得",
+      "最新子公司上市状态尚未复核",
+      "统一社会信用代码暂无法核实"
+    ]
+  },
+  "events": [
+    {
+      "id": "event-zinitix-management",
+      "company_id": "halo-688173",
+      "affected_entity": "Zinitix Co., Ltd.（控股子公司）",
+      "type": "控股子公司上市地位风险",
+      "event_date": "2026-09-03",
+      "stage": "管理股指定",
+      "amount_yuan": null,
+      "status": "是否后续恢复或退市尚未复核",
+      "verification_status": "verified",
+      "source_ids": [
+        "src-risk-20260903"
+      ],
+      "explanation": "公司公告称控股子公司因市值条件将被指定为管理股；退市及商誉减值是条件风险，不是已发生损失。"
+    }
+  ],
+  "result": {
+    "cash_curve": [
+      {
+        "day": 0,
+        "balance_yuan": 3000000.0
+      },
+      {
+        "day": 1,
+        "balance_yuan": 3000000.0
+      },
+      {
+        "day": 2,
+        "balance_yuan": 3000000.0
+      },
+      {
+        "day": 3,
+        "balance_yuan": 3000000.0
+      },
+      {
+        "day": 4,
+        "balance_yuan": 3000000.0
+      },
+      {
+        "day": 5,
+        "balance_yuan": 3000000.0
+      },
+      {
+        "day": 6,
+        "balance_yuan": 3000000.0
+      },
+      {
+        "day": 7,
+        "balance_yuan": 3000000.0
+      },
+      {
+        "day": 8,
+        "balance_yuan": 3000000.0
+      },
+      {
+        "day": 9,
+        "balance_yuan": 3000000.0
+      },
+      {
+        "day": 10,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 11,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 12,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 13,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 14,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 15,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 16,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 17,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 18,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 19,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 20,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 21,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 22,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 23,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 24,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 25,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 26,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 27,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 28,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 29,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 30,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 31,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 32,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 33,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 34,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 35,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 36,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 37,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 38,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 39,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 40,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 41,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 42,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 43,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 44,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 45,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 46,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 47,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 48,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 49,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 50,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 51,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 52,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 53,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 54,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 55,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 56,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 57,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 58,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 59,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 60,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 61,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 62,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 63,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 64,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 65,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 66,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 67,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 68,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 69,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 70,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 71,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 72,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 73,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 74,
+        "balance_yuan": 2180000.0
+      },
+      {
+        "day": 75,
+        "balance_yuan": 30000.0
+      },
+      {
+        "day": 76,
+        "balance_yuan": 30000.0
+      },
+      {
+        "day": 77,
+        "balance_yuan": 30000.0
+      },
+      {
+        "day": 78,
+        "balance_yuan": 30000.0
+      },
+      {
+        "day": 79,
+        "balance_yuan": 30000.0
+      },
+      {
+        "day": 80,
+        "balance_yuan": 30000.0
+      },
+      {
+        "day": 81,
+        "balance_yuan": 30000.0
+      },
+      {
+        "day": 82,
+        "balance_yuan": 30000.0
+      },
+      {
+        "day": 83,
+        "balance_yuan": 30000.0
+      },
+      {
+        "day": 84,
+        "balance_yuan": 30000.0
+      },
+      {
+        "day": 85,
+        "balance_yuan": 30000.0
+      },
+      {
+        "day": 86,
+        "balance_yuan": 30000.0
+      },
+      {
+        "day": 87,
+        "balance_yuan": 30000.0
+      },
+      {
+        "day": 88,
+        "balance_yuan": 30000.0
+      },
+      {
+        "day": 89,
+        "balance_yuan": 30000.0
+      },
+      {
+        "day": 90,
+        "balance_yuan": 30000.0
+      }
+    ],
+    "minimum_balance_yuan": 30000.0,
+    "minimum_day": 75,
+    "first_breach_day": 75,
+    "shortfall_yuan": 170000.0,
+    "final_payment_day": 130,
+    "outside_view_payment": true,
+    "assumptions": [
+      "目标企业的公开资料不代表付款记录",
+      "客户延付 30 天是用户设定情景",
+      "其他业务现金流与本方期初现金均为演示输入"
+    ],
+    "formula_breakdown": [
+      "期初现金 3000000.00 元",
+      "订单价款 1000000.00 元；预付款 0.00 元；直接成本 820000.00 元",
+      "第 75 天前其他业务现金流合计 -2150000.00 元",
+      "最低现金 30000.00 元；安全底线 200000.00 元；缺口 170000.00 元",
+      "余款 1000000.00 元，最晚第 130 天到账（情景假设）"
+    ],
+    "evidence_event_ids": [
+      "event-zinitix-management"
+    ],
+    "data_labels": [
+      "公开事实",
+      "情景假设",
+      "计算结果"
+    ]
+  },
+  "comparison": {
+    "variants": [
+      {
+        "name": "当前条款",
+        "result": {
+          "cash_curve": [
+            {
+              "day": 0,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 1,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 2,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 3,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 4,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 5,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 6,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 7,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 8,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 9,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 10,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 11,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 12,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 13,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 14,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 15,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 16,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 17,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 18,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 19,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 20,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 21,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 22,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 23,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 24,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 25,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 26,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 27,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 28,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 29,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 30,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 31,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 32,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 33,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 34,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 35,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 36,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 37,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 38,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 39,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 40,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 41,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 42,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 43,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 44,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 45,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 46,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 47,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 48,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 49,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 50,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 51,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 52,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 53,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 54,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 55,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 56,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 57,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 58,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 59,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 60,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 61,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 62,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 63,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 64,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 65,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 66,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 67,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 68,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 69,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 70,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 71,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 72,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 73,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 74,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 75,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 76,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 77,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 78,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 79,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 80,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 81,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 82,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 83,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 84,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 85,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 86,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 87,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 88,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 89,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 90,
+              "balance_yuan": 30000.0
+            }
+          ],
+          "minimum_balance_yuan": 30000.0,
+          "minimum_day": 75,
+          "first_breach_day": 75,
+          "shortfall_yuan": 170000.0,
+          "final_payment_day": 130,
+          "outside_view_payment": true,
+          "assumptions": [
+            "目标企业的公开资料不代表付款记录",
+            "客户延付 30 天是用户设定情景",
+            "其他业务现金流与本方期初现金均为演示输入"
+          ],
+          "formula_breakdown": [
+            "期初现金 3000000.00 元",
+            "订单价款 1000000.00 元；预付款 0.00 元；直接成本 820000.00 元",
+            "第 75 天前其他业务现金流合计 -2150000.00 元",
+            "最低现金 30000.00 元；安全底线 200000.00 元；缺口 170000.00 元",
+            "余款 1000000.00 元，最晚第 130 天到账（情景假设）"
+          ],
+          "evidence_event_ids": [
+            "event-zinitix-management"
+          ],
+          "data_labels": [
+            "公开事实",
+            "情景假设",
+            "计算结果"
+          ]
+        }
+      },
+      {
+        "name": "30%预付款",
+        "result": {
+          "cash_curve": [
+            {
+              "day": 0,
+              "balance_yuan": 3300000.0
+            },
+            {
+              "day": 1,
+              "balance_yuan": 3300000.0
+            },
+            {
+              "day": 2,
+              "balance_yuan": 3300000.0
+            },
+            {
+              "day": 3,
+              "balance_yuan": 3300000.0
+            },
+            {
+              "day": 4,
+              "balance_yuan": 3300000.0
+            },
+            {
+              "day": 5,
+              "balance_yuan": 3300000.0
+            },
+            {
+              "day": 6,
+              "balance_yuan": 3300000.0
+            },
+            {
+              "day": 7,
+              "balance_yuan": 3300000.0
+            },
+            {
+              "day": 8,
+              "balance_yuan": 3300000.0
+            },
+            {
+              "day": 9,
+              "balance_yuan": 3300000.0
+            },
+            {
+              "day": 10,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 11,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 12,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 13,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 14,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 15,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 16,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 17,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 18,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 19,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 20,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 21,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 22,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 23,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 24,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 25,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 26,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 27,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 28,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 29,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 30,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 31,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 32,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 33,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 34,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 35,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 36,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 37,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 38,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 39,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 40,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 41,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 42,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 43,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 44,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 45,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 46,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 47,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 48,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 49,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 50,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 51,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 52,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 53,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 54,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 55,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 56,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 57,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 58,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 59,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 60,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 61,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 62,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 63,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 64,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 65,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 66,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 67,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 68,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 69,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 70,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 71,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 72,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 73,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 74,
+              "balance_yuan": 2480000.0
+            },
+            {
+              "day": 75,
+              "balance_yuan": 330000.0
+            },
+            {
+              "day": 76,
+              "balance_yuan": 330000.0
+            },
+            {
+              "day": 77,
+              "balance_yuan": 330000.0
+            },
+            {
+              "day": 78,
+              "balance_yuan": 330000.0
+            },
+            {
+              "day": 79,
+              "balance_yuan": 330000.0
+            },
+            {
+              "day": 80,
+              "balance_yuan": 330000.0
+            },
+            {
+              "day": 81,
+              "balance_yuan": 330000.0
+            },
+            {
+              "day": 82,
+              "balance_yuan": 330000.0
+            },
+            {
+              "day": 83,
+              "balance_yuan": 330000.0
+            },
+            {
+              "day": 84,
+              "balance_yuan": 330000.0
+            },
+            {
+              "day": 85,
+              "balance_yuan": 330000.0
+            },
+            {
+              "day": 86,
+              "balance_yuan": 330000.0
+            },
+            {
+              "day": 87,
+              "balance_yuan": 330000.0
+            },
+            {
+              "day": 88,
+              "balance_yuan": 330000.0
+            },
+            {
+              "day": 89,
+              "balance_yuan": 330000.0
+            },
+            {
+              "day": 90,
+              "balance_yuan": 330000.0
+            }
+          ],
+          "minimum_balance_yuan": 330000.0,
+          "minimum_day": 75,
+          "first_breach_day": null,
+          "shortfall_yuan": 0.0,
+          "final_payment_day": 130,
+          "outside_view_payment": true,
+          "assumptions": [
+            "目标企业的公开资料不代表付款记录",
+            "客户延付 30 天是用户设定情景",
+            "其他业务现金流与本方期初现金均为演示输入"
+          ],
+          "formula_breakdown": [
+            "期初现金 3000000.00 元",
+            "订单价款 1000000.00 元；预付款 300000.00 元；直接成本 820000.00 元",
+            "第 75 天前其他业务现金流合计 -2150000.00 元",
+            "最低现金 330000.00 元；安全底线 200000.00 元；缺口 0.00 元",
+            "余款 700000.00 元，最晚第 130 天到账（情景假设）"
+          ],
+          "evidence_event_ids": [
+            "event-zinitix-management"
+          ],
+          "data_labels": [
+            "公开事实",
+            "情景假设",
+            "计算结果"
+          ]
+        }
+      },
+      {
+        "name": "两批发货",
+        "result": {
+          "cash_curve": [
+            {
+              "day": 0,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 1,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 2,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 3,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 4,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 5,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 6,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 7,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 8,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 9,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 10,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 11,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 12,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 13,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 14,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 15,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 16,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 17,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 18,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 19,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 20,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 21,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 22,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 23,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 24,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 25,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 26,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 27,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 28,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 29,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 30,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 31,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 32,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 33,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 34,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 35,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 36,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 37,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 38,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 39,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 40,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 41,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 42,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 43,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 44,
+              "balance_yuan": 2590000.0
+            },
+            {
+              "day": 45,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 46,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 47,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 48,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 49,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 50,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 51,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 52,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 53,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 54,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 55,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 56,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 57,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 58,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 59,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 60,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 61,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 62,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 63,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 64,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 65,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 66,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 67,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 68,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 69,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 70,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 71,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 72,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 73,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 74,
+              "balance_yuan": 2180000.0
+            },
+            {
+              "day": 75,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 76,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 77,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 78,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 79,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 80,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 81,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 82,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 83,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 84,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 85,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 86,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 87,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 88,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 89,
+              "balance_yuan": 30000.0
+            },
+            {
+              "day": 90,
+              "balance_yuan": 30000.0
+            }
+          ],
+          "minimum_balance_yuan": 30000.0,
+          "minimum_day": 75,
+          "first_breach_day": 75,
+          "shortfall_yuan": 170000.0,
+          "final_payment_day": 165,
+          "outside_view_payment": true,
+          "assumptions": [
+            "目标企业的公开资料不代表付款记录",
+            "客户延付 30 天是用户设定情景",
+            "其他业务现金流与本方期初现金均为演示输入"
+          ],
+          "formula_breakdown": [
+            "期初现金 3000000.00 元",
+            "订单价款 1000000.00 元；预付款 0.00 元；直接成本 820000.00 元",
+            "第 75 天前其他业务现金流合计 -2150000.00 元",
+            "最低现金 30000.00 元；安全底线 200000.00 元；缺口 170000.00 元",
+            "余款 1000000.00 元，最晚第 165 天到账（情景假设）"
+          ],
+          "evidence_event_ids": [
+            "event-zinitix-management"
+          ],
+          "data_labels": [
+            "公开事实",
+            "情景假设",
+            "计算结果"
+          ]
+        }
+      },
+      {
+        "name": "放弃订单",
+        "result": {
+          "cash_curve": [
+            {
+              "day": 0,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 1,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 2,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 3,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 4,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 5,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 6,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 7,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 8,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 9,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 10,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 11,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 12,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 13,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 14,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 15,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 16,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 17,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 18,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 19,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 20,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 21,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 22,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 23,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 24,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 25,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 26,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 27,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 28,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 29,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 30,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 31,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 32,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 33,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 34,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 35,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 36,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 37,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 38,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 39,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 40,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 41,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 42,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 43,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 44,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 45,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 46,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 47,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 48,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 49,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 50,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 51,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 52,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 53,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 54,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 55,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 56,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 57,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 58,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 59,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 60,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 61,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 62,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 63,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 64,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 65,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 66,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 67,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 68,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 69,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 70,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 71,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 72,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 73,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 74,
+              "balance_yuan": 3000000.0
+            },
+            {
+              "day": 75,
+              "balance_yuan": 850000.0
+            },
+            {
+              "day": 76,
+              "balance_yuan": 850000.0
+            },
+            {
+              "day": 77,
+              "balance_yuan": 850000.0
+            },
+            {
+              "day": 78,
+              "balance_yuan": 850000.0
+            },
+            {
+              "day": 79,
+              "balance_yuan": 850000.0
+            },
+            {
+              "day": 80,
+              "balance_yuan": 850000.0
+            },
+            {
+              "day": 81,
+              "balance_yuan": 850000.0
+            },
+            {
+              "day": 82,
+              "balance_yuan": 850000.0
+            },
+            {
+              "day": 83,
+              "balance_yuan": 850000.0
+            },
+            {
+              "day": 84,
+              "balance_yuan": 850000.0
+            },
+            {
+              "day": 85,
+              "balance_yuan": 850000.0
+            },
+            {
+              "day": 86,
+              "balance_yuan": 850000.0
+            },
+            {
+              "day": 87,
+              "balance_yuan": 850000.0
+            },
+            {
+              "day": 88,
+              "balance_yuan": 850000.0
+            },
+            {
+              "day": 89,
+              "balance_yuan": 850000.0
+            },
+            {
+              "day": 90,
+              "balance_yuan": 850000.0
+            }
+          ],
+          "minimum_balance_yuan": 850000.0,
+          "minimum_day": 75,
+          "first_breach_day": null,
+          "shortfall_yuan": 0.0,
+          "final_payment_day": 0,
+          "outside_view_payment": false,
+          "assumptions": [
+            "目标企业的公开资料不代表付款记录",
+            "客户延付 30 天是用户设定情景",
+            "其他业务现金流与本方期初现金均为演示输入"
+          ],
+          "formula_breakdown": [
+            "期初现金 3000000.00 元",
+            "订单价款 1000000.00 元；预付款 0 元；直接成本 0 元",
+            "第 75 天前其他业务现金流合计 -2150000.00 元",
+            "最低现金 850000.00 元；安全底线 200000.00 元；缺口 0.00 元",
+            "放弃订单：无订单回款，失去预期利润"
+          ],
+          "evidence_event_ids": [
+            "event-zinitix-management"
+          ],
+          "data_labels": [
+            "公开事实",
+            "情景假设",
+            "计算结果"
+          ]
+        }
+      }
+    ],
+    "opportunity_cost_yuan": 180000.0,
+    "explanation": "比较基于相同的用户现金假设。可考虑协商预付款或分批发货；放弃订单将失去预期毛利。公开风险事件不能推出具体延付概率。"
+  },
+  "sources": {
+    "src-report-20260829": {
+      "id": "src-report-20260829",
+      "type": "financial_report_summary",
+      "institution": "希荻微 / 巨潮资讯",
+      "title": "2026年半年度报告摘要",
+      "url": "https://static.cninfo.com.cn/finalpage/2026-08-29/1225532542.PDF",
+      "notice_number": null,
+      "published_at": "2026-08-29",
+      "fetched_at": "2026-10-02",
+      "page": 3,
+      "sha256": "669758BAF88B785ACCC52F21EBF60312DAB58191A90512E6A5DEE183102E1318",
+      "accessible": true,
+      "excerpt": "营业收入 528,740,366.73；经营活动产生的现金流量净额 -85,787,630.14。"
+    },
+    "src-risk-20260903": {
+      "id": "src-risk-20260903",
+      "type": "company_announcement",
+      "institution": "希荻微 / 巨潮资讯",
+      "title": "关于控股子公司的风险提示公告",
+      "url": "https://static.cninfo.com.cn/finalpage/2026-09-03/1225545002.PDF",
+      "notice_number": "2026-089",
+      "published_at": "2026-09-03",
+      "fetched_at": "2026-10-02",
+      "page": 1,
+      "sha256": "2831F261F85B1686CAD429ECC4FFFA575FDFA3C38EDF2A499B6B91018C2BC575",
+      "accessible": true,
+      "excerpt": "Zinitix将于2026年9月3日起被韩国交易所指定为管理股。"
+    }
+  }
+}

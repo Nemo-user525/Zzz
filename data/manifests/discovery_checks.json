@@ -1,0 +1,366 @@
+[
+  {
+    "company": "002450",
+    "query": {
+      "keyword": "终止上市",
+      "limit": 12
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 12,
+    "checked_at": "2026-10-02T01:56:36.821909+00:00",
+    "complete_search": true
+  },
+  {
+    "company": "002450",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 4
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 4,
+    "checked_at": "2026-10-02T01:56:37.160510+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "688086",
+    "query": {
+      "keyword": "终止上市",
+      "limit": 12
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 12,
+    "checked_at": "2026-10-02T01:56:37.683586+00:00",
+    "complete_search": true
+  },
+  {
+    "company": "688086",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 4
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 4,
+    "checked_at": "2026-10-02T01:56:37.819318+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "688555",
+    "query": {
+      "keyword": "终止上市",
+      "limit": 12
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 3,
+    "checked_at": "2026-10-02T01:56:38.143034+00:00",
+    "complete_search": true
+  },
+  {
+    "company": "688555",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 4
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 4,
+    "checked_at": "2026-10-02T01:56:38.514213+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "300116",
+    "query": {
+      "keyword": "终止上市",
+      "limit": 12
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 12,
+    "checked_at": "2026-10-02T01:56:38.858430+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "300116",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 4
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 4,
+    "checked_at": "2026-10-02T01:56:39.225455+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "600518",
+    "query": {
+      "keyword": "重整",
+      "limit": 12
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 12,
+    "checked_at": "2026-10-02T01:56:39.572403+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "600518",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 4
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 4,
+    "checked_at": "2026-10-02T01:56:39.928963+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "002157",
+    "query": {
+      "keyword": "重整",
+      "limit": 12
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 12,
+    "checked_at": "2026-10-02T01:56:40.288512+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "002157",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 4
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 4,
+    "checked_at": "2026-10-02T01:56:40.623735+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "000333",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 10
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 10,
+    "checked_at": "2026-10-02T01:56:40.985180+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "000651",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 10
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 10,
+    "checked_at": "2026-10-02T01:56:41.319198+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "600690",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 10
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 10,
+    "checked_at": "2026-10-02T01:56:41.672322+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "600060",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 10
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 10,
+    "checked_at": "2026-10-02T01:56:42.089695+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "600839",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 10
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 10,
+    "checked_at": "2026-10-02T01:56:42.399287+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "002415",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 10
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 10,
+    "checked_at": "2026-10-02T01:56:42.726230+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "002236",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 10
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 10,
+    "checked_at": "2026-10-02T01:56:43.102578+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "002475",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 10
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 10,
+    "checked_at": "2026-10-02T01:56:43.432695+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "000100",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 10
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 10,
+    "checked_at": "2026-10-02T01:56:43.801711+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "000725",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 10
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 10,
+    "checked_at": "2026-10-02T01:56:44.374721+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "600460",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 8
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 8,
+    "checked_at": "2026-10-02T01:56:44.497212+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "600460",
+    "query": {
+      "keyword": "",
+      "start": "2026-07-04",
+      "limit": 4
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 4,
+    "checked_at": "2026-10-02T01:56:45.203642+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "603986",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 8
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 8,
+    "checked_at": "2026-10-02T01:56:45.324117+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "603986",
+    "query": {
+      "keyword": "",
+      "start": "2026-07-04",
+      "limit": 4
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 4,
+    "checked_at": "2026-10-02T01:56:45.709952+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "688981",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 8
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 8,
+    "checked_at": "2026-10-02T01:56:46.046616+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "688981",
+    "query": {
+      "keyword": "",
+      "start": "2026-07-04",
+      "limit": 4
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 4,
+    "checked_at": "2026-10-02T01:56:46.424950+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "688173",
+    "query": {
+      "keyword": "年度报告摘要",
+      "limit": 8
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 8,
+    "checked_at": "2026-10-02T01:56:46.788438+00:00",
+    "complete_search": false
+  },
+  {
+    "company": "688173",
+    "query": {
+      "keyword": "",
+      "start": "2026-07-04",
+      "limit": 4
+    },
+    "status": "success",
+    "added": 0,
+    "selected": 4,
+    "checked_at": "2026-10-02T01:56:47.131299+00:00",
+    "complete_search": false
+  }
+]

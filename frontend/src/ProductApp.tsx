@@ -16,7 +16,7 @@ function ProductApp(){
   return <div className="xr-site">
     <header className="xr-nav">
       <a className="xr-brand" href="#top" aria-label="见微首页"><strong>见微</strong><small>See The Change</small></a>
-      <nav aria-label="主导航"><a href="#top">Intro</a><a href="#investigate">The search</a><a href="#chat">Ask X-Ray</a><a href="#how">Our method</a></nav>
+      <nav aria-label="主导航"><a href="#top">Intro</a><a href="#investigate">The search</a><a href="#chat">Ask X-Ray</a><a href="/?view=consumer">消费调查</a><a href="/?view=history">历史证据</a><a href="/?view=trade">现金流演示</a></nav>
       <a className="xr-nav-action" href="#lookup">开始查证 <sup>↗</sup></a>
     </header>
     <main id="top">

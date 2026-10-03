@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, Numeric, String, Text, create_engine
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, Numeric, String, Text, create_engine, event
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 from pathlib import Path
 import os
@@ -7,6 +7,11 @@ ROOT = Path(__file__).resolve().parents[3]
 DB_PATH = Path(os.getenv("XRAY_DB_PATH", ROOT / "data" / "xray.sqlite3"))
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 engine = create_engine(f"sqlite:///{DB_PATH.as_posix()}", connect_args={"check_same_thread": False})
+
+@event.listens_for(engine, "connect")
+def enable_foreign_keys(connection, _record):
+    connection.execute("PRAGMA foreign_keys=ON")
+
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
 

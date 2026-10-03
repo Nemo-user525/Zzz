@@ -1,0 +1,66 @@
+[
+  {
+    "url": "https://www.cninfo.com.cn/",
+    "checked_at": "2026-10-02T01:34:12.661910+00:00",
+    "http_status": 200,
+    "status": "reachable",
+    "conditions": "页面可达不代表拥有批量采集或再分发授权",
+    "integrated": true
+  },
+  {
+    "url": "https://webapi.cninfo.com.cn/",
+    "checked_at": "2026-10-02T01:34:12.524890+00:00",
+    "http_status": 200,
+    "status": "reachable",
+    "conditions": "页面可达不代表拥有批量采集或再分发授权",
+    "integrated": false
+  },
+  {
+    "url": "https://www.sse.com.cn/",
+    "checked_at": "2026-10-02T01:34:12.528892+00:00",
+    "http_status": 200,
+    "status": "reachable",
+    "conditions": "页面可达不代表拥有批量采集或再分发授权",
+    "integrated": false
+  },
+  {
+    "url": "https://www.szse.cn/",
+    "checked_at": "2026-10-02T01:34:12.679831+00:00",
+    "http_status": 302,
+    "status": "redirect_or_restricted",
+    "conditions": "页面可达不代表拥有批量采集或再分发授权",
+    "integrated": false
+  },
+  {
+    "url": "https://www.bse.cn/",
+    "checked_at": "2026-10-02T01:34:12.655910+00:00",
+    "http_status": 403,
+    "status": "redirect_or_restricted",
+    "conditions": "页面可达不代表拥有批量采集或再分发授权",
+    "integrated": false
+  },
+  {
+    "url": "https://www.csrc.gov.cn/",
+    "checked_at": "2026-10-02T01:34:12.838668+00:00",
+    "http_status": 200,
+    "status": "reachable",
+    "conditions": "页面可达不代表拥有批量采集或再分发授权",
+    "integrated": false
+  },
+  {
+    "url": "https://www.gsxt.gov.cn/",
+    "checked_at": "2026-10-02T01:34:12.759848+00:00",
+    "http_status": 521,
+    "status": "redirect_or_restricted",
+    "conditions": "页面可达不代表拥有批量采集或再分发授权",
+    "integrated": false
+  },
+  {
+    "url": "https://zxgk.court.gov.cn/",
+    "checked_at": "2026-10-02T01:34:12.774663+00:00",
+    "http_status": 200,
+    "status": "reachable",
+    "conditions": "页面可达不代表拥有批量采集或再分发授权",
+    "integrated": false
+  }
+]

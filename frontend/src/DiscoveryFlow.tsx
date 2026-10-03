@@ -1,7 +1,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import type {FormEvent} from 'react';
-import {api} from './api/client';
-import type {CompanyReport,IntegrationStatus,LegalEntity,Place,Region} from './api/types';
+import {discoveryApi as api} from './api/discovery';
+import type {CompanyReport,IntegrationStatus,LegalEntity,Place,Region} from './api/discovery';
 
 type Phase='search'|'places'|'entities'|'report';
 const regionLabels=['省 / 直辖市','市 / 区','区 / 县','街道'];

@@ -1,20 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")"
-if [[ -f .env ]]; then
-  while IFS='=' read -r key value; do
-    [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
-    value="${value%$'\r'}"
-    value="${value%\"}"; value="${value#\"}"
-    export "$key=$value"
-  done < .env
-fi
+if [ ! -f .env ]; then cp .env.example .env; fi
+while IFS='=' read -r key value; do
+  [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
+  value="${value%$'\r'}"
+  value="${value%\"}"; value="${value#\"}"
+  export "$key=$value"
+done < .env
 python3 -m venv .venv
 .venv/bin/python -m pip install -q -r backend/requirements.txt
 export PYTHONPATH="$PWD/backend"
-.venv/bin/python -m app.db.seed
+.venv/bin/python -m app.prepare
 (cd frontend && pnpm install)
-.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 &
+api_args=()
+if [ -f .env ]; then api_args+=(--env-file .env); fi
+.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 "${api_args[@]}" &
 api_pid=$!
 node chat/server/index.mjs &
 chat_pid=$!

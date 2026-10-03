@@ -1,0 +1,250 @@
+{
+  "version": "universe-1",
+  "start": "2018-01-01",
+  "end": "2026-10-02",
+  "max_pages": 2,
+  "queries": [
+    {
+      "keyword": "年度报告摘要",
+      "limit": 10
+    }
+  ],
+  "companies": [
+    {
+      "ticker": "002450",
+      "industry": "光学材料",
+      "cohort": "historical_case",
+      "reason": "历史结果待原文确认，结果筛选样本",
+      "queries": [
+        {
+          "keyword": "终止上市",
+          "limit": 12
+        },
+        {
+          "keyword": "年度报告摘要",
+          "limit": 4
+        }
+      ]
+    },
+    {
+      "ticker": "688086",
+      "industry": "信息存储",
+      "cohort": "historical_case",
+      "reason": "历史结果待原文确认，结果筛选样本",
+      "queries": [
+        {
+          "keyword": "终止上市",
+          "limit": 12
+        },
+        {
+          "keyword": "年度报告摘要",
+          "limit": 4
+        }
+      ]
+    },
+    {
+      "ticker": "688555",
+      "industry": "产业软件",
+      "cohort": "historical_case",
+      "reason": "历史结果待原文确认，结果筛选样本",
+      "queries": [
+        {
+          "keyword": "终止上市",
+          "limit": 12
+        },
+        {
+          "keyword": "年度报告摘要",
+          "limit": 4
+        }
+      ]
+    },
+    {
+      "ticker": "300116",
+      "industry": "锂电池",
+      "cohort": "historical_case",
+      "reason": "历史结果待原文确认，结果筛选样本",
+      "queries": [
+        {
+          "keyword": "终止上市",
+          "limit": 12
+        },
+        {
+          "keyword": "年度报告摘要",
+          "limit": 4
+        }
+      ]
+    },
+    {
+      "ticker": "600518",
+      "industry": "中药",
+      "cohort": "historical_case",
+      "reason": "历史结果待原文确认，结果筛选样本",
+      "queries": [
+        {
+          "keyword": "重整",
+          "limit": 12
+        },
+        {
+          "keyword": "年度报告摘要",
+          "limit": 4
+        }
+      ]
+    },
+    {
+      "ticker": "002157",
+      "industry": "饲料养殖",
+      "cohort": "historical_case",
+      "reason": "历史结果待原文确认，结果筛选样本",
+      "queries": [
+        {
+          "keyword": "重整",
+          "limit": 12
+        },
+        {
+          "keyword": "年度报告摘要",
+          "limit": 4
+        }
+      ]
+    },
+    {
+      "ticker": "000333",
+      "industry": "家电",
+      "cohort": "comparison_pool",
+      "reason": "公开披露充分的供应链研究候选，非代表性抽样"
+    },
+    {
+      "ticker": "000651",
+      "industry": "家电",
+      "cohort": "comparison_pool",
+      "reason": "公开披露充分的供应链研究候选，非代表性抽样"
+    },
+    {
+      "ticker": "600690",
+      "industry": "家电",
+      "cohort": "comparison_pool",
+      "reason": "公开披露充分的供应链研究候选，非代表性抽样"
+    },
+    {
+      "ticker": "600060",
+      "industry": "家电",
+      "cohort": "comparison_pool",
+      "reason": "公开披露充分的供应链研究候选，非代表性抽样"
+    },
+    {
+      "ticker": "600839",
+      "industry": "家电",
+      "cohort": "comparison_pool",
+      "reason": "公开披露充分的供应链研究候选，非代表性抽样"
+    },
+    {
+      "ticker": "002415",
+      "industry": "电子设备",
+      "cohort": "comparison_pool",
+      "reason": "公开披露充分的供应链研究候选，非代表性抽样"
+    },
+    {
+      "ticker": "002236",
+      "industry": "电子设备",
+      "cohort": "comparison_pool",
+      "reason": "公开披露充分的供应链研究候选，非代表性抽样"
+    },
+    {
+      "ticker": "002475",
+      "industry": "电子设备",
+      "cohort": "comparison_pool",
+      "reason": "公开披露充分的供应链研究候选，非代表性抽样"
+    },
+    {
+      "ticker": "000100",
+      "industry": "显示器件",
+      "cohort": "comparison_pool",
+      "reason": "公开披露充分的供应链研究候选，非代表性抽样"
+    },
+    {
+      "ticker": "000725",
+      "industry": "显示器件",
+      "cohort": "comparison_pool",
+      "reason": "公开披露充分的供应链研究候选，非代表性抽样"
+    },
+    {
+      "ticker": "600460",
+      "industry": "集成电路",
+      "cohort": "current_focus",
+      "reason": "公开披露充分的供应链研究候选，非代表性抽样",
+      "queries": [
+        {
+          "keyword": "年度报告摘要",
+          "limit": 8
+        },
+        {
+          "keyword": "",
+          "start": "2026-07-04",
+          "limit": 4
+        }
+      ]
+    },
+    {
+      "ticker": "603986",
+      "industry": "集成电路",
+      "cohort": "current_focus",
+      "reason": "公开披露充分的供应链研究候选，非代表性抽样",
+      "queries": [
+        {
+          "keyword": "年度报告摘要",
+          "limit": 8
+        },
+        {
+          "keyword": "",
+          "start": "2026-07-04",
+          "limit": 4
+        }
+      ]
+    },
+    {
+      "ticker": "688981",
+      "industry": "集成电路",
+      "cohort": "current_focus",
+      "reason": "公开披露充分的供应链研究候选，非代表性抽样",
+      "queries": [
+        {
+          "keyword": "年度报告摘要",
+          "limit": 8
+        },
+        {
+          "keyword": "",
+          "start": "2026-07-04",
+          "limit": 4
+        }
+      ]
+    },
+    {
+      "ticker": "688173",
+      "industry": "集成电路",
+      "cohort": "current_focus",
+      "reason": "公开披露充分的供应链研究候选，非代表性抽样",
+      "queries": [
+        {
+          "keyword": "年度报告摘要",
+          "limit": 8
+        },
+        {
+          "keyword": "",
+          "start": "2026-07-04",
+          "limit": 4
+        }
+      ]
+    }
+  ],
+  "comparisons": [
+    {
+      "company_id": "cninfo-gfbj0835870",
+      "as_of": "2023-04-23",
+      "window_days": 180
+    },
+    {
+      "company_id": "halo-688173",
+      "as_of": "2026-10-02",
+      "window_days": 180
+    }
+  ]
+}
