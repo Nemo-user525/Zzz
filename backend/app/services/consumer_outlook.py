@@ -9,7 +9,7 @@ from app.services import consumer_search as web
 
 
 def review_material(source):
-    return source.channel == 'community' or web.signal_matches(source, '用户评价|用户反馈|消费者反映|消费者投诉|顾客评价|用户评论|会员投诉')
+    return source.channel == 'community' or source.purpose in {'用户口碑', '大众点评', '消费者投诉'} or web.signal_matches(source, '用户评价|用户反馈|消费者反映|消费者投诉|顾客评价|用户评论|会员投诉')
 
 
 def validate_reviews(observations, rows):

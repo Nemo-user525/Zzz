@@ -1,7 +1,8 @@
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useMemo,useState,useRef} from 'react';
 import type {FormEvent} from 'react';
 import {discoveryApi as api} from './api/discovery';
 import type {CompanyReport,IntegrationStatus,LegalEntity,Place,Region} from './api/discovery';
+import {consumerApi, type RiskAnalysis} from './api/consumer';
 
 type Phase='search'|'places'|'entities'|'report';
 const regionLabels=['省 / 直辖市','市 / 区','区 / 县','街道'];
@@ -42,6 +43,26 @@ function DiscoveryFlow({onCompanySelected}:{onCompanySelected?:(name:string)=>vo
   const [error,setError]=useState('');
   const [streetNote,setStreetNote]=useState('');
   const [entitySearchNote,setEntitySearchNote]=useState('');
+  const [reviews,setReviews]=useState<RiskAnalysis|null>(null);
+  const [reviewProgress,setReviewProgress]=useState('');
+  const reviewController=useRef<AbortController|null>(null);
+  const requestSeq=useRef(0);
+  useEffect(()=>()=>{requestSeq.current++;reviewController.current?.abort();},[]);
+
+  function resetReviews(){requestSeq.current++;reviewController.current?.abort();setReviews(null);setReviewProgress('');}
+  async function investigateReviews(place:Place,seq:number){
+    reviewController.current?.abort();
+    const controller=new AbortController();reviewController.current=controller;
+    setLoading('reviews');setReviewProgress('正在按门店名称和地址启动公开评价调查…');
+    try{
+      const discovery=await api.storeReviews(place,controller.signal);
+      const result=await consumerApi.analyse(discovery.investigation_id,discovery.candidates[0].id,
+        {intent:'explore',service_category:'other',amount_yuan:null,service_duration_months:null},controller.signal,
+        text=>{if(seq===requestSeq.current)setReviewProgress(text);});
+      if(seq===requestSeq.current){setReviews(result);setPhase('report');}
+    }catch(e){if(seq===requestSeq.current&&!controller.signal.aborted)setError(message(e));}
+    finally{if(seq===requestSeq.current){setLoading('');setReviewProgress('');}}
+  }
 
   useEffect(()=>{
     let live=true;
@@ -77,33 +98,41 @@ function DiscoveryFlow({onCompanySelected}:{onCompanySelected?:(name:string)=>vo
   },[regions,selectedRegions]);
 
   async function searchPlaces(event:FormEvent){
+    resetReviews();const seq=requestSeq.current;
     event.preventDefault();setError('');setLoading('places');setReport(null);setSelectedPlace(null);setEntities([]);
     try{
       const result=await api.places(keyword.trim(),filter.regionCode,filter.street);
+      if(seq!==requestSeq.current)return;
       setPlaces(result.places);setStreetNote(result.street_filter_note);setPhase('places');
-    }catch(e){setError(message(e))}finally{setLoading('')}
+    }catch(e){if(seq===requestSeq.current)setError(message(e))}finally{if(seq===requestSeq.current)setLoading('')}
   }
 
-  async function searchEntities(term:string){
-    setEntityQuery(term);setError('');setLoading('entities');setEntities([]);setEntitySearchNote('');
+  async function searchEntities(term:string,place:Place|null=selectedPlace){
+    resetReviews();const seq=requestSeq.current;
+    setReport(null);setSelectedEntity(null);setEntityQuery(term);setError('');setLoading('entities');setEntities([]);setEntitySearchNote('');
     try{
       const result=await api.legalEntities(term.trim());
+      if(seq!==requestSeq.current)return;
       setEntities(result.companies);setEntitySearchNote(result.search_note||'');setPhase('entities');
-    }catch(e){setError(message(e));setPhase('entities')}finally{setLoading('')}
+      if(!result.companies.length&&place){await investigateReviews(place,seq);return;}
+    }catch(e){if(seq===requestSeq.current){setEntitySearchNote('企业查询暂不可用，继续调查门店公开评价。');setPhase('entities');if(place)await investigateReviews(place,seq);else setError(message(e));}}
+    finally{if(seq===requestSeq.current)setLoading(value=>value==='entities'?'':value)}
   }
 
   function choosePlace(place:Place){
     setSelectedPlace(place);setSelectedEntity(null);setReport(null);setPhase('entities');
-    void searchEntities(place.name);
+    void searchEntities(place.name,place);
   }
 
   async function loadReport(entity:LegalEntity){
     if(!selectedPlace)return;
+    resetReviews();const seq=requestSeq.current;
     setSelectedEntity(entity);setError('');setLoading('report');
     try{
       const value=await api.companyReport(entity.credit_code||entity.name,selectedPlace);
+      if(seq!==requestSeq.current)return;
       setReport(value);setPhase('report');onCompanySelected?.(value.company_name);
-    }catch(e){setError(message(e))}finally{setLoading('')}
+    }catch(e){if(seq===requestSeq.current)setError(message(e))}finally{if(seq===requestSeq.current)setLoading('')}
   }
 
   async function loadManualReport(event:FormEvent){
@@ -125,6 +154,19 @@ function DiscoveryFlow({onCompanySelected}:{onCompanySelected?:(name:string)=>vo
     amount?`预计预付 ${amount} 元${months?`、服务 ${months} 个月`:''}，未使用部分如何计算和退还？`:'未使用的服务如何计算和退还？',
     '如果是分店或加盟店，闭店、转店时由谁继续履约？',
   ];
+
+  if(status && !status.amap.configured) return <div className="xr-flow" id="lookup">
+    <form className="xr-search-card xr-flow-form" onSubmit={event=>{
+      event.preventDefault();
+      window.location.assign('/?'+new URLSearchParams({view:'consumer',query:keyword.trim()}));
+    }}>
+      <div className="xr-card-head"><span>START AN INVESTIGATION</span><span>地点查询暂不可用</span></div>
+      <h2>先按名称查找公开线索</h2>
+      <p>当前未配置高德地点服务，暂时无法搜索或确认实际门店。你可以先用消费者调查查找可能的经营主体；门店与企业的关系仍需核对营业执照、合同和收款方。</p>
+      <label className="xr-field"><span>门店、品牌或公司名称 <b>*</b></span><input value={keyword} onChange={event=>setKeyword(event.target.value)} placeholder="例如：某健身品牌" required minLength={2} maxLength={80}/></label>
+      <button className="xr-submit" type="submit">转到消费者调查 <span>↗</span></button>
+    </form>
+  </div>;
 
   return <div className="xr-flow" id="lookup">
     <div className="xr-flow-progress"><span className={phase==='search'?'active':''}>01 找门店</span><span className={phase==='places'?'active':''}>02 选地点</span><span className={phase==='entities'?'active':''}>03 选企业</span><span className={phase==='report'?'active':''}>04 看报告</span></div>
@@ -157,9 +199,22 @@ function DiscoveryFlow({onCompanySelected}:{onCompanySelected?:(name:string)=>vo
       {!status?.qcc.configured&&<p className="xr-flow-hint">企查查智能体未配置 API Key，企业候选与报告暂不可用。</p>}
       {entitySearchNote&&<p className="xr-flow-hint">{entitySearchNote}</p>}
       <div className="xr-flow-cards">{entities.map(entity=><article key={entity.key_no||entity.name} className={selectedEntity?.name===entity.name?'chosen':''}><strong>{entity.name}</strong><p>{[entity.status&&`登记状态：${entity.status}`,entity.credit_code&&`统一社会信用代码：${entity.credit_code}`].filter(Boolean).join(' · ')}</p>{entity.address&&<p>{entity.address}</p>}<div><span>企查查企业资料</span><button type="button" disabled={loading==='report'} onClick={()=>void loadReport(entity)}>获取企业报告 →</button></div></article>)}</div>
-      {entities.length===0&&loading!=='entities'&&<div className="xr-flow-empty">试试品牌名称，或输入合同、营业执照上的企业全称。</div>}
+      {entities.length===0&&loading!=='entities'&&<div className="xr-flow-empty">未匹配经营公司，将按所选门店名称和地址检索公开用户评价。也可输入营业执照上的企业全称。</div>}
+      {reviewProgress&&<p role="status" className="xr-flow-hint">{reviewProgress}</p>}
+      {entities.length===0&&loading!=='entities'&&<button type="button" disabled={loading==='reviews'} onClick={()=>{resetReviews();void investigateReviews(selectedPlace,requestSeq.current);}}>{loading==='reviews'?'正在调查公开评价…':'重新调查门店评价'}</button>}
       {loading==='report'&&<p className="xr-flow-hint">正在从企查查拉取工商资料、风险扫描及有记录项目的明细，请稍候…</p>}
       {selectedPlace&&status?.qcc.configured&&<form className="xr-flow-manual" onSubmit={e=>void loadManualReport(e)}><span>已知准确企业名称或统一社会信用代码？</span><button disabled={loading==='report'||entityQuery.trim().length<2}>{loading==='report'?'正在拉取报告…':'直接查询企业明细报告'}</button></form>}
+    </section>}
+
+    {reviews&&phase==='report'&&<section className="xr-flow-results xr-flow-report" aria-label="门店评价风险报告">
+      <div className="xr-flow-heading"><span>04 / 门店公开评价调查</span><h3>{reviews.identity.name}</h3><p>{selectedPlace?.address} · 经营公司尚未确认</p></div>
+      <div className={'xr-flow-verdict xr-flow-verdict-'+(reviews.risk?.level||'undetermined')}><span>基于本次公开评价的风险判断</span><strong>{reviews.risk?.label||'证据不足，暂不评级'}</strong><p>{reviews.risk?.explanation}</p><p>{reviews.risk?.review_impact}</p><p>预付建议：{reviews.risk?.decision_label||'先核实再预付'}</p><ul>{reviews.risk?.reasons.map((reason,i)=><li key={i}>{reason.explanation} {reason.citations.map(c=><a key={c.source_id} href={'#review-source-'+c.source_id}>查看依据 ↗ </a>)}</li>)}</ul></div>
+      <p>已审阅 {reviews.reviews?.reviewed_count||0} / {reviews.reviews?.collected_count||0} 条评价材料；仅覆盖本次公开搜索取得的资料，无法代表全网全部评论。其他分店及归属不明内容只作背景。</p>
+      <p>{Object.entries(reviews.reviews?.counts||{}).map(([kind,count])=>`${({positive:'正面',negative:'负面',mixed:'混合',unclear:'不明确'} as Record<string,string>)[kind]||kind} ${count}`).join(' · ')}（含背景评价，按近似内容去重，非好评率）</p>
+      <div className="xr-flow-fields">{reviews.reviews?.observations.map(o=><article key={o.source_id}><strong>{o.summary}</strong><p>{o.scope==='selected_entity'?'所选门店评价':'归属不明 / 背景资料'}{o.duplicate_of?' · 重复内容':''}</p><blockquote>{o.quote}</blockquote><a href={'#review-source-'+o.source_id}>查看原始来源 ↗</a></article>)}</div>
+      <h4>本次全部来源 · {reviews.sources.length} 条</h4><div className="xr-flow-fields">{reviews.sources.map(s=><article id={'review-source-'+s.id} key={s.id}><a href={s.url} target="_blank" rel="noopener noreferrer">{s.title} ↗</a><p>{s.publisher} · {s.verification_status==='page_text'?'已读取正文':'搜索摘要'} · {s.published_at||'公开日期未知'}</p><p>{s.excerpt}</p></article>)}</div>
+      <ul>{reviews.risk?.limitations.map((item,i)=><li key={i}>{item}</li>)}</ul>
+      <details><summary>查看调查过程</summary>{reviews.trace.map((step,i)=><p key={i}>{step.action} · {step.status} · {step.detail}</p>)}</details>
     </section>}
 
     {report&&phase==='report'&&<section className="xr-flow-results xr-flow-report">

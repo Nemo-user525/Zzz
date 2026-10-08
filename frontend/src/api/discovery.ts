@@ -7,12 +7,13 @@ export type CompanyReport={provider:string;queried_at:string;order_number:string
 export type IntegrationStatus={amap:{configured:boolean;provider:string};qcc:{configured:boolean;provider:string}};
 
 async function request<T>(path:string,options?:RequestInit):Promise<T>{
-  const response=await fetch('/api'+path,{headers:{'Content-Type':'application/json'},...options});
+  const response=await fetch('/api'+path,{headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(15000),...options});
   const value=await response.json().catch(()=>null);
-  if(!response.ok)throw new Error(value?.message||`请求失败 ${response.status}`);
+  if(!response.ok)throw new Error(value?.detail?.message||value?.message||`请求失败 ${response.status}`);
   return value as T;
 }
 export const discoveryApi={
+  storeReviews:(place:Place,signal?:AbortSignal)=>request<import('./consumer').Discovery>('/store-review-discovery',{method:'POST',signal,body:JSON.stringify({id:place.id,name:place.name,address:place.address,city:place.city,district:place.district})}),
   integrations:()=>request<IntegrationStatus>('/integrations'),
   regions:(parent:string)=>request<{provider:string;parent:string;regions:Region[]}>('/regions?parent='+encodeURIComponent(parent)),
   places:(keyword:string,regionCode:string,street:string)=>request<{provider:string;places:Place[];street_filter_note:string;identity_note:string}>('/places?'+new URLSearchParams({keyword,region_code:regionCode,street})),

@@ -13,7 +13,7 @@ const time = (value:string) => new Date(value).toLocaleString('zh-CN');
 export function ConsumerWorkspace() {
   const [profile,setProfile] = useState<UseCase|null>(null);
   const [cap,setCap] = useState<Capabilities|null>(null);
-  const [query,setQuery] = useState('');
+  const [query,setQuery] = useState(() => new URLSearchParams(window.location.search).get('query') || '');
   const [location,setLocation] = useState('');
   const [discovery,setDiscovery] = useState<Discovery|null>(null);
   const [selected,setSelected] = useState('');

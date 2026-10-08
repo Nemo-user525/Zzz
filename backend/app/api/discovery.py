@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, Query, Response
 from pydantic import BaseModel, Field
 
 from app.services import amap, qcc_discovery_mcp as qcc_mcp, qcc_openapi as qcc_openapi
+from app.services import consumer
 
 
 router = APIRouter(prefix="/api")
@@ -13,6 +14,8 @@ class SelectedPlace(BaseModel):
     id: str = Field(min_length=1, max_length=100)
     name: str = Field(min_length=1, max_length=200)
     address: str = Field(default="", max_length=500)
+    city: str = Field(default="", max_length=100)
+    district: str = Field(default="", max_length=100)
 
 
 class CompanyReportInput(BaseModel):
@@ -99,3 +102,8 @@ async def company_report(inp: CompanyReportInput):
         "identity_status": "user_selected_unverified",
         "identity_note": "报告对应你选定的企业。付款前，请确认合同和收款方使用同一企业名称。",
     }
+
+
+@router.post('/store-review-discovery')
+def store_review_discovery(place: SelectedPlace):
+    return consumer.store_review_discovery(place.model_dump())

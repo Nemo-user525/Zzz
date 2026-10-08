@@ -45,6 +45,8 @@ class IdentityCandidate(Strict):
     basis: str
     source_ids: list[str]
     relationship_status: str = '网页提及，门店关联尚未核实'
+    research_scope: Literal['company', 'store_reviews'] = 'company'
+    place: dict[str, str] = Field(default_factory=dict)
 
 
 class Step(Strict):

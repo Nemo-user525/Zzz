@@ -13,6 +13,20 @@ COMPANY = re.compile(r'[\u4e00-\u9fffA-Za-z0-9（）()·]{4,48}?(?:股份有限�
 ADVERSE = re.compile('处罚|闭店|停业|歇业|欠薪|退款|注销|变更|交接|更名|执行|诉讼')
 
 
+def store_review_discovery(place):
+    """Create a store research target without inventing a legal entity."""
+    identity = IdentityCandidate(id=uuid.uuid4().hex, name=place['name'], source_ids=[],
+        basis='以用户选定的门店名称和地址检索公开评价，尚未匹配经营公司。',
+        relationship_status='门店评价调查；经营公司尚未确认', research_scope='store_reviews', place=place)
+    result = Discovery(investigation_id=uuid.uuid4().hex, query=place['name'],
+        location=' '.join(filter(None, [place.get('city'), place.get('district'), place.get('address')]))[:60],
+        generated_at=web.now(), mode='live_search', candidates=[identity], sources=[],
+        trace=[Step(action='门店评价调查', status='user_selected', detail=f"{place['name']} · {place.get('address', '')}")],
+        unknowns=['尚未确认经营公司；本报告仅评估本次可检索的门店评价，不代表全平台全部评论。'])
+    cache.save(result)
+    return result
+
+
 def extract_names(text):
     names = []
     for match in COMPANY.finditer(text):
@@ -90,7 +104,13 @@ async def analysis(body):
     original = [s for s in previous.sources if s.id in identity.source_ids and web.relevant(s, identity.name)]
     state = await consumer_agent.investigate(identity, original, body, previous.query, previous.location)
     sources, reference = state['sources'], state['criteria']
-    trace = previous.trace + [Step(action='确认研究对象', status='user_selected', detail=f'研究 {identity.name}；不等于确认门店归属', source_ids=identity.source_ids)] + state['trace']
+    store_reviews = identity.research_scope == 'store_reviews'
+    if store_reviews:
+        state['risk'].limitations.extend(['评级对象为所选门店的公开评价，不是企业工商或财务评级。',
+            '经营公司尚未确认；仅覆盖本次收集的公开资料，其他分店及归属不明的反馈只作背景。'])
+        state['risk'].decision_explanation = '根据所选门店本次公开评价与证据覆盖给出预付建议；经营公司仍需核对。'
+    trace = previous.trace + [Step(action='确认研究对象', status='user_selected',
+        detail=f'研究 {identity.name}；' + ('按门店名称和地址评估公开评价，经营公司未知' if store_reviews else '不等于确认门店归属'), source_ids=identity.source_ids)] + state['trace']
     trace.append(Step(action='数据库学习参考', status=reference['status'],
         detail=f"使用 {reference['sample_count']} 条原文支持样本的主题参考；匹配仅决定复核方向，不作为当前公司证据"))
     indicators = consumer_indicators.build(identity, sources, state['trace'], state['findings'])
@@ -102,7 +122,8 @@ async def analysis(body):
             consumer_relevance='这是一条待核实材料；当前没有证据证明它会影响所选门店的服务履行。',
             interpretations=[Interpretation(text='需核对事件主体、时间与后续处理；材料可能涉及其他门店或已经处理的事项。', supporting_source_ids=[source.id])],
             missing_evidence=['准确事件主体与日期', '后续状态', '与本次服务的关系']))
-    questions = [f'“{identity.name}”是否实际运营这家门店？营业执照和品牌关联依据是什么？']
+    questions = ([f'“{identity.name}”的营业执照、合同抬头和收款方分别是哪家公司？'] if store_reviews else
+        [f'“{identity.name}”是否实际运营这家门店？营业执照和品牌关联依据是什么？'])
     questions += [f.question for f in state['findings']][:2]
     if not state['findings']:
         if changes:

@@ -5,6 +5,7 @@ The model cannot invent URLs, change identity or declare evidence verified.
 """
 import asyncio
 import httpx
+import re
 from typing import TypedDict
 from pydantic import Field
 from langgraph.graph import StateGraph, START, END
@@ -109,6 +110,8 @@ async def read_sources(rows, name):
 
 
 async def collect(state):
+    if state['identity'].get('research_scope') == 'store_reviews':
+        return await collect_store_reviews(state)
     update('正在跨网站检索公司、门店、新闻、公告与社区反馈…')
     name = state['identity']['name']
     results = await asyncio.gather(*(web.search(name + ' ' + term, topic) for topic, term in TOPICS.items()))
@@ -138,6 +141,35 @@ async def collect(state):
             'criteria': await asyncio.to_thread(reference, rows), 'executed_queries': list(TOPICS.values()) + terms,
             'reviews':consumer_outlook.summarize_reviews([], rows, completed=False),
             'cashflow':consumer_outlook.simulate([], rows, name)}
+
+
+def scope_store_sources(rows, identity):
+    name, place = identity['name'], identity.get('place', {})
+    # A branch qualifier or a specific address must support attribution.
+    branch = re.search(r'[（(]([^）)]+)[）)]', name)
+    locations = [place.get('address', '')]
+    for row in rows:
+        local = bool(branch) or any(value and value in row.title + row.excerpt for value in locations)
+        row.scope = ('selected_entity' if web.relevant(row, name) and local and
+                     consumer_outlook.review_material(row) else 'brand_context')
+    return rows
+
+
+async def collect_store_reviews(state):
+    update('未匹配经营公司，正在按门店名称和地址跨网站检索公开用户评价…')
+    name = state['identity']['name']
+    location = state['context'].get('location', '')
+    topics = {topic: term for topic, term in TOPICS.items() if topic in {
+        '用户口碑', '退款履约', '服务持续', '回应反证', '消费者投诉', '微博反馈', '知乎讨论',
+        '豆瓣讨论', '贴吧讨论', '哔哩哔哩', '抖音公开页', '大众点评', '小红书线索', '本地媒体', '后续处理'}}
+    results = await asyncio.gather(*(web.search(f'{name} {location} {term}', topic) for topic, term in topics.items()))
+    rows = web.diverse([s for items, _ in results for s in items if web.relevant(s, name)], limit=160)
+    reads = await read_sources(web.diverse(rows, limit=16), name)
+    rows = scope_store_sources(rows, state['identity'])
+    return {'sources': rows, 'trace': state['trace'] + [step for _, step in results] + reads,
+        'criteria': await asyncio.to_thread(reference, rows), 'executed_queries': list(topics.values()),
+        'reviews': consumer_outlook.summarize_reviews([], rows, completed=False),
+        'cashflow': consumer_outlook.simulate([], rows, name)}
 
 
 def payload(state, rows=None):
@@ -170,9 +202,12 @@ async def plan(state):
 
 async def act(state):
     decision, name = state['plan'], state['identity']['name']
-    results = await asyncio.gather(*(web.search(name + ' ' + term, '智能体补查') for term in decision.search_terms))
+    prefix = name + (' ' + state['context'].get('location', '') if state['identity'].get('research_scope') == 'store_reviews' else '')
+    results = await asyncio.gather(*(web.search(prefix + ' ' + term, '智能体补查') for term in decision.search_terms))
     rows = web.diverse(state['sources'] + [s for items, _ in results for s in items if web.relevant(s, name)], limit=160)
     reads = await read_sources([s for s in rows if s.id in decision.read_source_ids], name)
+    if state['identity'].get('research_scope') == 'store_reviews':
+        rows = scope_store_sources(rows, state['identity'])
     return {'sources': rows, 'rounds': state['rounds'] + 1,
             'executed_queries': state['executed_queries'] + decision.search_terms,
             'trace': state['trace'] + [t for _, t in results] + reads,
@@ -245,6 +280,14 @@ async def synthesize(state):
             facts.extend(valid_facts)
             reviewed_ids.update(s.id for s in batch)
         reviews = consumer_outlook.summarize_reviews(observations, eligible)
+        if state['identity'].get('research_scope') == 'store_reviews':
+            feedback = {o.source_id for o in observations if o.kind == 'customer_feedback'}
+            for source in eligible:
+                if source.id not in feedback:
+                    source.scope = 'brand_context'
+            reviews = consumer_outlook.summarize_reviews(observations, eligible)
+            selected = {s.id for s in eligible if s.scope == 'selected_entity'}
+            findings = [f for f in findings if all(c.source_id in selected for c in f.citations)]
         cashflow = consumer_outlook.simulate(facts, eligible, state['identity']['name'])
         # All materials are read in the map stage. Keep the reduce prompt bounded on 16K hardware.
         selected_findings = [f for key in ('identity','continuity','refund','changes','counter','coverage') for f in [x for x in findings if x.indicator_id==key][:2]]
@@ -279,6 +322,11 @@ async def synthesize(state):
             '综合时比较支持与反对同一结论的材料，区分当前事实、历史背景与条件模拟；说明最影响等级的证据及缺口。'
             '在内部完成主体一致性、时间有效性、引文支持和收支假设的交叉检查；最终只返回结论和可核对依据。'
             'reasons只能引用sources里的source_id和连续原句；数据库、调查状态、评价统计和模拟假设不是可引用来源。没有可引用事实时reasons=[]。')
+        if state['identity'].get('research_scope') == 'store_reviews':
+            instruction += (' 本次research_scope=store_reviews，评级对象是所选门店的公开用户评价，不是经营公司。'
+                '综合全部已审阅评价中的正负面、混合、重复、时间与后续处理；不能按负评数量直接定级。'
+                'selected_entity仅表示可定位到本门店的评价；brand_context包括其他门店、营销及归属不明内容，不能作本门店不利事实。'
+                '不得推断企业登记、资金链或财务状态。cashflow只作无真实基线的假设说明，不影响门店评价等级。')
         draft, draft_calls = await risk_draft(instruction, risk_data)
         synthesis_calls += draft_calls
         try:
